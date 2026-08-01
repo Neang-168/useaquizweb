@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,10 +25,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ]);
     });
 
-    Route::get('/users', function (Request $request) {
-        return response()->json([
-            'message' => 'You can access this because you have the required permission.',
-        ]);
-    })->middleware('permission:manage_users');
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::get('/users', [UserController::class, 'index'])->middleware('permission:manage_users');
+    Route::post('/users', [UserController::class, 'store'])->middleware('permission:manage_users');
 });
 

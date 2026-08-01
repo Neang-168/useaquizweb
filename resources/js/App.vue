@@ -1,12 +1,18 @@
 <template>
-    <div class="min-h-screen flex flex-col justify-center items-center gap-6 bg-white">
-        <h1 class="text-4xl font-bold text-blue-600">
-            Laravel 12 + Vue 3 + PrimeVue 
-        </h1>
-
-        <Button label="Development Branch!" icon="pi pi-check" severity="warning" />
-
-    </div>
+  <div>
+    <LoginPage v-if="!user" @logged-in="handleLogin" />
+    <RoleProfile v-else :user="user" />
+  </div>
 </template>
+
 <script setup>
+import { ref } from 'vue';
+import LoginPage from './components/LoginPage.vue';
+import RoleProfile from './components/RoleProfile.vue';
+
+const user = ref(null);
+
+function handleLogin(loggedInUser) {
+  user.value = loggedInUser;
+}
 </script>

@@ -2,9 +2,9 @@
   <div class="dashboard-page">
     <div class="dashboard-shell">
       <AdminSidebar :active-view="activeView" @select-view="handleSelectView" @logout="logout" />
-      <AdminContent
+      <AdminContentView
         :active-view="activeView"
-        :user="user"
+        :user="currentUser"
         :permissions="permissions"
         :users="users"
         :loading-users="loadingUsers"
@@ -59,30 +59,34 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import AdminSidebar from './AdminSidebar.vue'
-import AdminContent from './AdminContent.vue'
+import AdminSidebar from '../components/AdminSidebar.vue'
+import AdminContentView from './AdminContentView.vue'
 
 const props = defineProps({
-  user: { type: Object, default: null },
+  initialView: { type: String, default: 'profile' },
 })
 
+const route = useRoute()
+const router = useRouter()
 const toast = useToast?.() || null
 
-const permissions = computed(() => props.user?.permissions || [])
+const currentUser = ref(JSON.parse(localStorage.getItem('auth_user') || 'null'))
+const permissions = computed(() => currentUser.value?.permissions || [])
 
 const users = ref([])
 const roles = ref([])
 const loadingUsers = ref(false)
 const submitting = ref(false)
 const dialogVisible = ref(false)
-const activeView = ref('profile')
+const activeView = ref(props.initialView)
 
 const form = reactive({
   username: '',
@@ -94,8 +98,18 @@ const form = reactive({
   status: true,
 })
 
+watch(
+  () => route.name,
+  (name) => {
+    activeView.value = name === 'admin.users' ? 'users' : 'profile'
+  },
+  { immediate: true }
+)
+
 function handleSelectView(view) {
   activeView.value = view
+  const targetRoute = view === 'users' ? { name: 'admin.users' } : { name: 'admin.profile' }
+  router.push(targetRoute)
 }
 
 function openDialog() {
@@ -223,10 +237,16 @@ async function submitUser() {
 
 function logout() {
   localStorage.removeItem('auth_token')
-  window.location.reload()
+  localStorage.removeItem('auth_user')
+  router.replace({ name: 'login' })
 }
 
 onMounted(() => {
+  if (!currentUser.value) {
+    router.replace({ name: 'login' })
+    return
+  }
+
   loadRoles()
   loadUsers()
 })
@@ -234,13 +254,11 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-page {
-  /* min-height: 100vh; */
   background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
   padding: 2rem 1.25rem;
 }
 
 .dashboard-shell {
-  /* max-width: 1280px; */
   margin: 0 auto;
   display: grid;
   grid-template-columns: 280px 1fr;

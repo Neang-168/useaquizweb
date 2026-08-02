@@ -2,7 +2,6 @@
   <div class="min-h-screen flex items-center justify-center bg-surface-50 px-4 py-8">
     <Card class="w-full max-w-md shadow-xl border border-surface-200">
       <template #content>
-        <!-- Header -->
         <div class="text-center mb-8">
           <div
             class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary"
@@ -19,7 +18,6 @@
           </p>
         </div>
 
-        <!-- Error -->
         <Message
           v-if="error"
           severity="error"
@@ -29,10 +27,7 @@
           {{ error }}
         </Message>
 
-        <!-- Login Form -->
         <form @submit.prevent="submitLogin" class="space-y-5">
-
-          <!-- Email -->
           <div>
             <label
               for="email"
@@ -58,7 +53,6 @@
             </small>
           </div>
 
-          <!-- Password -->
           <div>
             <label
               for="password"
@@ -86,7 +80,6 @@
             </small>
           </div>
 
-          <!-- Remember / Forgot -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <Checkbox
@@ -111,7 +104,6 @@
             </a>
           </div>
 
-          <!-- Login Button -->
           <Button
             type="submit"
             label="Sign In"
@@ -122,7 +114,6 @@
           />
         </form>
 
-        <!-- Footer -->
         <div class="mt-7 text-center">
           <p class="text-sm text-surface-500">
             University Quiz Management System
@@ -134,36 +125,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-import Card from 'primevue/card';
-import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
-import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
-import Message from 'primevue/message';
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
+import Message from 'primevue/message'
+
+const router = useRouter()
 
 const form = ref({
   email: 'superadmin@example.com',
   password: 'password',
-});
+})
 
-const error = ref('');
-const loading = ref(false);
-const submitted = ref(false);
-const rememberMe = ref(false);
-
-const emit = defineEmits(['logged-in']);
+const error = ref('')
+const loading = ref(false)
+const submitted = ref(false)
+const rememberMe = ref(false)
 
 async function submitLogin() {
-  submitted.value = true;
-  error.value = '';
+  submitted.value = true
+  error.value = ''
 
   if (!form.value.email || !form.value.password) {
-    return;
+    return
   }
 
-  loading.value = true;
+  loading.value = true
 
   try {
     const response = await fetch('/api/login', {
@@ -176,26 +168,26 @@ async function submitLogin() {
         email: form.value.email,
         password: form.value.password,
       }),
-    });
+    })
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.message || 'Invalid email or password.');
+      throw new Error(data.message || 'Invalid email or password.')
     }
 
-    localStorage.setItem('auth_token', data.token);
+    localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('auth_user', JSON.stringify(data.user))
 
     if (rememberMe.value) {
-      localStorage.setItem('remember_me', 'true');
+      localStorage.setItem('remember_me', 'true')
     }
 
-    emit('logged-in', data.user);
-
+    router.push({ name: 'admin.profile' })
   } catch (err) {
-    error.value = err.message || 'Login failed. Please try again.';
+    error.value = err.message || 'Login failed. Please try again.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 </script>

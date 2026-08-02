@@ -398,10 +398,4 @@ function nameInitials(item) {
 .users-table :deep(.p-datatable-tbody > tr > td) {
   border-color: var(--border);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .primary-btn {
-    transition: none;
-  }
-}
 </style>

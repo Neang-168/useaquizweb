@@ -1,227 +1,237 @@
 <template>
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-mark">
-        <span class="brand-mark-ring"></span>
-        <span class="brand-mark-letter">Q</span>
-      </div>
-      <div>
-        <p class="brand-title">UseaQuiz</p>
-        <p class="brand-subtitle">Admin panel</p>
-      </div>
-    </div>
+  <!-- 1. Main Dashboard Wrapper (ពេញ Screen ១០០%) -->
+  <div class="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans antialiased">
+    
+    <!-- 2. SIDEBAR COMPONENT (ជាប់គែមឆ្វេង) -->
+    <aside class="w-64 h-full bg-black  border-r border-slate-200 flex flex-col justify-between p-4 font-sans select-none shrink-0">
+      
+      <!-- Header + Scrollable Nav Navigation -->
+      <div class="flex flex-col min-h-0 flex-1">
+        
+        <!-- Brand Logo & Name -->
+        <div class="flex items-center gap-3 pb-5 px-1">
+          <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <i class="pi pi-sparkles text-xl"></i>
+          </div>
+          <div>
+            <h2 class="m-0 text-base font-bold text-slate-900 leading-tight">QuizFlow</h2>
+            <p class="m-0 text-xs text-slate-400 font-medium">Learning Suite</p>
+          </div>
+        </div>
 
-    <nav class="sidebar-nav">
-      <button
-        class="nav-item"
-        :class="{ active: activeView === 'profile' }"
-        @click="emit('select-view', 'profile')"
-      >
-        <span class="nav-bubble">
-          <i class="pi pi-user"></i>
-        </span>
-        <span class="nav-label">Profile</span>
-      </button>
-      <button
-        class="nav-item"
-        :class="{ active: activeView === 'users' }"
-        @click="emit('select-view', 'users')"
-      >
-        <span class="nav-bubble">
-          <i class="pi pi-users"></i>
-        </span>
-        <span class="nav-label">Users</span>
-      </button>
-    </nav>
+        <!-- Navigation Menu Sections (Scrollable Area) -->
+        <div class="flex-1 overflow-y-auto pr-1 my-2 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
+          
+          <!-- SECTION 1: OVERVIEW -->
+          <div class="space-y-1">
+            <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-2">
+              OVERVIEW
+            </span>
+            
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'dashboard' }"
+              @click="activeView = 'dashboard'"
+            >
+              <i class="pi pi-th-large text-lg" :class="activeView === 'dashboard' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Dashboard</span>
+            </button>
+          </div>
 
-    <div class="sidebar-footer">
-      <Button label="Log out" icon="pi pi-sign-out" class="logout-btn" text @click="emit('logout')" />
-    </div>
-  </aside>
+          <!-- SECTION 2: TEACHING -->
+          <div class="space-y-1">
+            <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-2">
+              TEACHING
+            </span>
+            
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'quizzes' }"
+              @click="activeView = 'quizzes'"
+            >
+              <i class="pi pi-question-circle text-lg" :class="activeView === 'quizzes' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Quizzes</span>
+            </button>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'question-bank' }"
+              @click="activeView = 'question-bank'"
+            >
+              <i class="pi pi-bars text-lg" :class="activeView === 'question-bank' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Question Bank</span>
+            </button>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'subjects' }"
+              @click="activeView = 'subjects'"
+            >
+              <i class="pi pi-book text-lg" :class="activeView === 'subjects' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Subjects</span>
+            </button>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'classes' }"
+              @click="activeView = 'classes'"
+            >
+              <i class="pi pi-graduation-cap text-lg" :class="activeView === 'classes' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Classes</span>
+            </button>
+          </div>
+
+          <!-- SECTION 3: INSIGHTS -->
+          <div class="space-y-1">
+            <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-2">
+              INSIGHTS
+            </span>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'results' }"
+              @click="activeView = 'results'"
+            >
+              <i class="pi pi-chart-line text-lg" :class="activeView === 'results' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Results</span>
+            </button>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'reports' }"
+              @click="activeView = 'reports'"
+            >
+              <i class="pi pi-chart-bar text-lg" :class="activeView === 'reports' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Reports</span>
+            </button>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'leaderboard' }"
+              @click="activeView = 'leaderboard'"
+            >
+              <i class="pi pi-trophy text-lg" :class="activeView === 'leaderboard' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Leaderboard</span>
+            </button>
+          </div>
+
+          <!-- SECTION 4: ADMINISTRATION -->
+          <div class="space-y-1">
+            <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-2">
+              ADMINISTRATION
+            </span>
+
+            <button
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-blue-600 py-2.5 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all cursor-pointer text-left"
+              :class="{ '!bg-blue-50/80 !text-blue-600': activeView === 'users' }"
+              @click="activeView = 'users'"
+            >
+              <i class="pi pi-users text-lg" :class="activeView === 'users' ? 'text-blue-600' : 'text-slate-600'"></i>
+              <span>Users</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Help Card -->
+      <div class="pt-2 shrink-0">
+        <div class="bg-blue-50/50 border border-blue-100/60 rounded-2xl p-3.5">
+          <div class="flex items-center gap-1.5 text-blue-600 font-bold text-sm mb-1">
+            <i class="pi pi-question-circle"></i>
+            <span>Need help?</span>
+          </div>
+          <p class="text-xs text-slate-500 leading-relaxed mb-3">
+            Browse the docs or contact support.
+          </p>
+          <button 
+            class="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-semibold text-slate-800 shadow-xs transition-all cursor-pointer"
+            @click="handleOpenHelp"
+          >
+            Open Help Center
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- 3. MAIN CONTENT AREA (ខាងស្តាំលាតពេញ Scroll បាន) -->
+    <main class="flex-1 h-full overflow-y-auto p-6 md:p-10">
+      <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- User Profile Header -->
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-sm shadow-md">
+            SU
+          </div>
+          <div>
+            <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase block mb-0.5">
+              AUTHENTICATED PROFILE
+            </span>
+            <h1 class="text-2xl font-bold text-slate-900 m-0">
+              Super Admin Dashboard
+            </h1>
+          </div>
+        </div>
+
+        <!-- Info Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-2">
+              • USERNAME
+            </span>
+            <p class="text-slate-800 font-semibold text-lg m-0">super.admin</p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-2">
+              • EMAIL
+            </span>
+            <p class="text-slate-800 font-semibold text-lg m-0">superadmin@example.com</p>
+          </div>
+        </div>
+
+        <!-- Permissions Section -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+          <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-4">
+            • PERMISSIONS
+          </span>
+          <div class="flex flex-wrap gap-2.5">
+            <span 
+              v-for="permission in permissions" 
+              :key="permission"
+              class="px-3.5 py-1.5 bg-slate-100/80 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/60"
+            >
+              {{ permission }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
 </template>
 
 <script setup>
-import Button from 'primevue/button'
+import { ref } from 'vue'
 
-const props = defineProps({
-  activeView: { type: String, default: 'profile' },
-})
+// State សម្រាប់កំណត់ Tab ដែលកំពុងជ្រើសរើស
+const activeView = ref('dashboard')
 
-const emit = defineEmits(['select-view', 'logout'])
+// បញ្ជី Permissions
+const permissions = [
+  'manage_users', 
+  'manage_roles', 
+  'manage_courses', 
+  'manage_exams', 
+  'view_dashboard', 
+  'view_reports', 
+  'manage_profile', 
+  'view_schedule'
+]
+
+const handleOpenHelp = () => {
+  alert('Open Help Center clicked!')
+}
 </script>
-
-<style scoped>
-.sidebar {
-  --ink: #191b3a;
-  --ink-soft: #262a52;
-  --amber: #ffb020;
-  --green: #17b26a;
-  --hairline: rgba(255, 255, 255, 0.1);
-
-  background: var(--ink);
-  color: #f4f4f8;
-  border-radius: 1.25rem;
-  padding: 1.35rem 1.15rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  margin-bottom: 2.25rem;
-  padding-bottom: 1.15rem;
-  border-bottom: 1px solid var(--hairline);
-}
-
-.brand-mark {
-  position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-}
-
-.brand-mark-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1.5px solid var(--amber);
-  opacity: 0.55;
-}
-
-.brand-mark-letter {
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 50%;
-  background: var(--amber);
-  color: var(--ink);
-  display: grid;
-  place-items: center;
-  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.brand-title {
-  margin: 0;
-  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.brand-subtitle {
-  margin: 0.15rem 0 0;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(244, 244, 248, 0.5);
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.nav-item {
-  border: 0;
-  background: transparent;
-  color: rgba(244, 244, 248, 0.72);
-  padding: 0.6rem 0.7rem;
-  border-radius: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  cursor: pointer;
-  text-align: left;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 0.92rem;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.nav-bubble {
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 50%;
-  border: 1.5px solid rgba(244, 244, 248, 0.28);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.nav-item:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.nav-item:hover .nav-bubble {
-  border-color: rgba(244, 244, 248, 0.5);
-}
-
-.nav-item:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
-}
-
-.nav-item.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.nav-item.active .nav-bubble {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: var(--ink);
-}
-
-.sidebar-footer {
-  margin-top: 1.5rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--hairline);
-}
-
-.logout-btn {
-  width: 100%;
-  justify-content: flex-start;
-  color: rgba(244, 244, 248, 0.72) !important;
-  font-weight: 600;
-  padding-left: 0.7rem !important;
-}
-
-.logout-btn:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-}
-
-@media (max-width: 900px) {
-  .sidebar {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 560px) {
-  .sidebar-nav {
-    gap: 0.25rem;
-  }
-
-  .nav-item {
-    padding: 0.55rem 0.6rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav-item,
-  .nav-bubble {
-    transition: none;
-  }
-}
-</style>

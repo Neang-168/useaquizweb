@@ -1,21 +1,20 @@
 <template>
-  <!-- បន្ថែម Div រុំរៀបចំ flex ឱ្យលាតពេញ Screen 100% -->
-  <div class="w-screen h-screen m-0 p-0 overflow-hidden bg-slate-50 font-sans">
-    <router-view />
+  <div class="flex h-screen bg-slate-100">
+    <!-- 1. Sidebar -->
+    <!-- <AdminSidebar /> -->
+
+    <!-- 2. Main Content Container -->
+    <div class="flex-1 flex flex-col overflow-y-auto">
+      
+      <!-- 3. កន្លែងលោតបង្ហាញ Dashboard / Profile / Users -->
+      <main class="p-6">
+        <router-view />  <!--  ចំណុចសំខាន់គឺត្រង់នេះ! -->
+      </main>
+
+    </div>
   </div>
 </template>
 
 <script setup>
-// Code ផ្សេងៗបើមាន
+import AdminSidebar from '@/components/AdminSidebar.vue'
 </script>
-
-<style>
-/* Reset Global Styles ដើម្បីកាត់ចោល Margin/Padding ដើមរបស់ Browser */
-html, body, #app {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-}
-</style>

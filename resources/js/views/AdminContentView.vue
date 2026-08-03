@@ -1,103 +1,113 @@
 <template>
-  <main class="content-panel">
-    <div class="content-header">
-      <div class="header-identity">
-        <div class="id-mark">
-          <span class="id-mark-ring"></span>
-          <span class="id-mark-letter">{{ initials }}</span>
-        </div>
-        <div>
-          <p class="header-eyebrow">Authenticated profile</p>
-          <h1 class="header-title">{{ user?.role || 'User' }} dashboard</h1>
-        </div>
-      </div>
-    </div>
-
-    <section v-if="activeView === 'profile'" class="view-stack">
-      <div class="profile-grid">
-        <Card class="profile-card">
-          <template #content>
-            <p class="field-label"><span class="field-dot"></span>Username</p>
-            <p class="field-value">{{ user?.username || '—' }}</p>
-          </template>
-        </Card>
-        <Card class="profile-card">
-          <template #content>
-            <p class="field-label"><span class="field-dot"></span>Email</p>
-            <p class="field-value">{{ user?.email || '—' }}</p>
-          </template>
-        </Card>
-      </div>
-
-      <Card class="section-card">
-        <template #content>
-          <p class="field-label"><span class="field-dot"></span>Permissions</p>
-          <div class="chip-row">
-            <span v-for="permission in permissions" :key="permission" class="permission-chip">
-              {{ permission }}
-            </span>
-            <span v-if="!permissions.length" class="empty-hint">No permissions assigned</span>
-          </div>
-        </template>
-      </Card>
-    </section>
-
-    <section v-else class="view-stack">
-      <Card class="section-card">
-        <template #title>
-          <div class="section-header">
+  <div class="admin-layout">
+    <main class="admin-main">
+      <div class="content-panel">
+        
+        <!-- Content Header -->
+        <div class="content-header">
+          <div class="header-identity">
+            <div class="id-mark">
+              <span class="id-mark-ring"></span>
+              <span class="id-mark-letter">{{ initials }}</span>
+            </div>
             <div>
-              <h2 class="section-title">User management</h2>
-              <p class="section-subtitle">Create and review users from the API.</p>
-            </div>
-            <div class="section-actions">
-              <Button icon="pi pi-refresh" text rounded aria-label="Refresh" class="icon-btn" :loading="loadingUsers" @click="emit('refresh-users')" />
-              <Button label="New user" icon="pi pi-plus" class="primary-btn" @click="emit('open-dialog')" />
+              <p class="header-eyebrow">Authenticated profile</p>
+              <h1 class="header-title">{{ user?.role || 'User' }} dashboard</h1>
             </div>
           </div>
-        </template>
+        </div>
 
-        <template #content>
-          <DataTable
-            :value="users"
-            :loading="loadingUsers"
-            paginator
-            :rows="8"
-            dataKey="id"
-            responsiveLayout="scroll"
-            class="users-table"
-          >
-            <template #empty>
-              <div class="empty-state">No users yet — create the first one.</div>
+        <!-- PROFILE VIEW -->
+        <section v-if="activeView === 'profile'" class="view-stack">
+          <div class="profile-grid">
+            <Card class="profile-card">
+              <template #content>
+                <p class="field-label"><span class="field-dot"></span>Username</p>
+                <p class="field-value">{{ user?.username || '—' }}</p>
+              </template>
+            </Card>
+            <Card class="profile-card">
+              <template #content>
+                <p class="field-label"><span class="field-dot"></span>Email</p>
+                <p class="field-value">{{ user?.email || '—' }}</p>
+              </template>
+            </Card>
+          </div>
+
+          <Card class="section-card">
+            <template #content>
+              <p class="field-label"><span class="field-dot"></span>Permissions</p>
+              <div class="chip-row">
+                <span v-for="permission in permissions" :key="permission" class="permission-chip">
+                  {{ permission }}
+                </span>
+                <span v-if="!permissions.length" class="empty-hint">No permissions assigned</span>
+              </div>
+            </template>
+          </Card>
+        </section>
+
+        <!-- USERS TABLE VIEW -->
+        <section v-else class="view-stack">
+          <Card class="section-card">
+            <template #title>
+              <div class="section-header">
+                <div>
+                  <h2 class="section-title">User management</h2>
+                  <p class="section-subtitle">Create and review users from the API.</p>
+                </div>
+                <div class="section-actions">
+                  <Button icon="pi pi-refresh" text rounded aria-label="Refresh" class="icon-btn" :loading="loadingUsers" @click="emit('refresh-users')" />
+                  <Button label="New user" icon="pi pi-plus" class="primary-btn" @click="emit('open-dialog')" />
+                </div>
+              </div>
             </template>
 
-            <Column field="name" header="Name">
-              <template #body="{ data }">
-                <div class="name-cell">
-                  <span class="row-mark">{{ nameInitials(data) }}</span>
-                  <span>{{ data.first_name }} {{ data.last_name }}</span>
-                </div>
-              </template>
-            </Column>
-            <Column field="email" header="Email" />
-            <Column field="role" header="Role">
-              <template #body="{ data }">
-                {{ data.role?.name || '—' }}
-              </template>
-            </Column>
-            <Column field="status" header="Status">
-              <template #body="{ data }">
-                <span class="status-pill" :class="data.status ? 'is-active' : 'is-inactive'">
-                  <span class="status-dot"></span>
-                  {{ data.status ? 'Active' : 'Inactive' }}
-                </span>
-              </template>
-            </Column>
-          </DataTable>
-        </template>
-      </Card>
-    </section>
-  </main>
+            <template #content>
+              <DataTable
+                :value="users"
+                :loading="loadingUsers"
+                paginator
+                :rows="8"
+                dataKey="id"
+                responsiveLayout="scroll"
+                class="users-table"
+              >
+                <template #empty>
+                  <div class="empty-state">No users yet — create the first one.</div>
+                </template>
+
+                <Column field="name" header="Name">
+                  <template #body="{ data }">
+                    <div class="name-cell">
+                      <span class="row-mark">{{ nameInitials(data) }}</span>
+                      <span>{{ data.first_name }} {{ data.last_name }}</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column field="email" header="Email" />
+                <Column field="role" header="Role">
+                  <template #body="{ data }">
+                    {{ data.role?.name || '—' }}
+                  </template>
+                </Column>
+                <Column field="status" header="Status">
+                  <template #body="{ data }">
+                    <span class="status-pill" :class="data.status ? 'is-active' : 'is-inactive'">
+                      <span class="status-dot"></span>
+                      {{ data.status ? 'Active' : 'Inactive' }}
+                    </span>
+                  </template>
+                </Column>
+              </DataTable>
+            </template>
+          </Card>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
 </template>
 
 <script setup>
@@ -106,11 +116,12 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
+import AdminSidebar from '../components/AdminSidebar.vue'
 
 const props = defineProps({
   activeView: { type: String, default: 'profile' },
-  user: { type: Object, default: null },
-  permissions: { type: Array, default: () => [] },
+  user: { type: Object, default: () => ({ username: 'super.admin', email: 'superadmin@example.com', role: 'Super Admin' }) },
+  permissions: { type: Array, default: () => ['manage_users', 'manage_roles', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'] },
   users: { type: Array, default: () => [] },
   loadingUsers: { type: Boolean, default: false },
 })
@@ -127,6 +138,38 @@ function nameInitials(item) {
 </script>
 
 <style scoped>
+/* ==========================================================================
+   LAYOUT WRAPPER (Fix បញ្ហាអត់ស្មើគែម & Horizontal Scrollbar)
+   ========================================================================== */
+.admin-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.admin-sidebar {
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.admin-main {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  min-width: 0; /* ការពារ DataTable មិនឱ្យរុញអេក្រង់លេច Scrollbar ក្រោម */
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-y: auto; /* Scroll តែផ្នែក Content ខាងស្តាំ */
+  background-color: #17b26a;
+}
+
+/* ==========================================================================
+   CONTENT PANEL STYLES
+   ========================================================================== */
 .content-panel {
   --ink: #191b3a;
   --paper-card: #ffffff;
@@ -138,12 +181,10 @@ function nameInitials(item) {
   --grey-soft: #eef0f6;
   --border: rgba(30, 32, 51, 0.08);
 
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: 1.25rem;
-  padding: 1.4rem;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 2rem;
   font-family: 'Inter', system-ui, sans-serif;
   color: var(--text);
 }
@@ -153,13 +194,14 @@ function nameInitials(item) {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.35rem;
+  margin-bottom: 1.5rem;
+  background-color: #17b26a;
 }
 
 .view-stack {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .header-identity {
@@ -221,7 +263,16 @@ function nameInitials(item) {
 .profile-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* Card Styling */
+.profile-card,
+.section-card {
+  border-radius: 1rem !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  background: var(--paper-card) !important;
 }
 
 .profile-card :deep(.p-card-body) {
@@ -320,7 +371,7 @@ function nameInitials(item) {
 }
 
 .primary-btn:hover {
-  background: var(--ink-soft, #262a52) !important;
+  background: #262a52 !important;
 }
 
 .name-cell {

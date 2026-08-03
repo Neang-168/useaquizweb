@@ -3,7 +3,7 @@
   <div class="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans antialiased">
     
     <!-- 2. SIDEBAR COMPONENT (ជាប់គែមឆ្វេង) -->
-    <aside class="w-64 h-full bg-black  border-r border-slate-200 flex flex-col justify-between p-4 font-sans select-none shrink-0">
+    <aside class="w-64 h-full bg-indigo-50 border-r border-slate-200 flex flex-col justify-between p-4 font-sans select-none shrink-0">
       
       <!-- Header + Scrollable Nav Navigation -->
       <div class="flex flex-col min-h-0 flex-1">
@@ -14,7 +14,7 @@
             <i class="pi pi-sparkles text-xl"></i>
           </div>
           <div>
-            <h2 class="m-0 text-base font-bold text-slate-900 leading-tight">QuizFlow</h2>
+            <h2 class="m-0 text-base font-bold text-slate-900 leading-tight">QMS</h2>
             <p class="m-0 text-xs text-slate-400 font-medium">Learning Suite</p>
           </div>
         </div>

@@ -1,7 +1,14 @@
 <template>
-  <div class="dashboard-page">
-    <div class="dashboard-shell">
+  <!-- Main Layout Container: លាតពេញ 100% គ្មាន Padding/Margin (លុបចន្លោះសចោល) -->
+  <div class="flex w-screen h-screen m-0 p-0 overflow-hidden bg-[#17b26a] font-sans">
+    
+    <!-- 1. Sidebar ពណ៌ខ្មៅ (ជាប់ឆ្វេង និងជាប់លើ 100%) -->
+    <div class="h-full shrink-0">
       <AdminSidebar :active-view="activeView" @select-view="handleSelectView" @logout="logout" />
+    </div>
+
+    <!-- 2. Content ពណ៌បៃតង (ជាប់ Sidebar និងជាប់លើ 100%) -->
+    <main class="flex-1 h-full overflow-y-auto bg-[#17b26a]">
       <AdminContentView
         :active-view="activeView"
         :user="currentUser"
@@ -11,39 +18,40 @@
         @refresh-users="loadUsers"
         @open-dialog="openDialog"
       />
-    </div>
+    </main>
 
-    <Dialog v-model:visible="dialogVisible" header="Create user" modal :style="{ width: '32rem' }">
-      <form class="user-form" @submit.prevent="submitUser">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="username">Username</label>
-            <InputText id="username" v-model="form.username" placeholder="jane.doe" />
+    <!-- Dialog បង្កើត User -->
+    <Dialog v-model:visible="dialogVisible" header="Create user" modal class="w-[32rem]">
+      <form class="py-2" @submit.prevent="submitUser">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="username" class="text-xs font-medium text-slate-600">Username</label>
+            <InputText id="username" v-model="form.username" placeholder="jane.doe" class="w-full" />
           </div>
-          <div class="form-field">
-            <label for="email">Email</label>
-            <InputText id="email" v-model="form.email" type="email" placeholder="jane@example.com" />
+          <div class="flex flex-col gap-1.5">
+            <label for="email" class="text-xs font-medium text-slate-600">Email</label>
+            <InputText id="email" v-model="form.email" type="email" placeholder="jane@example.com" class="w-full" />
           </div>
-          <div class="form-field">
-            <label for="password">Password</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="password" class="text-xs font-medium text-slate-600">Password</label>
             <Password id="password" v-model="form.password" placeholder="Minimum 8 characters" :feedback="false" toggleMask inputClass="w-full" />
           </div>
-          <div class="form-field">
-            <label for="role_id">Role</label>
-            <select id="role_id" v-model="form.role_id" class="role-select">
+          <div class="flex flex-col gap-1.5">
+            <label for="role_id" class="text-xs font-medium text-slate-600">Role</label>
+            <select id="role_id" v-model="form.role_id" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option :value="null">Select a role</option>
               <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
               </option>
             </select>
           </div>
-          <div class="form-field">
-            <label for="first_name">First name</label>
-            <InputText id="first_name" v-model="form.first_name" placeholder="Jane" />
+          <div class="flex flex-col gap-1.5">
+            <label for="first_name" class="text-xs font-medium text-slate-600">First name</label>
+            <InputText id="first_name" v-model="form.first_name" placeholder="Jane" class="w-full" />
           </div>
-          <div class="form-field">
-            <label for="last_name">Last name</label>
-            <InputText id="last_name" v-model="form.last_name" placeholder="Doe" />
+          <div class="flex flex-col gap-1.5">
+            <label for="last_name" class="text-xs font-medium text-slate-600">Last name</label>
+            <InputText id="last_name" v-model="form.last_name" placeholder="Doe" class="w-full" />
           </div>
         </div>
       </form>
@@ -251,61 +259,3 @@ onMounted(() => {
   loadUsers()
 })
 </script>
-
-<style scoped>
-.dashboard-page {
-  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
-  padding: 2rem 1.25rem;
-}
-
-.dashboard-shell {
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 1.25rem;
-  min-height: calc(100vh - 4rem);
-}
-
-.role-select {
-  width: 100%;
-  border: 1px solid var(--surface-border, #cbd5e1);
-  border-radius: 0.5rem;
-  padding: 0.7rem 0.8rem;
-  background: white;
-  color: var(--text-color, #0f172a);
-}
-
-.user-form .form-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.form-field label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-color-secondary, #475569);
-}
-
-.w-full {
-  width: 100%;
-}
-
-@media (max-width: 900px) {
-  .dashboard-shell {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 560px) {
-  .user-form .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

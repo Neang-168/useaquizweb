@@ -7,9 +7,9 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full w-full m-0 p-0 overflow-hidden bg-slate-50 antialiased">
+<body >
 
-    <div id="app" class="w-full h-full m-0 p-0"></div>
+    <div id="app" ></div>
 
 </body>
 </html>

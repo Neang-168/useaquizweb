@@ -4,7 +4,7 @@
     <!-- 1. ក្បាល Header នៃ Page (ដក AdminContentView ចេញ រួចជំនួសដោយ Content នេះ) -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800 m-0">User Profile</h1>
+        <h1 class="text-2xl font-bold text-slate-800 m-0">Role Profile</h1>
         <p class="text-slate-500 text-sm mt-1 m-0">គ្រប់គ្រងព័ត៌មាន និងអ្នកប្រើប្រាស់</p>
       </div>
       <Button label="Create User" icon="pi pi-plus" @click="openDialog" />

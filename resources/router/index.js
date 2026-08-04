@@ -25,8 +25,9 @@ const routes = [
         component: Dashboard,
       },
       {
-        path: 'profile', 
-        name: 'admin.profile',
+        path: 'role-profile', 
+        alias: 'profile',
+        name: 'admin.role-profile',
         component: RoleProfileView,
       },
     ],

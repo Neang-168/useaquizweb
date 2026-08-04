@@ -25,8 +25,9 @@ const routes = [
         component: () => import('../views/pages/superAdmin/Dashboard.vue'),
       },
       {
-        path: 'profile',
-        name: 'admin.profile',
+        path: 'role-profile',
+        alias: 'profile',
+        name: 'admin.role-profile',
         component: RoleProfileView,
       },
     ],

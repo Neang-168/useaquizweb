@@ -1,24 +1,17 @@
 <template>
-  <!-- Main Layout Container: លាតពេញ 100% គ្មាន Padding/Margin (លុបចន្លោះសចោល) -->
-  <div class="flex w-screen h-screen m-0 p-0 overflow-hidden bg-[#17b26a] font-sans">
+  <!-- Content សសុទ្ធ មិនបាច់ដាក់ w-screen, h-screen, bg-green ឬ Sidebar ទេ -->
+  <div class="space-y-6 w-full">
     
-    <!-- 1. Sidebar ពណ៌ខ្មៅ (ជាប់ឆ្វេង និងជាប់លើ 100%) -->
-    <div class="h-full shrink-0">
-      <AdminSidebar :active-view="activeView" @select-view="handleSelectView" @logout="logout" />
-    </div>
-
-    <!-- 2. Content ពណ៌បៃតង (ជាប់ Sidebar និងជាប់លើ 100%) -->
-    <main class="flex-1 h-full overflow-y-auto bg-[#17b26a]">
-      <AdminContentView
-        :active-view="activeView"
-        :user="currentUser"
-        :permissions="permissions"
-        :users="users"
-        :loading-users="loadingUsers"
-        @refresh-users="loadUsers"
-        @open-dialog="openDialog"
-      />
-    </main>
+    <!-- User / Profile / Content Main Area -->
+    <AdminContentView
+      :active-view="activeView"
+      :user="currentUser"
+      :permissions="permissions"
+      :users="users"
+      :loading-users="loadingUsers"
+      @refresh-users="loadUsers"
+      @open-dialog="openDialog"
+    />
 
     <!-- Dialog បង្កើត User -->
     <Dialog v-model:visible="dialogVisible" header="Create user" modal class="w-[32rem]">
@@ -75,7 +68,7 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import AdminSidebar from '../components/AdminSidebar.vue'
+// ដក AdminSidebar ចេញពីទីនេះ ព្រោះវាត្រូវនៅ Layout មេ
 import AdminContentView from './AdminContentView.vue'
 
 const props = defineProps({
@@ -114,12 +107,6 @@ watch(
   { immediate: true }
 )
 
-function handleSelectView(view) {
-  activeView.value = view
-  const targetRoute = view === 'users' ? { name: 'admin.users' } : { name: 'admin.profile' }
-  router.push(targetRoute)
-}
-
 function openDialog() {
   dialogVisible.value = true
 }
@@ -145,27 +132,18 @@ async function loadRoles() {
     })
 
     const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Unable to load roles.')
-    }
+    if (!response.ok) throw new Error(data.message || 'Unable to load roles.')
 
     roles.value = data || []
   } catch (error) {
     if (toast) {
-      toast.add({
-        severity: 'error',
-        summary: 'Unable to load roles',
-        detail: error.message,
-        life: 4000,
-      })
+      toast.add({ severity: 'error', summary: 'Unable to load roles', detail: error.message, life: 4000 })
     }
   }
 }
 
 async function loadUsers() {
   loadingUsers.value = true
-
   try {
     const token = localStorage.getItem('auth_token')
     const response = await fetch('/api/users', {
@@ -176,20 +154,12 @@ async function loadUsers() {
     })
 
     const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Unable to load users.')
-    }
+    if (!response.ok) throw new Error(data.message || 'Unable to load users.')
 
     users.value = data.data || []
   } catch (error) {
     if (toast) {
-      toast.add({
-        severity: 'error',
-        summary: 'Unable to load users',
-        detail: error.message,
-        life: 4000,
-      })
+      toast.add({ severity: 'error', summary: 'Unable to load users', detail: error.message, life: 4000 })
     }
   } finally {
     loadingUsers.value = false
@@ -198,7 +168,6 @@ async function loadUsers() {
 
 async function submitUser() {
   submitting.value = true
-
   try {
     const token = localStorage.getItem('auth_token')
     const response = await fetch('/api/users', {
@@ -212,10 +181,7 @@ async function submitUser() {
     })
 
     const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Unable to create user.')
-    }
+    if (!response.ok) throw new Error(data.message || 'Unable to create user.')
 
     if (toast) {
       toast.add({
@@ -231,22 +197,11 @@ async function submitUser() {
     await loadUsers()
   } catch (error) {
     if (toast) {
-      toast.add({
-        severity: 'error',
-        summary: 'Unable to create user',
-        detail: error.message,
-        life: 4000,
-      })
+      toast.add({ severity: 'error', summary: 'Unable to create user', detail: error.message, life: 4000 })
     }
   } finally {
     submitting.value = false
   }
-}
-
-function logout() {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  router.replace({ name: 'login' })
 }
 
 onMounted(() => {

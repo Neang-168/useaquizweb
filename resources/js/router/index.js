@@ -1,29 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import LoginPageView from '../views/LoginPageView.vue'
+import AdminContentView from '../views/AdminContentView.vue'
+import Dashboard from '../views/pages/superAdmin/Dashboard.vue'
 import RoleProfileView from '../views/RoleProfileView.vue'
+import LoginPageView from '../views/LoginPageView.vue'
 
 const routes = [
+  { path: '/', redirect: '/admin/dashboard' },
+  { path: '/login', name: 'login', component: LoginPageView },
   {
-    path: '/',
-    redirect: { name: 'login' },
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: LoginPageView,
-  },
-  {
-    path: '/admin/profile',
-    name: 'admin.profile',
-    component: RoleProfileView,
-    props: { initialView: 'profile' },
-  },
-  {
-    path: '/admin/users',
-    name: 'admin.users',
-    component: RoleProfileView,
-    props: { initialView: 'users' },
+    path: '/admin',
+    component: AdminContentView, // Layout មាន Sidebar + router-view
+    children: [
+      {
+        path: 'dashboard',
+        name: 'admin.dashboard',
+        component: Dashboard,
+      },
+      {
+        path: 'profile',
+        name: 'admin.profile',
+        component: RoleProfileView,
+      },
+    ],
   },
 ]
 

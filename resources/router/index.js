@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// 1. Import Layout និង Pages ឱ្យត្រូវតាម Directory របស់អ្នក
 import AdminContentView from '../views/pages/superAdmin/AdminContentView.vue'
 import Dashboard from '../views/pages/superAdmin/Dashboard.vue'
 import RoleProfileView from '../views/pages/superAdmin/RoleProfileView.vue'
@@ -9,7 +8,7 @@ import LoginPageView from '../views/pages/superAdmin/LoginPageView.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/admin/dashboard',
+    redirect: '/admin/dashboard', // <--- ត្រូវ៖ បើចូល path ដើម វារុញទៅ dashboard
   },
   {
     path: '/login',
@@ -18,21 +17,20 @@ const routes = [
   },
   {
     path: '/admin',
-    component: AdminContentView, // Main Admin Layout
+    component: AdminContentView, 
     children: [
       {
-        path: 'dashboard', // URL: /admin/dashboard
-        name: 'admin.dashboard',
+        path: 'dashboard', 
+        name: 'admin.dashboard', // <--- ត្រូវ៖ name នេះត្រូវគ្នានឹង router.push({ name: 'admin.dashboard' })
         component: Dashboard,
       },
       {
-        path: 'profile', // URL: /admin/profile
+        path: 'profile', 
         name: 'admin.profile',
         component: RoleProfileView,
       },
     ],
   },
-  // Catch-all route សម្រាប់ករណីចូល Path ខុស (Optional)
   {
     path: '/:pathMatch(.*)*',
     redirect: '/admin/dashboard',

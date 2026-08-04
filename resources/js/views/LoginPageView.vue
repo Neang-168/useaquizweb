@@ -178,7 +178,7 @@ async function submitLogin() {
       localStorage.setItem('remember_me', 'true')
     }
 
-    router.push({ name: 'admin.profile' })
+    router.push({ name: 'admin.dashboard' })
   } catch (err) {
     error.value = err.message || 'Login failed. Please try again.'
   } finally {

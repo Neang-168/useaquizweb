@@ -29,3 +29,28 @@
 
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const stats = ref({
+  totalUsers: 0,
+  activeCourses: 0,
+  systemRoles: 0
+})
+
+const fetchDashboardData = async () => {
+  try {
+    // ឧទាហរណ៍ការហៅ API
+    const response = await fetch('/api/dashboard-stats')
+    const data = await response.json()
+    stats.value = data
+  } catch (error) {
+    console.error('Error loading dashboard data:', error)
+  }
+}
+
+// 💡 ដំណើរការ Fetch ទិន្នន័យរាល់ពេល Component ត្រូវបាន Mount ឡើងវិញ
+onMounted(() => {
+  fetchDashboardData()
+})
+</script>

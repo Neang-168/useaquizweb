@@ -1,9 +1,6 @@
 <template>
   <!-- Main Container: ប្រើ w-full h-screen លុប Margin/Padding ចោលទាំងអស់ -->
   <div class="flex h-screen w-full m-0 p-0 overflow-hidden bg-slate-100 font-sans antialiased">
-    
-    <!-- 1. Sidebar នៅខាងឆ្វេង (បើក Comment វិញដើម្បីឱ្យវាបង្ហាញ) -->
-    <AdminSidebar />
 
     <!-- 2. Main Content Container ខាងស្តាំ -->
     <div class="flex-1 h-full overflow-y-auto">
@@ -19,5 +16,4 @@
 </template>
 
 <script setup>
-import AdminSidebar from '@/components/AdminSidebar.vue'
 </script>

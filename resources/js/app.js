@@ -1,10 +1,10 @@
 import { createApp } from 'vue';
 import App from './App.vue';
+import router from './router';
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
-
-import Button from 'primevue/button';
+import ToastService from 'primevue/toastservice';
 
 import 'primeicons/primeicons.css';
 
@@ -15,7 +15,7 @@ app.use(PrimeVue, {
         preset: Aura
     }
 });
-
-app.component('Button', Button);
+app.use(ToastService);
+app.use(router);
 
 app.mount('#app');

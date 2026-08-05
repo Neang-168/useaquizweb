@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Degree extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'faculty_id',
+        'code',
+        'name',
+        'description',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
+    public function faculty(): BelongsTo
+    {
+        return $this->belongsTo(Faculty::class);
+    }
+
+    public function majors(): HasMany
+    {
+        return $this->hasMany(Major::class);
+    }
+
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(Subject::class);
+    }
+
+    public function teacherProfiles(): HasMany
+    {
+        return $this->hasMany(TeacherProfile::class);
+    }
+
+    public function studentEnrollments(): HasMany
+    {
+        return $this->hasMany(StudentEnrollment::class);
+    }
+}

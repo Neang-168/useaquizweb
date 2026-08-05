@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $superAdminRole = Role::where('name', 'Super Admin')->first();
         $adminRole = Role::where('name', 'Admin')->first();
+        $teacherRole    = Role::where('name', 'Teacher')->first();
 
         User::factory()->create([
             'username' => 'super.admin',
@@ -38,6 +39,15 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Admin',
             'last_name' => 'User',
             'role_id' => $adminRole?->id,
+        ]);
+
+        User::factory()->create([
+            'username'   => 'teacher.user',
+            'email'      => 'teacher@example.com',
+            'password'   => Hash::make('password'),
+            'first_name' => 'Teacher',
+            'last_name'  => 'User',
+            'role_id'    => $teacherRole?->id,
         ]);
     }
 }

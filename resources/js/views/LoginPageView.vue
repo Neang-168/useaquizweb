@@ -119,7 +119,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-// 💡 Import រូបភាពតាម Relative Path កុំឱ្យ Vite មានបញ្ហា
 import LogoUsea from '../images/usea_logo.png'
 
 import InputText from 'primevue/inputtext'
@@ -131,8 +130,8 @@ import Message from 'primevue/message'
 const router = useRouter()
 
 const form = ref({
-  email: 'superadmin@example.com',
-  password: 'password',
+  email: '',
+  password: '',
 })
 
 const error = ref('')
@@ -166,17 +165,29 @@ async function submitLogin() {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.message || 'Invalid email or password.')
+      const errorMsg = data.errors?.email?.[0] || data.message || 'Invalid email or password.'
+      throw new Error(errorMsg)
     }
 
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('auth_user', JSON.stringify(data.user))
 
+    const userRole = data.user?.role || ''
+    localStorage.setItem('auth_role', userRole)
+
     if (rememberMe.value) {
       localStorage.setItem('remember_me', 'true')
     }
 
-    router.push({ name: 'admin.dashboard' })
+   if (userRole === 'Super Admin' || userRole === 'Admin') {
+      router.push({ name: 'admin.dashboard' })
+    } else if (userRole === 'Teacher') {
+      router.push({ name: 'teacher.dashboard' })
+    } else {
+      // ប្រសិនបើមាន Role ផ្សេងៗទៀត (ឧ. Student)
+      router.push({ name: 'login' })
+    }
+
   } catch (err) {
     error.value = err.message || 'Login failed. Please try again.'
   } finally {

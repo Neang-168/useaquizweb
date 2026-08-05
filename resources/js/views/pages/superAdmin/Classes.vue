@@ -54,10 +54,10 @@
       </div>
     </div>
 
-    <!-- ======= DATA TABLE CARD ======= -->
+    <!-- ======= MAIN CONTENT CARD ======= -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
       
-      <!-- Table Header Bar / Search & Filter -->
+      <!-- Toolbar Bar: Search & View Mode Switcher -->
       <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="relative w-full sm:w-80">
           <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -67,15 +67,36 @@
             class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
           />
         </div>
-        <div class="text-xs text-slate-400">
-          Showing <b>{{ classes.length }}</b> entries
+
+        <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+          <span class="text-xs text-slate-400">
+            Showing <b>{{ filteredClasses.length }}</b> entries
+          </span>
+
+          <!-- View Mode Switcher Buttons -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button 
+              @click="viewMode = 'grid'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            >
+              <i class="pi pi-th-large"></i> Cards
+            </button>
+            <button 
+              @click="viewMode = 'list'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            >
+              <i class="pi pi-list"></i> List
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- PrimeVue DataTable -->
+      <!-- ======= 1. LIST VIEW (DataTable) ======= -->
       <DataTable 
-        :value="classes" 
-        v-model:filters="filters"
+        v-if="viewMode === 'list'"
+        :value="filteredClasses" 
         dataKey="id" 
         paginator 
         :rows="5" 
@@ -180,6 +201,100 @@
           </template>
         </Column>
       </DataTable>
+
+      <!-- ======= 2. CARD VIEW ======= -->
+      <div v-else class="p-6">
+        <div v-if="filteredClasses.length === 0" class="text-center py-8 text-slate-400 text-sm">
+          No classes found.
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div 
+            v-for="cls in filteredClasses" 
+            :key="cls.id"
+            class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+          >
+            <!-- Card Top Bar -->
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-3">
+                <div>
+                  <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                    {{ cls.code }}
+                  </span>
+                  <h3 class="font-bold text-slate-800 text-base mt-2 mb-0">{{ cls.name }}</h3>
+                  <p class="text-xs text-slate-400 m-0">{{ cls.department }}</p>
+                </div>
+
+                <span 
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0"
+                  :class="cls.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" :class="cls.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                  {{ cls.status }}
+                </span>
+              </div>
+
+              <!-- Card Information Rows -->
+              <div class="space-y-2 py-3 border-y border-slate-100 my-3 text-xs text-slate-600">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <i class="pi pi-step-forward text-slate-400"></i> Stage
+                  </span>
+                  <span class="font-medium text-slate-700">{{ cls.stage }}</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <i class="pi pi-clock text-slate-400"></i> Shift
+                  </span>
+                  <span class="font-medium text-slate-700">{{ cls.shift }}</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <i class="pi pi-building text-slate-400"></i> Room
+                  </span>
+                  <span class="font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                    {{ cls.room }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Students Progress Bar -->
+              <div class="mt-3">
+                <div class="flex justify-between text-xs font-semibold mb-1.5">
+                  <span class="text-slate-500">Students Enrolled</span>
+                  <span class="text-slate-800">{{ cls.students_count }} / {{ cls.capacity }}</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full rounded-full transition-all duration-300" 
+                    :class="cls.students_count >= cls.capacity ? 'bg-rose-500' : 'bg-blue-600'"
+                    :style="{ width: Math.min((cls.students_count / cls.capacity) * 100, 100) + '%' }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Bottom Actions -->
+            <div class="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
+              <Button 
+                label="Edit" 
+                icon="pi pi-pencil" 
+                class="!py-1.5 !px-3 !text-xs !bg-slate-50 hover:!bg-slate-100 !text-slate-600 !border-slate-200 !rounded-xl"
+                @click="editClass(cls)"
+              />
+              <Button 
+                label="Delete" 
+                icon="pi pi-trash" 
+                class="!py-1.5 !px-3 !text-xs !bg-rose-50 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-xl"
+                @click="confirmDeleteClass(cls)"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
@@ -297,6 +412,9 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 
+// View Mode State: 'grid' or 'list'
+const viewMode = ref('grid')
+
 // Mock Data: Classes
 const classes = ref([
   { id: 1, code: 'M1-CS', name: 'Class M1-CS', department: 'Computer Science', stage: 'Year 1 (Foundation)', shift: 'Morning Shift', room: 'Room 301', students_count: 28, capacity: 35, status: 'Active' },
@@ -326,8 +444,21 @@ const shiftOptions = ref([
   'Weekend Shift'
 ])
 
-// Search Filter (ប្រើ String 'contains')
+// Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+
+// Computed Filter for Grid View Search Integration
+const filteredClasses = computed(() => {
+  const query = filters.value.global.value?.toLowerCase().trim()
+  if (!query) return classes.value
+  
+  return classes.value.filter(c => 
+    c.code.toLowerCase().includes(query) ||
+    c.name.toLowerCase().includes(query) ||
+    c.department.toLowerCase().includes(query) ||
+    c.room.toLowerCase().includes(query)
+  )
+})
 
 // Dialog States & Form
 const classDialog = ref(false)

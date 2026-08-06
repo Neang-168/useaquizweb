@@ -114,36 +114,38 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
+// ================= Navigation Guard (ការពារតាម Role) =================
+router.beforeEach((to, from) => {
   const token = localStorage.getItem('auth_token')
   const userRole = localStorage.getItem('auth_role') // "Super Admin", "Admin", ឬ "Teacher"
 
   // ១. បើ Route ត្រូវការ Auth តែមិនទាន់ Login ត្រូវរុញទៅ Login
   if (to.meta.requiresAuth && !token) {
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
 
   // ២. បើ Login រួចហើយ តែព្យាយាមចូល Route ដែលខ្លួនគ្មានសិទ្ធិ (Role មិនត្រូវគ្នា)
   if (to.meta.roles && !to.meta.roles.includes(userRole)) {
     if (userRole === 'Super Admin' || userRole === 'Admin') {
-      return next({ name: 'admin.dashboard' })
+      return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
-      return next({ name: 'teacher.dashboard' })
+      return { name: 'teacher.dashboard' }
     } else {
-      return next({ name: 'login' })
+      return { name: 'login' }
     }
   }
 
   // ៣. បើ Login រួចហើយ តែព្យាយាមចូលទំព័រ /login ម្ដងទៀត ត្រូវរុញទៅ Dashboard តាម Role
   if (to.name === 'login' && token) {
     if (userRole === 'Super Admin' || userRole === 'Admin') {
-      return next({ name: 'admin.dashboard' })
+      return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
-      return next({ name: 'teacher.dashboard' })
+      return { name: 'teacher.dashboard' }
     }
   }
 
-  next()
+  // បើឆែកត្រូវអស់ហើយ ឱ្យវាបន្តដំណើរទៅ Route នោះធម្មតា
+  return true
 })
 
 export default router

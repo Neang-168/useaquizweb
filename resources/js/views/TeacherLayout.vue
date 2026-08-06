@@ -1,14 +1,13 @@
 <template>
-  <div class="flex h-screen bg-slate-50 overflow-hidden">
-    <!-- Teacher Sidebar -->
-    <TeacherSidebar />
+  <div class="fixed top-0 left-0 w-screen h-screen m-0 p-0 flex bg-slate-100 font-sans antialiased overflow-hidden">
+    
+    <TeacherSidebar class="shrink-0 h-full" />
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col overflow-y-auto">
-      <main class="p-6">
-        <router-view />
-      </main>
-    </div>
+    <!--Content-->
+    <main class="flex-1 h-full overflow-y-auto p-6 md:p-8">
+      <router-view  />
+    </main>
+
   </div>
 </template>
 

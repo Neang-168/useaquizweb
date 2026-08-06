@@ -14,6 +14,13 @@ import Teachers from '../views/pages/superAdmin/Teachers.vue'
 import Students from '../views/pages/superAdmin/Students.vue'
 
 import TeacherLayout from '../views/TeacherLayout.vue'
+import TeachClasses from '../views/pages/teacher/Classes.vue'
+import TeachSubjects from '../views/pages/teacher/Subjects.vue'
+import questionBank from '../views/pages/teacher/questionBank.vue'
+import Quizzes from '../views/pages/teacher/Quizzes.vue'
+import ScoreReport from '../views/pages/teacher/ScoreReport.vue'
+import Feedback from '../views/pages/teacher/Feedback.vue'
+import QuestionBank from '../views/pages/teacher/questionBank.vue'
 
 const routes = [
   {
@@ -92,6 +99,36 @@ const routes = [
         path: 'dashboard',
         name: 'teacher.dashboard',
         component: () => import('../views/pages/teacher/Dashboard.vue'),
+      },
+      {
+        path: 'classes',
+        name: 'teacher.classes',
+        component: TeachClasses,
+      },
+      {
+        path: 'subjects',
+        name: 'teacher.subjects',
+        component: TeachSubjects,
+      },
+      {
+        path: 'questionbank',
+        name: 'teacher.questionbank',
+        component: QuestionBank,
+      },
+      {
+        path: 'quizzes',
+        name: 'teacher.quizzes',
+        component: Quizzes,
+      },
+      {
+        path: 'scoreReport',
+        name: 'teacher.scoreReport',
+        component: ScoreReport,
+      },
+      {
+        path: 'feedback',
+        name: 'teacher.feedback',
+        component: Feedback,
       },
       {
         path: 'role-profile',

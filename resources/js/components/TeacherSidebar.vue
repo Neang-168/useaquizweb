@@ -1,74 +1,167 @@
 <template>
-  <aside class="w-64 bg-slate-900 text-slate-300 min-h-screen flex flex-col justify-between border-r border-slate-800">
-    <!-- Header Section (Logo / App Name) -->
-    <div>
-      <div class="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
-        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-          <i class="pi pi-book"></i>
+  <div class="h-screen w-full flex flex-col overflow-hidden font-sans">
+
+    <!-- ======= HEADER ======= -->
+    <header class="w-full h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10">
+      <!-- Left: Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl  text-white flex items-center justify-center shrink-0 shadow-sm">
+          <img :src="LogoUsea" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <div>
-          <h2 class="text-white font-bold text-sm tracking-wide">Portal គ្រូបង្រៀន</h2>
-          <p class="text-xs text-slate-500">Quiz Management</p>
+          <h1 class="m-0 text-sm font-bold text-slate-900 leading-tight">USEA</h1>
+          <p class="m-0 text-[11px] text-slate-400 font-medium leading-tight">Learning Suite</p>
         </div>
       </div>
 
-      <!-- Navigation Links -->
-      <nav class="p-4 space-y-1.5">
-        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
-          Menu ចម្បង
-        </div>
+      <!-- Right: Search, Notifications, Profile -->
+      <div class="flex items-center gap-5">
+        <button type="button"
+          class="border-0 bg-transparent text-slate-400 hover:text-blue-600 transition-colors p-0 cursor-pointer"
+          aria-label="Search">
+          <i class="pi pi-search text-lg"></i>
+        </button>
 
-        <!-- Dashboard Link -->
-        <router-link
-          :to="{ name: 'teacher.dashboard' }"
-          class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          :class="isRouteActive('teacher.dashboard') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'"
-        >
-          <i class="pi pi-th-large text-base"></i>
-          <span>ផ្ទាំងគ្រប់គ្រង (Dashboard)</span>
-        </router-link>
+        <button type="button"
+          class="relative border-0 bg-transparent text-slate-400 hover:text-blue-600 transition-colors p-0 cursor-pointer"
+          aria-label="Notifications">
+          <i class="pi pi-bell text-lg"></i>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600"></span>
+        </button>
 
-        <!-- Profile Link -->
-        <router-link
-          :to="{ name: 'teacher.role-profile' }"
-          class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          :class="isRouteActive('teacher.role-profile') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'"
-        >
-          <i class="pi pi-user text-base"></i>
-          <span>ព័ត៌មានផ្ទាល់ខ្លួន (Profile)</span>
-        </router-link>
-      </nav>
-    </div>
+        <div class="w-px h-6 bg-slate-200"></div>
 
-    <!-- User & Logout Section (ខាងក្រោមបង្អស់) -->
-    <div class="p-4 border-t border-slate-800">
-      <div class="flex items-center justify-between p-2 rounded-xl bg-slate-800/40">
-        <div class="flex items-center gap-3 overflow-hidden">
-          <div class="w-9 h-9 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm border border-indigo-500/30">
-            {{ userInitial }}
+        <button type="button" class="flex items-center gap-2 border-0 bg-transparent p-0 cursor-pointer">
+          <div
+            class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+            <i class="pi pi-user text-sm"></i>
           </div>
-          <div class="truncate">
-            <h4 class="text-xs font-semibold text-white truncate">{{ userFullName }}</h4>
-            <span class="text-[10px] text-indigo-400 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-800/50">Teacher</span>
-          </div>
-        </div>
-        
-        <!-- Logout Button -->
-        <button
-          @click="handleLogout"
-          title="ចាកចេញ"
-          class="text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
-        >
-          <i class="pi pi-sign-out text-base"></i>
+          <i class="pi pi-chevron-down text-xs text-slate-400"></i>
         </button>
       </div>
+    </header>
+
+    <!-- ======= BODY: SIDEBAR + CONTENT ======= -->
+    <div class="flex flex-1 min-h-0">
+
+      <!-- ======= SIDEBAR ======= -->
+      <aside
+        class="w-64 h-full m-0 rounded-none bg-indigo-50/70 border-r border-slate-200 flex flex-col justify-between p-4 font-sans select-none shrink-0">
+        <div class="flex flex-col min-h-0 flex-1">
+
+          <!-- Navigation Links Area -->
+          <div class="flex-1 overflow-y-auto pr-1 my-2 space-y-5 custom-scrollbar">
+
+            <!-- 1. OVERVIEW -->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                Overview
+              </span>
+              <router-link to="/teacher/dashboard"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-th-large text-base"></i>
+                <span>Dashboard</span>
+              </router-link>
+            </div>
+
+            <!-- 2. ACADEMIC STRUCTURE -->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                Academic Setup
+              </span>
+
+              <router-link to="/teacher/classes"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-building text-base"></i>
+                <span>My Classes</span>
+              </router-link>
+
+              <router-link to="/teacher/subjects"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-graduation-cap text-base"></i>
+                <span>Subjects</span>
+              </router-link>
+            </div>
+
+            <!--3. QUIZ & EXAM MANAGEMENT-->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                QUIZ & EXAM MANAGEMENT
+              </span>
+
+              <router-link to="/teacher/questionbank"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-graduation-cap text-base"></i>
+                <span>Question Bank</span>
+              </router-link>
+
+              <router-link to="/teacher/quizzes"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-graduation-cap text-base"></i>
+                <span>Quizzes</span>
+              </router-link>
+
+              <router-link to="/teacher/scoreReport"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-graduation-cap text-base"></i>
+                <span>score & Report</span>
+              </router-link>
+
+              <router-link to="/teacher/feedback"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-graduation-cap text-base"></i>
+                <span>Feedback</span>
+              </router-link>
+            </div>
+          </div>
+
+          <!--Account-->
+          <div class="space-y-1">
+               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                Administration
+              </span>
+
+              <router-link to="/teacher/users"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-user-plus text-base"></i>
+                <span>User Accounts</span>
+              </router-link>
+          </div>
+
+          <!-- Bottom Section: Logout Button -->
+          <div class="pt-2 border-t border-slate-200/80 mt-auto">
+            <button @click="handleLogout" type="button"
+              class="w-full border-0 bg-transparent text-red-500 hover:bg-red-50 py-2 px-3 rounded-xl flex items-center gap-3 text-sm font-semibold cursor-pointer transition-all">
+              <i class="pi pi-sign-out text-base"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- ======= MAIN CONTENT ======= -->
+      <main class="flex-1 overflow-y-auto bg-slate-50 p-6">
+        <!-- 💡 បន្ថែម :key="$route.fullPath" ដើម្បីដោះស្រាយបញ្ហា Re-render ពេលដូរទំព័រ -->
+        <router-view :key="$route.fullPath" />
+      </main>
+
     </div>
-  </aside>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import LogoUsea from '../images/usea_logo.png'
 
 const route = useRoute()
 const router = useRouter()

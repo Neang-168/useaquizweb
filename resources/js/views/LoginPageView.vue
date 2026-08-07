@@ -183,8 +183,9 @@ async function submitLogin() {
       router.push({ name: 'admin.dashboard' })
     } else if (userRole === 'Teacher') {
       router.push({ name: 'teacher.dashboard' })
-    } else {
-      // ប្រសិនបើមាន Role ផ្សេងៗទៀត (ឧ. Student)
+    } else if (userRole === 'Student') {
+      router.push({name: 'student.dashboard'})
+    }else {
       router.push({ name: 'login' })
     }
 

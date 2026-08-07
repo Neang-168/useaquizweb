@@ -22,6 +22,13 @@ import ScoreReport from '../views/pages/teacher/ScoreReport.vue'
 import Feedback from '../views/pages/teacher/Feedback.vue'
 import QuestionBank from '../views/pages/teacher/questionBank.vue'
 
+import StudentLayout from '../views/StudentLayout.vue'
+import Mycourse from '../views/pages/student/Mycourse.vue'
+import MyExam from '../views/pages/student/MyExam.vue'
+import GradeHistory from '../views/pages/student/GradeHistory.vue'
+import Notification from '../views/pages/student/Notification.vue'
+
+
 const routes = [
   {
     path: '/login',
@@ -139,6 +146,40 @@ const routes = [
     ],
   },
 
+  //Route Student
+  {
+    path: '/student',
+    component: StudentLayout,
+    meta:{requiresAuth: true, roles: ['Student']},
+    children: [
+      {
+        path: 'dashboard',
+        name: 'student.dashboard',
+        component: () => import('../views/pages/student/Dashboard.vue'),
+      },
+      {
+        path: 'mycourses',
+        name: 'student.mycourses',
+        component: Mycourse,
+      },
+      {
+        path: 'myexam',
+        name: 'student.myexam',
+        component: MyExam,
+      },
+      {
+        path: 'gradeHistory',
+        name: 'student.gradeHistory',
+        component: GradeHistory,
+      },
+      {
+        path: 'notification',
+        name: 'student.notification',
+        component: Notification,
+      },
+    ]
+  },
+
   // បើក / ដំបូង ឱ្យរត់ទៅ /login
   {
     path: '/',
@@ -167,6 +208,8 @@ router.beforeEach((to, from) => {
       return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
       return { name: 'teacher.dashboard' }
+    } else if (userRole === 'Student') {
+      return {name: 'student.dashboard'}
     } else {
       return { name: 'login' }
     }
@@ -178,6 +221,8 @@ router.beforeEach((to, from) => {
       return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
       return { name: 'teacher.dashboard' }
+    } else if( userRole === 'Student'){
+      return {name: 'student.dashboard'}
     }
   }
 

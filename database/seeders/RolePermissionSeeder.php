@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'manage_roles', 'module' => 'roles'],
             ['name' => 'manage_courses', 'module' => 'courses'],
             ['name' => 'manage_exams', 'module' => 'exams'],
+            ['name' => 'take_exam', 'module' => 'exams'],
             ['name' => 'view_dashboard', 'module' => 'dashboard'],
             ['name' => 'view_reports', 'module' => 'reports'],
             ['name' => 'manage_profile', 'module' => 'profile'],
@@ -34,7 +35,7 @@ class RolePermissionSeeder extends Seeder
             'Admin' => ['manage_users', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
             'Staff' => ['view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
             'Teacher' => ['manage_exams', 'view_dashboard', 'manage_profile', 'view_schedule'],
-            'Student' => ['view_dashboard', 'manage_profile', 'view_schedule'],
+            'Student' => ['view_dashboard', 'manage_profile', 'view_schedule', 'take_exam'],
         ];
 
         foreach ($roles as $roleName => $permissionNames) {

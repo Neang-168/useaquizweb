@@ -6,10 +6,10 @@
       <!-- Left: Logo -->
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-          <i class="pi pi-sparkles text-lg"></i>
+          <img :src="LogoUsea" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <div>
-          <h1 class="m-0 text-sm font-bold text-slate-900 leading-tight">QMS</h1>
+          <h1 class="m-0 text-sm font-bold text-slate-900 leading-tight">USEA</h1>
           <p class="m-0 text-[11px] text-slate-400 font-medium leading-tight">Learning Suite</p>
         </div>
       </div>
@@ -189,6 +189,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import LogoUsea from '../images/usea_logo.png'
 
 const router = useRouter()
 

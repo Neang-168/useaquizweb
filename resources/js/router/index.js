@@ -12,6 +12,8 @@ import ShiftsStages from '../views/pages/superAdmin/ShiftsStages.vue'
 import Classes from '../views/pages/superAdmin/Classes.vue'
 import Teachers from '../views/pages/superAdmin/Teachers.vue'
 import Students from '../views/pages/superAdmin/Students.vue'
+import Users from '../views/pages/superAdmin/Users.vue'
+import RolesPermissions from '../views/pages/superAdmin/RolesPermissions.vue'
 
 import TeacherLayout from '../views/TeacherLayout.vue'
 import TeachClasses from '../views/pages/teacher/Classes.vue'
@@ -86,6 +88,16 @@ const routes = [
         path: 'students',
         name: 'admin.students',
         component: Students,
+      },
+      {
+        path: 'users',
+        name: 'admin.users',
+        component: Users,
+      },
+      {
+        path: 'roles-permissions',
+        name: 'admin.roles-permissions',
+        component: RolesPermissions,
       },
       {
         path: 'role-profile',

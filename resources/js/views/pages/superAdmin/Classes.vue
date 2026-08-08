@@ -328,10 +328,12 @@
         <!-- Department / Major -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Major *</label>
-          <Dropdown 
-            v-model="classForm.department" 
-            :options="departmentOptions" 
-            placeholder="Select Department" 
+          <Dropdown
+            v-model="classForm.major_id"
+            :options="majors"
+            optionLabel="name_en"
+            optionValue="id"
+            placeholder="Select Department"
             class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
           />
         </div>
@@ -340,19 +342,23 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage / Level *</label>
-            <Dropdown 
-              v-model="classForm.stage" 
-              :options="stageOptions" 
-              placeholder="Select Stage" 
+            <Dropdown
+              v-model="classForm.stage_id"
+              :options="stages"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Stage"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
-            <Dropdown 
-              v-model="classForm.shift" 
-              :options="shiftOptions" 
-              placeholder="Select Shift" 
+            <Dropdown
+              v-model="classForm.shift_id"
+              :options="shifts"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Shift"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
@@ -402,7 +408,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -415,34 +422,31 @@ import Dropdown from 'primevue/dropdown'
 // View Mode State: 'grid' or 'list'
 const viewMode = ref('grid')
 
-// Mock Data: Classes
-const classes = ref([
-  { id: 1, code: 'M1-CS', name: 'Class M1-CS', department: 'Computer Science', stage: 'Year 1 (Foundation)', shift: 'Morning Shift', room: 'Room 301', students_count: 28, capacity: 35, status: 'Active' },
-  { id: 2, code: 'A2-CS', name: 'Class A2-CS', department: 'Computer Science', stage: 'Year 2', shift: 'Afternoon Shift', room: 'Lab 2', students_count: 32, capacity: 35, status: 'Active' },
-  { id: 3, code: 'E3-BIT', name: 'Class E3-BIT', department: 'Business Information Technology', stage: 'Year 3', shift: 'Evening Shift', room: 'Room 405', students_count: 24, capacity: 30, status: 'Active' },
-  { id: 4, code: 'W4-LAW', name: 'Class W4-LAW', department: 'Law', stage: 'Year 4', shift: 'Weekend Shift', room: 'Room 102', students_count: 15, capacity: 40, status: 'Inactive' },
-])
+const classes = ref([])
+const majors = ref([])
+const stages = ref([])
+const shifts = ref([])
 
-const departmentOptions = ref([
-  'Computer Science',
-  'Business Information Technology',
-  'Law',
-  'Marketing'
-])
+const fetchClasses = async () => {
+  const { data } = await api.get('/classes', { params: { per_page: 100 } })
+  classes.value = data.data
+}
 
-const stageOptions = ref([
-  'Year 1 (Foundation)',
-  'Year 2',
-  'Year 3',
-  'Year 4'
-])
+const fetchLookups = async () => {
+  const [majorsRes, stagesRes, shiftsRes] = await Promise.all([
+    api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/stages', { params: { per_page: 100 } }),
+    api.get('/shifts', { params: { per_page: 100 } }),
+  ])
+  majors.value = majorsRes.data.data
+  stages.value = stagesRes.data.data
+  shifts.value = shiftsRes.data.data
+}
 
-const shiftOptions = ref([
-  'Morning Shift',
-  'Afternoon Shift',
-  'Evening Shift',
-  'Weekend Shift'
-])
+onMounted(() => {
+  fetchClasses()
+  fetchLookups()
+})
 
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -452,11 +456,11 @@ const filteredClasses = computed(() => {
   const query = filters.value.global.value?.toLowerCase().trim()
   if (!query) return classes.value
   
-  return classes.value.filter(c => 
+  return classes.value.filter(c =>
     c.code.toLowerCase().includes(query) ||
     c.name.toLowerCase().includes(query) ||
-    c.department.toLowerCase().includes(query) ||
-    c.room.toLowerCase().includes(query)
+    (c.department || '').toLowerCase().includes(query) ||
+    (c.room || '').toLowerCase().includes(query)
   )
 })
 
@@ -467,12 +471,11 @@ const classForm = ref({
   id: null,
   code: '',
   name: '',
-  department: '',
-  stage: '',
-  shift: '',
+  major_id: null,
+  stage_id: null,
+  shift_id: null,
   room: '',
   capacity: 35,
-  students_count: 0,
   status: 'Active'
 })
 
@@ -486,12 +489,11 @@ const openNewDialog = () => {
     id: null,
     code: '',
     name: '',
-    department: '',
-    stage: '',
-    shift: '',
+    major_id: null,
+    stage_id: null,
+    shift_id: null,
     room: '',
     capacity: 35,
-    students_count: 0,
     status: 'Active'
   }
   isEdit.value = false
@@ -504,23 +506,45 @@ const editClass = (data) => {
   classDialog.value = true
 }
 
-const saveClass = () => {
-  if (!classForm.value.code || !classForm.value.name || !classForm.value.department) return
-
-  if (isEdit.value) {
-    const index = classes.value.findIndex(c => c.id === classForm.value.id)
-    if (index !== -1) classes.value[index] = { ...classForm.value }
-  } else {
-    classForm.value.id = Date.now()
-    classes.value.unshift({ ...classForm.value })
+const saveClass = async () => {
+  if (!classForm.value.code || !classForm.value.name || !classForm.value.major_id || !classForm.value.stage_id || !classForm.value.shift_id) {
+    alert('Code, name, department/major, stage, and shift are required.')
+    return
   }
 
-  classDialog.value = false
+  const payload = {
+    code: classForm.value.code,
+    name: classForm.value.name,
+    major_id: classForm.value.major_id,
+    stage_id: classForm.value.stage_id,
+    shift_id: classForm.value.shift_id,
+    room: classForm.value.room,
+    capacity: classForm.value.capacity,
+    status: classForm.value.status,
+  }
+
+  try {
+    if (isEdit.value) {
+      await api.put(`/classes/${classForm.value.id}`, payload)
+    } else {
+      await api.post('/classes', payload)
+    }
+
+    classDialog.value = false
+    await fetchClasses()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteClass = (data) => {
+const confirmDeleteClass = async (data) => {
   if (confirm(`Are you sure you want to delete ${data.name}?`)) {
-    classes.value = classes.value.filter(c => c.id !== data.id)
+    try {
+      await api.delete(`/classes/${data.id}`)
+      await fetchClasses()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

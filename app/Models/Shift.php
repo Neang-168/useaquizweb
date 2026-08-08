@@ -11,7 +11,9 @@ class Shift extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'name',
+        'name_kh',
         'start_time',
         'end_time',
         'status',
@@ -29,5 +31,10 @@ class Shift extends Model
     public function studentEnrollments(): HasMany
     {
         return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function classes(): HasMany
+    {
+        return $this->hasMany(Classroom::class);
     }
 }

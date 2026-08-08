@@ -303,7 +303,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -315,21 +316,23 @@ import Dropdown from 'primevue/dropdown'
 
 const activeTab = ref(0) // 0: Shifts, 1: Stages
 
-// Mock Data: Shifts
-const shifts = ref([
-  { id: 1, code: 'MORNING', name_en: 'Morning Shift', name_kh: 'វេនព្រឹក', start_time: '07:30 AM', end_time: '11:00 AM', status: 'Active' },
-  { id: 2, code: 'AFTERNOON', name_en: 'Afternoon Shift', name_kh: 'វេនរសៀល', start_time: '01:30 PM', end_time: '05:00 PM', status: 'Active' },
-  { id: 3, code: 'EVENING', name_en: 'Evening Shift', name_kh: 'វេនល្ងាច', start_time: '05:30 PM', end_time: '08:30 PM', status: 'Active' },
-  { id: 4, code: 'WEEKEND', name_en: 'Weekend Shift', name_kh: 'វេនចុងសប្តាហ៍', start_time: '08:00 AM', end_time: '04:30 PM', status: 'Inactive' },
-])
+const shifts = ref([])
+const stages = ref([])
 
-// Mock Data: Stages
-const stages = ref([
-  { id: 1, code: 'Y1', level: 1, name_en: 'Year 1 (Foundation)', name_kh: 'ឆ្នាំទី ១ (ថ្នាក់ឆ្នាំមូលដ្ឋាន)', status: 'Active' },
-  { id: 2, code: 'Y2', level: 2, name_en: 'Year 2', name_kh: 'ឆ្នាំទី ២', status: 'Active' },
-  { id: 3, code: 'Y3', level: 3, name_en: 'Year 3', name_kh: 'ឆ្នាំទី ៣', status: 'Active' },
-  { id: 4, code: 'Y4', level: 4, name_en: 'Year 4', name_kh: 'ឆ្នាំទី ៤', status: 'Active' },
-])
+const fetchShifts = async () => {
+  const { data } = await api.get('/shifts', { params: { per_page: 100 } })
+  shifts.value = data.data
+}
+
+const fetchStages = async () => {
+  const { data } = await api.get('/stages', { params: { per_page: 100 } })
+  stages.value = data.data
+}
+
+onMounted(() => {
+  fetchShifts()
+  fetchStages()
+})
 
 // Search Filters (ប្រើ String 'contains')
 const shiftFilters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -371,21 +374,43 @@ const editShift = (data) => {
   shiftDialog.value = true
 }
 
-const saveShift = () => {
-  if (!shiftForm.value.code || !shiftForm.value.name_en) return
-  if (isEditShift.value) {
-    const idx = shifts.value.findIndex(s => s.id === shiftForm.value.id)
-    if (idx !== -1) shifts.value[idx] = { ...shiftForm.value }
-  } else {
-    shiftForm.value.id = Date.now()
-    shifts.value.unshift({ ...shiftForm.value })
+const saveShift = async () => {
+  if (!shiftForm.value.code || !shiftForm.value.name_en) {
+    alert('Shift code and name (English) are required.')
+    return
   }
-  shiftDialog.value = false
+
+  const payload = {
+    code: shiftForm.value.code,
+    name_en: shiftForm.value.name_en,
+    name_kh: shiftForm.value.name_kh,
+    start_time: shiftForm.value.start_time,
+    end_time: shiftForm.value.end_time,
+    status: shiftForm.value.status,
+  }
+
+  try {
+    if (isEditShift.value) {
+      await api.put(`/shifts/${shiftForm.value.id}`, payload)
+    } else {
+      await api.post('/shifts', payload)
+    }
+
+    shiftDialog.value = false
+    await fetchShifts()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteShift = (data) => {
+const confirmDeleteShift = async (data) => {
   if (confirm(`Delete shift ${data.name_en}?`)) {
-    shifts.value = shifts.value.filter(s => s.id !== data.id)
+    try {
+      await api.delete(`/shifts/${data.id}`)
+      await fetchShifts()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 
@@ -396,21 +421,42 @@ const editStage = (data) => {
   stageDialog.value = true
 }
 
-const saveStage = () => {
-  if (!stageForm.value.code || !stageForm.value.name_en) return
-  if (isEditStage.value) {
-    const idx = stages.value.findIndex(s => s.id === stageForm.value.id)
-    if (idx !== -1) stages.value[idx] = { ...stageForm.value }
-  } else {
-    stageForm.value.id = Date.now()
-    stages.value.push({ ...stageForm.value })
+const saveStage = async () => {
+  if (!stageForm.value.code || !stageForm.value.name_en) {
+    alert('Stage code and name (English) are required.')
+    return
   }
-  stageDialog.value = false
+
+  const payload = {
+    code: stageForm.value.code,
+    name_en: stageForm.value.name_en,
+    name_kh: stageForm.value.name_kh,
+    level: stageForm.value.level,
+    status: stageForm.value.status,
+  }
+
+  try {
+    if (isEditStage.value) {
+      await api.put(`/stages/${stageForm.value.id}`, payload)
+    } else {
+      await api.post('/stages', payload)
+    }
+
+    stageDialog.value = false
+    await fetchStages()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteStage = (data) => {
+const confirmDeleteStage = async (data) => {
   if (confirm(`Delete stage ${data.name_en}?`)) {
-    stages.value = stages.value.filter(s => s.id !== data.id)
+    try {
+      await api.delete(`/stages/${data.id}`)
+      await fetchStages()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

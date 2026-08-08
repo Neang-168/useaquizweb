@@ -241,44 +241,36 @@
           </div>
         </div>
 
-        <!-- Class Name & Shift -->
+        <!-- Class (Shift & Major are derived from the selected class) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
-            <Dropdown 
-              v-model="studentForm.class_name" 
-              :options="classOptions" 
-              placeholder="Select Class" 
+            <Dropdown
+              v-model="studentForm.class_id"
+              :options="classes"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select Class"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
-            <Dropdown 
-              v-model="studentForm.shift" 
-              :options="shiftOptions" 
-              placeholder="Select Shift" 
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift</label>
+            <InputText :model-value="selectedClassShift" disabled placeholder="Derived from class" class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
         <!-- Major & Phone -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major / Department *</label>
-            <Dropdown 
-              v-model="studentForm.major" 
-              :options="majorOptions" 
-              placeholder="Select Major" 
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major / Department</label>
+            <InputText :model-value="selectedClassMajor" disabled placeholder="Derived from class" class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
-            <InputText 
-              v-model="studentForm.phone" 
-              placeholder="012 345 678" 
+            <InputText
+              v-model="studentForm.phone"
+              placeholder="012 345 678"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
             />
           </div>
@@ -317,7 +309,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -328,34 +321,23 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Avatar from 'primevue/avatar'
 
-// Mock Data: Students
-const students = ref([
-  { id: 1, student_id: 'STU-1001', name_en: 'Sok Visal', name_kh: 'សុខ វិសាល', gender: 'Male', class_name: 'Class M1-CS', shift: 'Morning Shift', major: 'Computer Science', phone: '012 333 444', email: 'visal.sok@student.edu.kh', status: 'Active', avatar: '' },
-  { id: 2, student_id: 'STU-1002', name_en: 'Chan Leakhena', name_kh: 'ចាន់ លក្ខិណា', gender: 'Female', class_name: 'Class A2-CS', shift: 'Afternoon Shift', major: 'Computer Science', phone: '098 111 222', email: 'leakhena.chan@student.edu.kh', status: 'Active', avatar: '' },
-  { id: 3, student_id: 'STU-1003', name_en: 'Keo Sovann', name_kh: 'កែវ សុវណ្ណ', gender: 'Male', class_name: 'Class E3-BIT', shift: 'Evening Shift', major: 'BIT', phone: '017 555 666', email: 'sovann.keo@student.edu.kh', status: 'Suspended', avatar: '' },
-  { id: 4, student_id: 'STU-1004', name_en: 'Nhem Bopha', name_kh: 'ញឹម បុប្ផា', gender: 'Female', class_name: 'Class W4-LAW', shift: 'Weekend Shift', major: 'Law', phone: '088 777 888', email: 'bopha.nhem@student.edu.kh', status: 'Inactive', avatar: '' },
-])
+const students = ref([])
+const classes = ref([])
 
-const classOptions = ref([
-  'Class M1-CS',
-  'Class A2-CS',
-  'Class E3-BIT',
-  'Class W4-LAW'
-])
+const fetchStudents = async () => {
+  const { data } = await api.get('/students', { params: { per_page: 100 } })
+  students.value = data.data
+}
 
-const shiftOptions = ref([
-  'Morning Shift',
-  'Afternoon Shift',
-  'Evening Shift',
-  'Weekend Shift'
-])
+const fetchClasses = async () => {
+  const { data } = await api.get('/classes', { params: { per_page: 100 } })
+  classes.value = data.data
+}
 
-const majorOptions = ref([
-  'Computer Science',
-  'BIT',
-  'Law',
-  'Marketing'
-])
+onMounted(() => {
+  fetchStudents()
+  fetchClasses()
+})
 
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -369,14 +351,18 @@ const studentForm = ref({
   name_en: '',
   name_kh: '',
   gender: 'Male',
-  class_name: '',
-  shift: '',
-  major: '',
+  class_id: null,
   phone: '',
   email: '',
   status: 'Active',
   avatar: ''
 })
+
+// Shift & Major are derived from whichever class is selected, since a
+// student's enrollment inherits both from its class rather than being
+// chosen independently.
+const selectedClassShift = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.shift || '')
+const selectedClassMajor = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.department || '')
 
 // Computed Properties
 const activeStudentsCount = computed(() => students.value.filter(s => s.status === 'Active').length)
@@ -390,9 +376,7 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     gender: 'Male',
-    class_name: '',
-    shift: '',
-    major: '',
+    class_id: null,
     phone: '',
     email: '',
     status: 'Active',
@@ -408,23 +392,49 @@ const editStudent = (data) => {
   studentDialog.value = true
 }
 
-const saveStudent = () => {
-  if (!studentForm.value.student_id || !studentForm.value.name_en || !studentForm.value.class_name) return
-
-  if (isEdit.value) {
-    const index = students.value.findIndex(s => s.id === studentForm.value.id)
-    if (index !== -1) students.value[index] = { ...studentForm.value }
-  } else {
-    studentForm.value.id = Date.now()
-    students.value.unshift({ ...studentForm.value })
+const saveStudent = async () => {
+  if (classes.value.length === 0) {
+    alert('No classes exist yet. Create a Class first (Classes page) before adding students.')
+    return
+  }
+  if (!studentForm.value.student_id || !studentForm.value.name_en || !studentForm.value.class_id || !studentForm.value.phone) {
+    alert('Student ID, name (English), class, and phone are required.')
+    return
   }
 
-  studentDialog.value = false
+  const payload = {
+    student_id: studentForm.value.student_id,
+    name_en: studentForm.value.name_en,
+    name_kh: studentForm.value.name_kh,
+    gender: studentForm.value.gender,
+    class_id: studentForm.value.class_id,
+    phone: studentForm.value.phone,
+    email: studentForm.value.email,
+    status: studentForm.value.status,
+  }
+
+  try {
+    if (isEdit.value) {
+      await api.put(`/students/${studentForm.value.id}`, payload)
+    } else {
+      await api.post('/students', payload)
+    }
+
+    studentDialog.value = false
+    await fetchStudents()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteStudent = (data) => {
+const confirmDeleteStudent = async (data) => {
   if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    students.value = students.value.filter(s => s.id !== data.id)
+    try {
+      await api.delete(`/students/${data.id}`)
+      await fetchStudents()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

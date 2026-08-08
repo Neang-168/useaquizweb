@@ -167,15 +167,48 @@
       class="w-full max-w-lg"
     >
       <div class="space-y-4 pt-2">
-        <!-- Faculty Selection -->
+        <!-- Faculty / Degree / Major Selection -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
-          <Dropdown 
-            v-model="subjectForm.faculty_name" 
-            :options="facultyOptions" 
-            placeholder="Select Faculty" 
+          <Dropdown
+            v-model="subjectForm.faculty_id"
+            :options="faculties"
+            optionLabel="name_en"
+            optionValue="id"
+            placeholder="Select Faculty"
             class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            @change="subjectForm.degree_id = null; subjectForm.major_id = null"
           />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree</label>
+            <Dropdown
+              v-model="subjectForm.degree_id"
+              :options="degreesForSelectedFaculty"
+              optionLabel="title_en"
+              optionValue="id"
+              placeholder="Any degree"
+              showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              :disabled="!subjectForm.faculty_id"
+              @change="subjectForm.major_id = null"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
+            <Dropdown
+              v-model="subjectForm.major_id"
+              :options="majorsForSelectedDegree"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Any major"
+              showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              :disabled="!subjectForm.degree_id"
+            />
+          </div>
         </div>
 
         <!-- Subject Code & Credits -->
@@ -252,7 +285,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -263,19 +297,31 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 
-// Mock Data: Subjects
-const subjects = ref([
-  { id: 1, code: 'CS101', name_en: 'Introduction to Programming', name_kh: 'ការណែនាំអំពីការសរសេរកម្មវិធី', faculty_name: 'Faculty of Science & Technology', credits: 3, description: 'Basic fundamentals of programming concepts using C++', status: 'Active' },
-  { id: 2, code: 'CS202', name_en: 'Database Management Systems', name_kh: 'ប្រព័ន្ធគ្រប់គ្រងមូលដ្ឋានទិន្នន័យ', faculty_name: 'Faculty of Science & Technology', credits: 4, description: 'Relational database design and SQL programming', status: 'Active' },
-  { id: 3, code: 'MKT201', name_en: 'Principles of Marketing', name_kh: 'គោលការណ៍ទីផ្សារ', faculty_name: 'Faculty of Business Administration', credits: 3, description: 'Fundamental principles of market research and branding', status: 'Active' },
-  { id: 4, code: 'LAW102', name_en: 'Constitutional Law', name_kh: 'ច្បាប់រដ្ឋធម្មនុញ្ញ', faculty_name: 'Faculty of Law & Social Sciences', credits: 3, description: 'Study of constitutional frameworks and governance', status: 'Inactive' },
-])
+const subjects = ref([])
+const faculties = ref([])
+const degrees = ref([])
+const majors = ref([])
 
-const facultyOptions = ref([
-  'Faculty of Science & Technology',
-  'Faculty of Business Administration',
-  'Faculty of Law & Social Sciences'
-])
+const fetchSubjects = async () => {
+  const { data } = await api.get('/subjects', { params: { per_page: 100 } })
+  subjects.value = data.data
+}
+
+const fetchLookups = async () => {
+  const [facultiesRes, degreesRes, majorsRes] = await Promise.all([
+    api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/degrees', { params: { per_page: 100 } }),
+    api.get('/majors', { params: { per_page: 100 } }),
+  ])
+  faculties.value = facultiesRes.data.data
+  degrees.value = degreesRes.data.data
+  majors.value = majorsRes.data.data
+}
+
+onMounted(() => {
+  fetchSubjects()
+  fetchLookups()
+})
 
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -288,11 +334,21 @@ const subjectForm = ref({
   code: '',
   name_en: '',
   name_kh: '',
-  faculty_name: '',
+  faculty_id: null,
+  degree_id: null,
+  major_id: null,
   credits: 3,
   description: '',
   status: 'Active'
 })
+
+// Degree/Major options narrow down as Faculty, then Degree, is picked
+const degreesForSelectedFaculty = computed(() =>
+  degrees.value.filter(d => d.faculty_id === subjectForm.value.faculty_id)
+)
+const majorsForSelectedDegree = computed(() =>
+  majors.value.filter(m => m.degree_id === subjectForm.value.degree_id)
+)
 
 // Computed Properties
 const activeSubjectsCount = computed(() => subjects.value.filter(s => s.status === 'Active').length)
@@ -305,7 +361,9 @@ const openNewDialog = () => {
     code: '',
     name_en: '',
     name_kh: '',
-    faculty_name: '',
+    faculty_id: null,
+    degree_id: null,
+    major_id: null,
     credits: 3,
     description: '',
     status: 'Active'
@@ -320,23 +378,46 @@ const editSubject = (data) => {
   subjectDialog.value = true
 }
 
-const saveSubject = () => {
-  if (!subjectForm.value.code || !subjectForm.value.name_en || !subjectForm.value.faculty_name) return
-
-  if (isEdit.value) {
-    const index = subjects.value.findIndex(s => s.id === subjectForm.value.id)
-    if (index !== -1) subjects.value[index] = { ...subjectForm.value }
-  } else {
-    subjectForm.value.id = Date.now()
-    subjects.value.unshift({ ...subjectForm.value })
+const saveSubject = async () => {
+  if (!subjectForm.value.code || !subjectForm.value.name_en || !subjectForm.value.faculty_id) {
+    alert('Faculty, subject code, and name (English) are required.')
+    return
   }
 
-  subjectDialog.value = false
+  const payload = {
+    faculty_id: subjectForm.value.faculty_id,
+    degree_id: subjectForm.value.degree_id,
+    major_id: subjectForm.value.major_id,
+    code: subjectForm.value.code,
+    name_en: subjectForm.value.name_en,
+    name_kh: subjectForm.value.name_kh,
+    credits: subjectForm.value.credits,
+    description: subjectForm.value.description,
+    status: subjectForm.value.status,
+  }
+
+  try {
+    if (isEdit.value) {
+      await api.put(`/subjects/${subjectForm.value.id}`, payload)
+    } else {
+      await api.post('/subjects', payload)
+    }
+
+    subjectDialog.value = false
+    await fetchSubjects()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteSubject = (data) => {
+const confirmDeleteSubject = async (data) => {
   if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    subjects.value = subjects.value.filter(s => s.id !== data.id)
+    try {
+      await api.delete(`/subjects/${data.id}`)
+      await fetchSubjects()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

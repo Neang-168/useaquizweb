@@ -267,7 +267,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -277,12 +278,14 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 
-// Mock Data: Academic Years
-const academicYears = ref([
-  { id: 1, code: 'AY2024-2025', name_en: 'Academic Year 2024-2025', name_kh: 'ឆ្នាំសិក្សា ២០២៤-២០២៥', start_date: '2024-10-01', end_date: '2025-08-31', is_current: false, status: 'Active' },
-  { id: 2, code: 'AY2025-2026', name_en: 'Academic Year 2025-2026', name_kh: 'ឆ្នាំសិក្សា ២០២៥-២០២៦', start_date: '2025-10-01', end_date: '2026-08-31', is_current: true, status: 'Active' },
-  { id: 3, code: 'AY2026-2027', name_en: 'Academic Year 2026-2027', name_kh: 'ឆ្នាំសិក្សា ២០២៦-២០២៧', start_date: '2026-10-01', end_date: '2027-08-31', is_current: false, status: 'Inactive' },
-])
+const academicYears = ref([])
+
+const fetchAcademicYears = async () => {
+  const { data } = await api.get('/academic-years', { params: { per_page: 100 } })
+  academicYears.value = data.data
+}
+
+onMounted(fetchAcademicYears)
 
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -330,33 +333,53 @@ const editAcademicYear = (data) => {
   yearDialog.value = true
 }
 
-const setCurrentYear = (data) => {
-  academicYears.value.forEach(y => y.is_current = false)
-  data.is_current = true
+const setCurrentYear = async (data) => {
+  try {
+    await api.post(`/academic-years/${data.id}/set-current`)
+    await fetchAcademicYears()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const saveAcademicYear = () => {
-  if (!yearForm.value.code || !yearForm.value.name_en || !yearForm.value.start_date || !yearForm.value.end_date) return
-
-  // ប្រសិនបើជ្រើសរើស Current ត្រូវលុប Current ពីឆ្នាំផ្សេងទៀតចេញ
-  if (yearForm.value.is_current) {
-    academicYears.value.forEach(y => y.is_current = false)
+const saveAcademicYear = async () => {
+  if (!yearForm.value.code || !yearForm.value.name_en || !yearForm.value.start_date || !yearForm.value.end_date) {
+    alert('Code, name (English), start date, and end date are required.')
+    return
   }
 
-  if (isEdit.value) {
-    const index = academicYears.value.findIndex(y => y.id === yearForm.value.id)
-    if (index !== -1) academicYears.value[index] = { ...yearForm.value }
-  } else {
-    yearForm.value.id = Date.now()
-    academicYears.value.unshift({ ...yearForm.value })
+  const payload = {
+    code: yearForm.value.code,
+    name_en: yearForm.value.name_en,
+    name_kh: yearForm.value.name_kh,
+    start_date: yearForm.value.start_date,
+    end_date: yearForm.value.end_date,
+    is_current: yearForm.value.is_current,
+    status: yearForm.value.status,
   }
 
-  yearDialog.value = false
+  try {
+    if (isEdit.value) {
+      await api.put(`/academic-years/${yearForm.value.id}`, payload)
+    } else {
+      await api.post('/academic-years', payload)
+    }
+
+    yearDialog.value = false
+    await fetchAcademicYears()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteAcademicYear = (data) => {
+const confirmDeleteAcademicYear = async (data) => {
   if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    academicYears.value = academicYears.value.filter(y => y.id !== data.id)
+    try {
+      await api.delete(`/academic-years/${data.id}`)
+      await fetchAcademicYears()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

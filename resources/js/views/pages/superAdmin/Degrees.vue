@@ -226,6 +226,10 @@
     <Dialog v-model:visible="degreeDialog" :header="isEditDegree ? 'Edit Degree' : 'Create New Degree'" :modal="true" class="w-full max-w-lg">
       <div class="space-y-4 pt-2">
         <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
+          <Dropdown v-model="degreeForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id" placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+        </div>
+        <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Code *</label>
           <InputText v-model="degreeForm.code" placeholder="e.g. BACHELOR" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
         </div>
@@ -240,6 +244,10 @@
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Duration (Years) *</label>
           <InputText v-model="degreeForm.duration_years" type="number" placeholder="4" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+          <Dropdown v-model="degreeForm.status" :options="['Active', 'Inactive']" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
       </div>
       <template #footer>
@@ -256,11 +264,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
-            <Dropdown v-model="majorForm.faculty_name" :options="facultyOptions" placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <Dropdown v-model="majorForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id" placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" @change="majorForm.degree_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level *</label>
-            <Dropdown v-model="majorForm.degree_title" :options="degreeOptions" placeholder="Select Degree" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <Dropdown v-model="majorForm.degree_id" :options="degreesForSelectedFaculty" optionLabel="title_en" optionValue="id" placeholder="Select Degree" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" :disabled="!majorForm.faculty_id" />
           </div>
         </div>
         <div>
@@ -292,7 +300,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -304,28 +313,35 @@ import Dropdown from 'primevue/dropdown'
 
 const activeTab = ref(0) // 0: Degrees, 1: Majors
 
-// Mock Data: Degrees
-const degrees = ref([
-  { id: 1, code: 'ASSOC', title_en: 'Associate Degree', title_kh: 'បរិញ្ញាបត្ររង', duration_years: 2 },
-  { id: 2, code: 'BACHELOR', title_en: 'Bachelor Degree', title_kh: 'បរិញ្ញាបត្រ', duration_years: 4 },
-  { id: 3, code: 'MASTER', title_en: 'Master Degree', title_kh: 'បរិញ្ញាបត្រជាន់ខ្ពស់', duration_years: 2 },
-])
+const faculties = ref([])
+const degrees = ref([])
+const majors = ref([])
 
-// Mock Data: Majors
-const majors = ref([
-  { id: 1, code: 'CS', name_en: 'Computer Science', name_kh: 'វិទ្យាសាស្ត្រកុំព្យូទ័រ', faculty_name: 'Faculty of Science & Technology', degree_title: 'Bachelor Degree', status: 'Active' },
-  { id: 2, code: 'IT', name_en: 'Information Technology', name_kh: 'បច្ចេកវិទ្យាព័ត៌មាន', faculty_name: 'Faculty of Science & Technology', degree_title: 'Bachelor Degree', status: 'Active' },
-  { id: 3, code: 'MKT', name_en: 'Marketing', name_kh: 'ទីផ្សារ', faculty_name: 'Faculty of Business Administration', degree_title: 'Associate Degree', status: 'Active' },
-  { id: 4, code: 'LAW', name_en: 'Public Law', name_kh: 'នីតិសាធារណៈ', faculty_name: 'Faculty of Law & Social Sciences', degree_title: 'Master Degree', status: 'Inactive' },
-])
+const fetchFaculties = async () => {
+  const { data } = await api.get('/faculties', { params: { per_page: 100 } })
+  faculties.value = data.data
+}
 
-const facultyOptions = ref([
-  'Faculty of Science & Technology',
-  'Faculty of Business Administration',
-  'Faculty of Law & Social Sciences'
-])
+const fetchDegrees = async () => {
+  const { data } = await api.get('/degrees', { params: { per_page: 100 } })
+  degrees.value = data.data
+}
 
-const degreeOptions = computed(() => degrees.value.map(d => d.title_en))
+const fetchMajors = async () => {
+  const { data } = await api.get('/majors', { params: { per_page: 100 } })
+  majors.value = data.data
+}
+
+onMounted(() => {
+  fetchFaculties()
+  fetchDegrees()
+  fetchMajors()
+})
+
+// Degrees available for the faculty currently selected in the major dialog
+const degreesForSelectedFaculty = computed(() =>
+  degrees.value.filter(d => d.faculty_id === majorForm.value.faculty_id)
+)
 
 // Search Filters (ប្រើ string 'contains' មិនបាច់ import FilterMatchMode)
 const degreeFilters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -334,22 +350,22 @@ const majorFilters = ref({ global: { value: null, matchMode: 'contains' } })
 // Dialog States & Forms
 const degreeDialog = ref(false)
 const isEditDegree = ref(false)
-const degreeForm = ref({ id: null, code: '', title_en: '', title_kh: '', duration_years: 4 })
+const degreeForm = ref({ id: null, faculty_id: null, code: '', title_en: '', title_kh: '', duration_years: 4, status: 'Active' })
 
 const majorDialog = ref(false)
 const isEditMajor = ref(false)
-const majorForm = ref({ id: null, code: '', name_en: '', name_kh: '', faculty_name: '', degree_title: '', status: 'Active' })
+const majorForm = ref({ id: null, faculty_id: null, degree_id: null, code: '', name_en: '', name_kh: '', status: 'Active' })
 
 const activeMajorsCount = computed(() => majors.value.filter(m => m.status === 'Active').length)
 
 // Actions
 const openNewDialog = () => {
   if (activeTab.value === 0) {
-    degreeForm.value = { id: null, code: '', title_en: '', title_kh: '', duration_years: 4 }
+    degreeForm.value = { id: null, faculty_id: null, code: '', title_en: '', title_kh: '', duration_years: 4, status: 'Active' }
     isEditDegree.value = false
     degreeDialog.value = true
   } else {
-    majorForm.value = { id: null, code: '', name_en: '', name_kh: '', faculty_name: '', degree_title: '', status: 'Active' }
+    majorForm.value = { id: null, faculty_id: null, degree_id: null, code: '', name_en: '', name_kh: '', status: 'Active' }
     isEditMajor.value = false
     majorDialog.value = true
   }
@@ -362,21 +378,43 @@ const editDegree = (data) => {
   degreeDialog.value = true
 }
 
-const saveDegree = () => {
-  if (!degreeForm.value.code || !degreeForm.value.title_en) return
-  if (isEditDegree.value) {
-    const idx = degrees.value.findIndex(d => d.id === degreeForm.value.id)
-    if (idx !== -1) degrees.value[idx] = { ...degreeForm.value }
-  } else {
-    degreeForm.value.id = Date.now()
-    degrees.value.unshift({ ...degreeForm.value })
+const saveDegree = async () => {
+  if (!degreeForm.value.faculty_id || !degreeForm.value.code || !degreeForm.value.title_en) {
+    alert('Faculty, degree code, and title (English) are required.')
+    return
   }
-  degreeDialog.value = false
+
+  const payload = {
+    faculty_id: degreeForm.value.faculty_id,
+    code: degreeForm.value.code,
+    title_en: degreeForm.value.title_en,
+    title_kh: degreeForm.value.title_kh,
+    duration_years: degreeForm.value.duration_years,
+    status: degreeForm.value.status,
+  }
+
+  try {
+    if (isEditDegree.value) {
+      await api.put(`/degrees/${degreeForm.value.id}`, payload)
+    } else {
+      await api.post('/degrees', payload)
+    }
+
+    degreeDialog.value = false
+    await fetchDegrees()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteDegree = (data) => {
+const confirmDeleteDegree = async (data) => {
   if (confirm(`Delete degree ${data.title_en}?`)) {
-    degrees.value = degrees.value.filter(d => d.id !== data.id)
+    try {
+      await api.delete(`/degrees/${data.id}`)
+      await fetchDegrees()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 
@@ -387,21 +425,42 @@ const editMajor = (data) => {
   majorDialog.value = true
 }
 
-const saveMajor = () => {
-  if (!majorForm.value.code || !majorForm.value.name_en) return
-  if (isEditMajor.value) {
-    const idx = majors.value.findIndex(m => m.id === majorForm.value.id)
-    if (idx !== -1) majors.value[idx] = { ...majorForm.value }
-  } else {
-    majorForm.value.id = Date.now()
-    majors.value.unshift({ ...majorForm.value })
+const saveMajor = async () => {
+  if (!majorForm.value.faculty_id || !majorForm.value.degree_id || !majorForm.value.code || !majorForm.value.name_en) {
+    alert('Faculty, degree, major code, and name (English) are required.')
+    return
   }
-  majorDialog.value = false
+
+  const payload = {
+    degree_id: majorForm.value.degree_id,
+    code: majorForm.value.code,
+    name_en: majorForm.value.name_en,
+    name_kh: majorForm.value.name_kh,
+    status: majorForm.value.status,
+  }
+
+  try {
+    if (isEditMajor.value) {
+      await api.put(`/majors/${majorForm.value.id}`, payload)
+    } else {
+      await api.post('/majors', payload)
+    }
+
+    majorDialog.value = false
+    await fetchMajors()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteMajor = (data) => {
+const confirmDeleteMajor = async (data) => {
   if (confirm(`Delete major ${data.name_en}?`)) {
-    majors.value = majors.value.filter(m => m.id !== data.id)
+    try {
+      await api.delete(`/majors/${data.id}`)
+      await fetchMajors()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

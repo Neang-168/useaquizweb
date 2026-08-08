@@ -12,6 +12,7 @@ class StudentEnrollment extends Model
 
     protected $fillable = [
         'student_profile_id',
+        'class_id',
         'faculty_id',
         'degree_id',
         'major_id',
@@ -26,12 +27,16 @@ class StudentEnrollment extends Model
 
     protected $casts = [
         'enrollment_date' => 'date',
-        'status' => 'boolean',
     ];
 
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);
+    }
+
+    public function classroom(): BelongsTo
+    {
+        return $this->belongsTo(Classroom::class, 'class_id');
     }
 
     public function faculty(): BelongsTo

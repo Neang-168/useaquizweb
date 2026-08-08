@@ -19,6 +19,7 @@ class TeacherProfile extends Model
         'major_id',
         'qualification',
         'specialization',
+        'employment_type',
         'hire_date',
     ];
 

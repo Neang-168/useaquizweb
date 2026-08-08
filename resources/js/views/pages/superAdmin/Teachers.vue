@@ -232,20 +232,24 @@
         <!-- Department & Degree -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Subject *</label>
-            <Dropdown 
-              v-model="teacherForm.department" 
-              :options="departmentOptions" 
-              placeholder="Select Department" 
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Faculty *</label>
+            <Dropdown
+              v-model="teacherForm.faculty_id"
+              :options="faculties"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Faculty"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level *</label>
-            <Dropdown 
-              v-model="teacherForm.degree" 
-              :options="degreeOptions" 
-              placeholder="Select Degree" 
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level</label>
+            <Dropdown
+              v-model="teacherForm.degree_id"
+              :options="degrees"
+              optionLabel="title_en"
+              optionValue="id"
+              placeholder="Select Degree"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
@@ -304,7 +308,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -315,27 +320,28 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Avatar from 'primevue/avatar'
 
-// Mock Data: Teachers
-const teachers = ref([
-  { id: 1, code: 'T-101', name_en: 'Dr. Keo Samnang', name_kh: 'បណ្ឌិត កែវ សំនៀង', gender: 'Male', department: 'Computer Science', degree: 'Ph.D. in Computer Science', phone: '012 888 999', email: 'keo.samnang@school.edu.kh', type: 'Full-Time', status: 'Active', avatar: '' },
-  { id: 2, code: 'T-102', name_en: 'Sok Vanna', name_kh: 'សុខ វណ្ណា', gender: 'Female', department: 'Business Information Technology', degree: 'Master Degree', phone: '098 765 432', email: 'sok.vanna@school.edu.kh', type: 'Full-Time', status: 'Active', avatar: '' },
-  { id: 3, code: 'T-103', name_en: 'Chan Dara', name_kh: 'ចាន់ ដារ៉ា', gender: 'Male', department: 'Law', degree: 'Master Degree', phone: '017 112 233', email: 'chan.dara@school.edu.kh', type: 'Part-Time', status: 'Active', avatar: '' },
-  { id: 4, code: 'T-104', name_en: 'Meng Bophal', name_kh: 'ម៉េង បុប្ផា', gender: 'Female', department: 'English Literature', degree: 'Bachelor Degree', phone: '069 554 433', email: 'meng.bophal@school.edu.kh', type: 'Part-Time', status: 'Inactive', avatar: '' },
-])
+const teachers = ref([])
+const faculties = ref([])
+const degrees = ref([])
 
-const departmentOptions = ref([
-  'Computer Science',
-  'Business Information Technology',
-  'Law',
-  'English Literature',
-  'Mathematics'
-])
+const fetchTeachers = async () => {
+  const { data } = await api.get('/teachers', { params: { per_page: 100 } })
+  teachers.value = data.data
+}
 
-const degreeOptions = ref([
-  'Bachelor Degree',
-  'Master Degree',
-  'Ph.D. / Doctoral'
-])
+const fetchLookups = async () => {
+  const [facultiesRes, degreesRes] = await Promise.all([
+    api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/degrees', { params: { per_page: 100 } }),
+  ])
+  faculties.value = facultiesRes.data.data
+  degrees.value = degreesRes.data.data
+}
+
+onMounted(() => {
+  fetchTeachers()
+  fetchLookups()
+})
 
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
@@ -349,8 +355,8 @@ const teacherForm = ref({
   name_en: '',
   name_kh: '',
   gender: 'Male',
-  department: '',
-  degree: '',
+  faculty_id: null,
+  degree_id: null,
   phone: '',
   email: '',
   type: 'Full-Time',
@@ -370,8 +376,8 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     gender: 'Male',
-    department: '',
-    degree: '',
+    faculty_id: null,
+    degree_id: null,
     phone: '',
     email: '',
     type: 'Full-Time',
@@ -388,23 +394,47 @@ const editTeacher = (data) => {
   teacherDialog.value = true
 }
 
-const saveTeacher = () => {
-  if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.department) return
-
-  if (isEdit.value) {
-    const index = teachers.value.findIndex(t => t.id === teacherForm.value.id)
-    if (index !== -1) teachers.value[index] = { ...teacherForm.value }
-  } else {
-    teacherForm.value.id = Date.now()
-    teachers.value.unshift({ ...teacherForm.value })
+const saveTeacher = async () => {
+  if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.faculty_id || !teacherForm.value.phone) {
+    alert('Teacher code, name (English), faculty, and phone are required.')
+    return
   }
 
-  teacherDialog.value = false
+  const payload = {
+    code: teacherForm.value.code,
+    name_en: teacherForm.value.name_en,
+    name_kh: teacherForm.value.name_kh,
+    gender: teacherForm.value.gender,
+    faculty_id: teacherForm.value.faculty_id,
+    degree_id: teacherForm.value.degree_id,
+    phone: teacherForm.value.phone,
+    email: teacherForm.value.email,
+    type: teacherForm.value.type,
+    status: teacherForm.value.status,
+  }
+
+  try {
+    if (isEdit.value) {
+      await api.put(`/teachers/${teacherForm.value.id}`, payload)
+    } else {
+      await api.post('/teachers', payload)
+    }
+
+    teacherDialog.value = false
+    await fetchTeachers()
+  } catch (error) {
+    alert(extractError(error))
+  }
 }
 
-const confirmDeleteTeacher = (data) => {
+const confirmDeleteTeacher = async (data) => {
   if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    teachers.value = teachers.value.filter(t => t.id !== data.id)
+    try {
+      await api.delete(`/teachers/${data.id}`)
+      await fetchTeachers()
+    } catch (error) {
+      alert(extractError(error))
+    }
   }
 }
 </script>

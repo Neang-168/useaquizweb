@@ -17,6 +17,7 @@ class Subject extends Model
         'major_id',
         'code',
         'name',
+        'name_kh',
         'credit',
         'description',
         'status',

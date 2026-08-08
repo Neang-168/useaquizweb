@@ -11,7 +11,9 @@ class Stage extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'name',
+        'name_kh',
         'order_no',
         'status',
     ];
@@ -24,5 +26,10 @@ class Stage extends Model
     public function studentEnrollments(): HasMany
     {
         return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function classes(): HasMany
+    {
+        return $this->hasMany(Classroom::class);
     }
 }

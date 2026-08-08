@@ -16,11 +16,14 @@ class Degree extends Model
         'faculty_id',
         'code',
         'name',
+        'name_kh',
         'description',
+        'duration_years',
         'status',
     ];
 
     protected $casts = [
+        'duration_years' => 'integer',
         'status' => 'boolean',
     ];
 

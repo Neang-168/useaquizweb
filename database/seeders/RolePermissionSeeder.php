@@ -20,6 +20,9 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'view_reports', 'module' => 'reports'],
             ['name' => 'manage_profile', 'module' => 'profile'],
             ['name' => 'view_schedule', 'module' => 'schedule'],
+            ['name' => 'manage_academic_structure', 'module' => 'academic_structure'],
+            ['name' => 'manage_teachers', 'module' => 'teachers'],
+            ['name' => 'manage_students', 'module' => 'students'],
         ];
 
         $createdPermissions = [];
@@ -31,8 +34,8 @@ class RolePermissionSeeder extends Seeder
         }
 
         $roles = [
-            'Super Admin' => ['manage_users', 'manage_roles', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
-            'Admin' => ['manage_users', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
+            'Super Admin' => ['manage_users', 'manage_roles', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule', 'manage_academic_structure', 'manage_teachers', 'manage_students'],
+            'Admin' => ['manage_users', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule', 'manage_academic_structure', 'manage_teachers', 'manage_students'],
             'Staff' => ['view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
             'Teacher' => ['manage_exams', 'view_dashboard', 'manage_profile', 'view_schedule'],
             'Student' => ['view_dashboard', 'manage_profile', 'view_schedule', 'take_exam'],

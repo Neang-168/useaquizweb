@@ -16,6 +16,7 @@ class Major extends Model
         'degree_id',
         'code',
         'name',
+        'name_kh',
         'description',
         'status',
     ];
@@ -42,5 +43,10 @@ class Major extends Model
     public function studentEnrollments(): HasMany
     {
         return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function classes(): HasMany
+    {
+        return $this->hasMany(Classroom::class);
     }
 }

@@ -11,15 +11,19 @@ class AcademicYear extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'name',
+        'name_kh',
         'start_date',
         'end_date',
+        'is_current',
         'status',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'is_current' => 'boolean',
         'status' => 'boolean',
     ];
 
@@ -36,5 +40,10 @@ class AcademicYear extends Model
     public function studentEnrollments(): HasMany
     {
         return $this->hasMany(StudentEnrollment::class);
+    }
+
+    public function classes(): HasMany
+    {
+        return $this->hasMany(Classroom::class);
     }
 }

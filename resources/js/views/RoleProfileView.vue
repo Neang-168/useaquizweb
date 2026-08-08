@@ -62,3 +62,68 @@
     <Toast />
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
+import api, { extractError } from '../api'
+
+const toast = useToast()
+
+const currentUser = ref(null)
+const roles = ref([])
+
+const fetchCurrentUser = async () => {
+  const { data } = await api.get('/me')
+  currentUser.value = data
+}
+
+const fetchRoles = async () => {
+  const { data } = await api.get('/roles')
+  roles.value = data
+}
+
+onMounted(() => {
+  fetchCurrentUser()
+  fetchRoles()
+})
+
+const dialogVisible = ref(false)
+const submitting = ref(false)
+const form = ref({
+  username: '',
+  email: '',
+  password: '',
+  role_id: null,
+  first_name: '',
+  last_name: '',
+})
+
+const openDialog = () => {
+  form.value = { username: '', email: '', password: '', role_id: null, first_name: '', last_name: '' }
+  dialogVisible.value = true
+}
+
+const submitUser = async () => {
+  if (!form.value.username || !form.value.email || !form.value.password || !form.value.first_name || !form.value.last_name) {
+    toast.add({ severity: 'warn', summary: 'Missing fields', detail: 'Username, email, password, first name, and last name are required.', life: 4000 })
+    return
+  }
+
+  submitting.value = true
+  try {
+    await api.post('/users', form.value)
+    toast.add({ severity: 'success', summary: 'User created', detail: `${form.value.first_name} ${form.value.last_name} was created.`, life: 3000 })
+    dialogVisible.value = false
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Could not create user', detail: extractError(error), life: 5000 })
+  } finally {
+    submitting.value = false
+  }
+}
+</script>

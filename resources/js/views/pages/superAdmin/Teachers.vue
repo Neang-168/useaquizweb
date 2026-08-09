@@ -164,13 +164,19 @@
         <Column header="ACTIONS" class="!text-right !py-3.5">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-2">
-              <Button 
-                icon="pi pi-pencil" 
+              <Button
+                icon="pi pi-book"
+                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-indigo-600 hover:!bg-indigo-50 !border-0"
+                title="Manage Assignments"
+                @click="openAssignmentsDialog(data)"
+              />
+              <Button
+                icon="pi pi-pencil"
                 class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-blue-600 hover:!bg-slate-100 !border-0"
                 @click="editTeacher(data)"
               />
-              <Button 
-                icon="pi pi-trash" 
+              <Button
+                icon="pi pi-trash"
                 class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
                 @click="confirmDeleteTeacher(data)"
               />
@@ -304,6 +310,75 @@
       </template>
     </Dialog>
 
+    <!-- ======= ASSIGNMENTS DIALOG (Subject + Class per Teacher) ======= -->
+    <Dialog
+      v-model:visible="assignmentsDialog"
+      :header="assignmentTeacher ? `Assignments - ${assignmentTeacher.name_en}` : 'Assignments'"
+      :modal="true"
+      class="w-full max-w-2xl"
+    >
+      <div class="space-y-4 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject</label>
+            <Dropdown
+              v-model="assignmentForm.subject_id"
+              :options="subjects"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Subject"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class</label>
+            <Dropdown
+              v-model="assignmentForm.class_id"
+              :options="classes"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select Class"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <Button
+            label="Add Assignment"
+            icon="pi pi-plus"
+            class="!bg-indigo-600 hover:!bg-indigo-700 !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="addAssignment"
+          />
+        </div>
+
+        <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
+          <div
+            v-for="assignment in teacherAssignments"
+            :key="assignment.id"
+            class="flex items-center justify-between px-4 py-2.5"
+          >
+            <div>
+              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{{ assignment.subject_code }}</span>
+              <span class="text-sm font-semibold text-slate-800">{{ assignment.subject_name }}</span>
+              <span class="text-xs text-slate-400 ml-2">→ {{ assignment.class_name }}</span>
+            </div>
+            <Button
+              icon="pi pi-trash"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+              @click="removeAssignment(assignment)"
+            />
+          </div>
+          <div v-if="teacherAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
+            No subject/class assignments yet.
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end pt-3">
+          <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="assignmentsDialog = false" />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -323,6 +398,8 @@ import Avatar from 'primevue/avatar'
 const teachers = ref([])
 const faculties = ref([])
 const degrees = ref([])
+const subjects = ref([])
+const classes = ref([])
 
 const fetchTeachers = async () => {
   const { data } = await api.get('/teachers', { params: { per_page: 100 } })
@@ -330,12 +407,16 @@ const fetchTeachers = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, degreesRes] = await Promise.all([
+  const [facultiesRes, degreesRes, subjectsRes, classesRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
+    api.get('/subjects', { params: { per_page: 200 } }),
+    api.get('/classes', { params: { per_page: 200 } }),
   ])
   faculties.value = facultiesRes.data.data
   degrees.value = degreesRes.data.data
+  subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, name_en: `${s.name_en} (${s.code})` }))
+  classes.value = classesRes.data.data
 }
 
 onMounted(() => {
@@ -435,6 +516,58 @@ const confirmDeleteTeacher = async (data) => {
     } catch (error) {
       alert(extractError(error))
     }
+  }
+}
+
+// Assignments Dialog (Subject + Class per Teacher)
+const assignmentsDialog = ref(false)
+const assignmentTeacher = ref(null)
+const teacherAssignments = ref([])
+const assignmentForm = ref({ subject_id: null, class_id: null })
+
+const fetchAssignments = async (teacherId) => {
+  const { data } = await api.get('/teacher-assignments', { params: { teacher_profile_id: teacherId } })
+  teacherAssignments.value = data.data
+}
+
+const openAssignmentsDialog = async (data) => {
+  assignmentTeacher.value = data
+  assignmentForm.value = { subject_id: null, class_id: null }
+  assignmentsDialog.value = true
+  try {
+    await fetchAssignments(data.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const addAssignment = async () => {
+  if (!assignmentForm.value.subject_id || !assignmentForm.value.class_id) {
+    alert('Please select both a subject and a class.')
+    return
+  }
+
+  try {
+    await api.post('/teacher-assignments', {
+      teacher_profile_id: assignmentTeacher.value.id,
+      subject_id: assignmentForm.value.subject_id,
+      class_id: assignmentForm.value.class_id,
+    })
+    assignmentForm.value = { subject_id: null, class_id: null }
+    await fetchAssignments(assignmentTeacher.value.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const removeAssignment = async (assignment) => {
+  if (!confirm(`Remove ${assignment.subject_name} → ${assignment.class_name}?`)) return
+
+  try {
+    await api.delete(`/teacher-assignments/${assignment.id}`)
+    await fetchAssignments(assignmentTeacher.value.id)
+  } catch (error) {
+    alert(extractError(error))
   }
 }
 </script>

@@ -33,13 +33,34 @@
 
         <div class="w-px h-6 bg-slate-200"></div>
 
-        <button type="button" class="flex items-center gap-2 border-0 bg-transparent p-0 cursor-pointer">
-          <div
-            class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
-            <i class="pi pi-user text-sm"></i>
+        <div class="relative" ref="profileMenuRef">
+          <button type="button" @click="profileMenuOpen = !profileMenuOpen"
+            class="flex items-center gap-2 border-0 bg-transparent p-0 cursor-pointer">
+            <div
+              class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
+              <img v-if="authUser.avatar_url" :src="authUser.avatar_url" alt="Avatar" class="w-full h-full object-cover" />
+              <span v-else>{{ userInitial }}</span>
+            </div>
+            <span class="text-sm font-semibold text-slate-700">{{ userFullName }}</span>
+            <i class="pi pi-chevron-down text-xs text-slate-400"></i>
+          </button>
+
+          <!-- Profile Dropdown -->
+          <div v-if="profileMenuOpen"
+            class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-20">
+            <router-link :to="{ name: 'admin.my-profile' }" @click="profileMenuOpen = false"
+              class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-100 py-2 px-3.5 flex items-center gap-2.5 text-sm font-medium no-underline">
+              <i class="pi pi-user text-sm"></i>
+              <span>User Profile</span>
+            </router-link>
+            <div class="h-px bg-slate-200 my-1"></div>
+            <button @click="handleLogout" type="button"
+              class="w-full border-0 bg-transparent text-red-500 hover:bg-red-50 py-2 px-3.5 flex items-center gap-2.5 text-sm font-medium cursor-pointer">
+              <i class="pi pi-sign-out text-sm"></i>
+              <span>Logout</span>
+            </button>
           </div>
-          <i class="pi pi-chevron-down text-xs text-slate-400"></i>
-        </button>
+        </div>
       </div>
     </header>
 
@@ -154,6 +175,13 @@
                 <span>User Management</span>
               </router-link>
 
+              <router-link :to="{ name: 'admin.my-profile' }"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-user text-base"></i>
+                <span>User Profile</span>
+              </router-link>
+
               <!-- <router-link to="/admin/roles-permissions"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
@@ -186,14 +214,40 @@
 </template>
 
 <script setup>
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import LogoUsea from '../images/usea_logo.png'
+import { authUser, clearAuthUser } from '../store/authUser'
 
 const router = useRouter()
 
+// Profile dropdown (User Profile / Logout)
+const profileMenuOpen = ref(false)
+const profileMenuRef = ref(null)
+
+function handleClickOutside(event) {
+  if (profileMenuRef.value && !profileMenuRef.value.contains(event.target)) {
+    profileMenuOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
+
+// Full display name (reactive — updates live when the profile page saves changes)
+const userFullName = computed(() => {
+  const fullName = `${authUser.first_name || ''} ${authUser.last_name || ''}`.trim()
+  return fullName || 'Admin'
+})
+
+// Initial letter for the avatar (e.g. "A")
+const userInitial = computed(() => {
+  return userFullName.value.charAt(0).toUpperCase()
+})
+
 const handleLogout = () => {
   localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
+  clearAuthUser()
   router.push('/login')
 }
 </script>

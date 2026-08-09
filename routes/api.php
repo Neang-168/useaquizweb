@@ -12,7 +12,16 @@ use App\Http\Controllers\Api\ShiftController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
+use App\Http\Controllers\Api\TeacherAssignmentController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\Teacher\CalendarController as TeacherCalendarController;
+use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
+use App\Http\Controllers\Api\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Api\Teacher\FeedbackController as TeacherFeedbackController;
+use App\Http\Controllers\Api\Teacher\QuestionController as TeacherQuestionController;
+use App\Http\Controllers\Api\Teacher\QuizController as TeacherQuizController;
+use App\Http\Controllers\Api\Teacher\ScoreController as TeacherScoreController;
+use App\Http\Controllers\Api\Teacher\SubjectController as TeacherSubjectController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +34,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Current user with role and permissions
     Route::get('/me', [UserController::class, 'me']);
+    Route::put('/me', [UserController::class, 'updateMe']);
+    Route::post('/me/avatar', [UserController::class, 'uploadAvatar']);
+    Route::put('/me/password', [UserController::class, 'changeMyPassword']);
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index']);
@@ -55,6 +67,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->middleware('permission:manage_users');
 
+    Route::post('/users/{user}/avatar', [UserController::class, 'uploadUserAvatar'])
+        ->middleware('permission:manage_users');
+
     // Academic structure: faculties, degrees, majors, subjects, academic years, shifts, stages, classes
     Route::middleware('permission:manage_academic_structure')->group(function () {
         Route::apiResource('faculties', FacultyController::class)->parameters(['faculties' => 'faculty']);
@@ -75,8 +90,41 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->parameters(['teachers' => 'teacher'])
         ->middleware('permission:manage_teachers');
 
+    // Teacher subject/class assignments (Admin manages what each teacher teaches)
+    Route::apiResource('teacher-assignments', TeacherAssignmentController::class)
+        ->parameters(['teacher-assignments' => 'teacherAssignment'])
+        ->only(['index', 'store', 'destroy'])
+        ->middleware('permission:manage_teachers');
+
     // Students
     Route::apiResource('students', StudentController::class)
         ->parameters(['students' => 'student'])
         ->middleware('permission:manage_students');
+
+    // Teacher's own workspace: classes, subjects, question bank, quizzes, scores, feedback
+    Route::prefix('teacher')->middleware('permission:manage_exams')->group(function () {
+        Route::get('/dashboard', [TeacherDashboardController::class, 'index']);
+        Route::get('/calendar', [TeacherCalendarController::class, 'index']);
+
+        Route::get('/classes', [TeacherClassController::class, 'index']);
+
+        Route::get('/subjects', [TeacherSubjectController::class, 'index']);
+        Route::post('/subjects/{subject}/materials', [TeacherSubjectController::class, 'storeMaterial']);
+        Route::delete('/materials/{material}', [TeacherSubjectController::class, 'destroyMaterial']);
+
+        Route::apiResource('questions', TeacherQuestionController::class)
+            ->parameters(['questions' => 'question'])
+            ->except(['show']);
+
+        Route::post('/quizzes/{quiz}/publish', [TeacherQuizController::class, 'publish']);
+        Route::post('/quizzes/{quiz}/close', [TeacherQuizController::class, 'close']);
+        Route::apiResource('quizzes', TeacherQuizController::class)
+            ->parameters(['quizzes' => 'quiz']);
+
+        Route::get('/quizzes/{quiz}/scores', [TeacherScoreController::class, 'index']);
+        Route::put('/submissions/{submission}/essay-score', [TeacherScoreController::class, 'gradeEssay']);
+
+        Route::get('/quizzes/{quiz}/feedback', [TeacherFeedbackController::class, 'index']);
+        Route::post('/feedback', [TeacherFeedbackController::class, 'store']);
+    });
 });

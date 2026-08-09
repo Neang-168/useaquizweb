@@ -42,6 +42,13 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array/JSON form.
+     */
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    /**
      * The attributes that should be cast.
      */
     protected function casts(): array
@@ -92,6 +99,19 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name . ' ' . $this->last_name);
+    }
+
+    /**
+     * Get the public URL of the user's avatar, if any.
+     *
+     * Deliberately relative (not built from APP_URL) so it resolves against
+     * whatever origin is currently serving the SPA — the same reasoning the
+     * frontend's axios client uses a relative "/api" base instead of an
+     * absolute one.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? '/storage/' . ltrim($this->avatar, '/') : null;
     }
 
     /**

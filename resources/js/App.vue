@@ -7,7 +7,7 @@
       
       <!-- 3. កន្លែងលោតបង្ហាញ Dashboard / Profile / Users -->
       <!-- ដក p-6 ចេញពី <main> ហើយយកទៅដាក់ក្នុង Wrapper ខាងក្នុងវិញ ដើម្បីឱ្យ Content មិនបុកគែម តែ Layout មេនៅតែបឺតជាប់ ១០០% -->
-      <main class="w-full h-full p-6 md:p-8">
+      <main class="w-full h-full">
         <router-view />
       </main>
 

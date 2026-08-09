@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '../views/AdminContentView.vue'
 import LoginPageView from '../views/LoginPageView.vue' 
 import RoleProfileView from '../views/RoleProfileView.vue'
+import MyProfileView from '../views/MyProfileView.vue'
 import Faculties from '../views/pages/superAdmin/Faculties.vue'
 import Degrees from '../views/pages/superAdmin/Degrees.vue'
 import Subjects from '../views/pages/superAdmin/Subjects.vue'
@@ -17,12 +18,12 @@ import RolesPermissions from '../views/pages/superAdmin/RolesPermissions.vue'
 
 import TeacherLayout from '../views/TeacherLayout.vue'
 import TeachClasses from '../views/pages/teacher/Classes.vue'
+import ClassWorkspace from '../views/pages/teacher/ClassWorkspace.vue'
+import TeacherCalendar from '../views/pages/teacher/Calendar.vue'
 import TeachSubjects from '../views/pages/teacher/Subjects.vue'
-import questionBank from '../views/pages/teacher/questionBank.vue'
-import Quizzes from '../views/pages/teacher/Quizzes.vue'
 import ScoreReport from '../views/pages/teacher/ScoreReport.vue'
 import Feedback from '../views/pages/teacher/Feedback.vue'
-import QuestionBank from '../views/pages/teacher/questionBank.vue'
+import QuestionBank from '../views/pages/teacher/QuestionBank.vue'
 
 import StudentLayout from '../views/StudentLayout.vue'
 import Mycourse from '../views/pages/student/Mycourse.vue'
@@ -101,9 +102,14 @@ const routes = [
       },
       {
         path: 'role-profile',
-        alias: 'profile',
         name: 'admin.role-profile',
         component: RoleProfileView,
+      },
+      {
+        path: 'my-profile',
+        alias: 'profile',
+        name: 'admin.my-profile',
+        component: MyProfileView,
       },
     ],
   },
@@ -125,6 +131,16 @@ const routes = [
         component: TeachClasses,
       },
       {
+        path: 'classes/:assignmentId',
+        name: 'teacher.classWorkspace',
+        component: ClassWorkspace,
+      },
+      {
+        path: 'calendar',
+        name: 'teacher.calendar',
+        component: TeacherCalendar,
+      },
+      {
         path: 'subjects',
         name: 'teacher.subjects',
         component: TeachSubjects,
@@ -133,11 +149,6 @@ const routes = [
         path: 'questionbank',
         name: 'teacher.questionbank',
         component: QuestionBank,
-      },
-      {
-        path: 'quizzes',
-        name: 'teacher.quizzes',
-        component: Quizzes,
       },
       {
         path: 'scoreReport',
@@ -151,9 +162,14 @@ const routes = [
       },
       {
         path: 'role-profile',
-        alias: 'profile',
         name: 'teacher.role-profile',
         component: RoleProfileView,
+      },
+      {
+        path: 'my-profile',
+        alias: 'profile',
+        name: 'teacher.my-profile',
+        component: MyProfileView,
       },
     ],
   },

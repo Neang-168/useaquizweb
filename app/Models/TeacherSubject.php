@@ -13,6 +13,7 @@ class TeacherSubject extends Model
     protected $fillable = [
         'teacher_profile_id',
         'subject_id',
+        'class_id',
         'academic_year_id',
         'semester_id',
         'shift_id',
@@ -26,6 +27,11 @@ class TeacherSubject extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function classroom(): BelongsTo
+    {
+        return $this->belongsTo(Classroom::class, 'class_id');
     }
 
     public function academicYear(): BelongsTo

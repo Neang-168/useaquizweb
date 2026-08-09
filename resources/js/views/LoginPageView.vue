@@ -120,6 +120,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import LogoUsea from '../images/usea_logo.png'
+import { setAuthUser } from '../store/authUser'
 
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -170,7 +171,7 @@ async function submitLogin() {
     }
 
     localStorage.setItem('auth_token', data.token)
-    localStorage.setItem('auth_user', JSON.stringify(data.user))
+    setAuthUser(data.user)
 
     const userRole = data.user?.role || ''
     localStorage.setItem('auth_role', userRole)

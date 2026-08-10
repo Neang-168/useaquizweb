@@ -1,13 +1,16 @@
 <template>
-  <div class="h-[calc(100vh-2rem)] flex flex-col gap-4 overflow-hidden">
+  <div class="h-[calc(100vh-2rem)] flex flex-col gap-4 overflow-hidden font-sans text-slate-800">
 
     <!-- ======= PAGE HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 bg-white/60 backdrop-blur-md p-4 rounded-xl border border-slate-200/60 shadow-xs">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <span class="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100/80">
+            <i class="pi pi-users text-lg"></i>
+          </span>
           User Management
         </h1>
-        <p class="text-sm text-slate-500 m-0 mt-1">
+        <p class="text-xs sm:text-sm text-slate-500 m-0 mt-1 pl-0.5">
           Manage every account in the system &mdash; Super Admins, Admins, Staff, Teachers, and Students &mdash; from one place.
         </p>
       </div>
@@ -15,25 +18,25 @@
       <Button
         :label="addLabel"
         icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-sm !py-2 !px-2.5 !text-sm !font-semibold shadow-sm"
+        class="!bg-blue-600 hover:!bg-blue-700 active:!bg-blue-800 !text-white !border-0 !rounded-lg !py-2.5 !px-4 !text-xs !font-semibold shadow-sm hover:shadow transition-all duration-200 gap-2 shrink-0 cursor-pointer"
         @click="openNewDialog(defaultRoleForTab)"
       />
     </div>
 
-    <!-- ======= DATA TABLE CARD (fills remaining height, no page scroll) ======= -->
-    <div class="bg-white rounded-sm shadow-sm border border-slate-200/80 overflow-hidden flex-1 flex flex-col">
+    <!-- ======= DATA TABLE CARD ======= -->
+    <div class="bg-white rounded-xl shadow-xs border border-slate-200/80 overflow-hidden flex-1 flex flex-col">
 
-      <!-- Tab Header Buttons (matches Degrees & Majors page) -->
-      <div class="flex flex-wrap border-b border-slate-200 bg-slate-50/50 p-2 gap-2 shrink-0">
+      <!-- Tab Header Buttons -->
+      <div class="flex flex-wrap border-b border-slate-200/80 bg-slate-50/70 p-2 gap-1.5 shrink-0">
         <button
           type="button"
           @click="activeTab = 'all'"
-          class="flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all border-0 cursor-pointer"
-          :class="activeTab === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'all' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
         >
-          <i class="pi pi-users text-base"></i>
+          <i class="pi pi-users text-sm"></i>
           <span>All Users</span>
-          <span class="ml-1 px-2 py-0.5 text-xs rounded-full" :class="activeTab === 'all' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'all' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
             {{ countFor('all') }}
           </span>
         </button>
@@ -41,12 +44,12 @@
         <button
           type="button"
           @click="activeTab = 'staff'"
-          class="flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all border-0 cursor-pointer"
-          :class="activeTab === 'staff' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'staff' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
         >
-          <i class="pi pi-shield text-base"></i>
+          <i class="pi pi-shield text-sm"></i>
           <span>Super Admin, Admin &amp; Staff</span>
-          <span class="ml-1 px-2 py-0.5 text-xs rounded-full" :class="activeTab === 'staff' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'staff' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
             {{ countFor('staff') }}
           </span>
         </button>
@@ -54,12 +57,12 @@
         <button
           type="button"
           @click="activeTab = 'teacher'"
-          class="flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all border-0 cursor-pointer"
-          :class="activeTab === 'teacher' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'teacher' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
         >
-          <i class="pi pi-id-card text-base"></i>
+          <i class="pi pi-id-card text-sm"></i>
           <span>Teacher</span>
-          <span class="ml-1 px-2 py-0.5 text-xs rounded-full" :class="activeTab === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'teacher' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
             {{ countFor('teacher') }}
           </span>
         </button>
@@ -67,30 +70,30 @@
         <button
           type="button"
           @click="activeTab = 'student'"
-          class="flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all border-0 cursor-pointer"
-          :class="activeTab === 'student' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'student' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
         >
-          <i class="pi pi-graduation-cap text-base"></i>
+          <i class="pi pi-graduation-cap text-sm"></i>
           <span>Student</span>
-          <span class="ml-1 px-2 py-0.5 text-xs rounded-full" :class="activeTab === 'student' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'student' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
             {{ countFor('student') }}
           </span>
         </button>
       </div>
 
       <!-- Table Header Bar / Search -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 p-5 pb-0">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 p-4 pb-0">
         <div class="relative w-full sm:w-80">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
           <InputText
             v-model="filters['global'].value"
             placeholder="Search username, name, or email..."
-            class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm focus:!bg-white"
+            class="w-full !pl-9 !pr-3.5 !py-2 !bg-slate-50/80 hover:!bg-slate-100/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs transition-all placeholder:text-slate-400"
           />
         </div>
       </div>
 
-      <!-- PrimeVue DataTable: body scrolls internally, paginator pinned to bottom -->
+      <!-- PrimeVue DataTable -->
       <DataTable
         :value="filteredUsers"
         v-model:filters="filters"
@@ -106,19 +109,21 @@
         scrollHeight="flex"
         responsiveLayout="scroll"
         :loading="loading"
-        class="p-datatable-sm users-table flex-1 min-h-0 mt-5 mx-5 mb-5"
+        class="p-datatable-sm users-table flex-1 min-h-0 mt-4 mx-4 mb-4 text-xs"
       >
         <template #empty>
-          <div class="text-center py-16 text-slate-400 text-sm flex flex-col items-center gap-2">
-            <i class="pi pi-inbox text-3xl text-slate-300"></i>
-            No users found.
+          <div class="text-center py-16 text-slate-400 text-xs flex flex-col items-center gap-2.5">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+              <i class="pi pi-inbox text-xl"></i>
+            </div>
+            <p class="m-0 font-medium text-slate-500">No users found</p>
           </div>
         </template>
 
         <!-- Username -->
         <Column field="username" header="USERNAME" sortable style="min-width: 130px">
           <template #body="{ data }">
-            <span class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-sm border border-blue-100 inline-block">
+            <span class="font-mono text-[11px] font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100 inline-block tracking-tight">
               {{ data.username }}
             </span>
           </template>
@@ -127,49 +132,49 @@
         <!-- Full Name -->
         <Column field="first_name" header="FULL NAME" sortable style="min-width: 180px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-700">{{ data.first_name }} {{ data.last_name }}</span>
+            <span class="font-medium text-slate-800">{{ data.first_name }} {{ data.last_name }}</span>
           </template>
         </Column>
 
         <!-- Name (Khmer) -->
         <Column field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-600 font-khmer">{{ data.name_kh || 'N/A' }}</span>
+            <span class="text-slate-600 font-khmer">{{ data.name_kh || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Email -->
         <Column field="email" header="EMAIL" sortable style="min-width: 190px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-700">{{ data.email }}</span>
+            <span class="text-slate-600 hover:text-slate-900 transition-colors">{{ data.email }}</span>
           </template>
         </Column>
 
         <!-- Phone -->
         <Column field="phone" header="PHONE" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-700">{{ data.phone || 'N/A' }}</span>
+            <span class="text-slate-600 font-mono text-[11px]">{{ data.phone || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Gender -->
         <Column field="gender" header="GENDER" style="width: 100px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-600">{{ data.gender || 'N/A' }}</span>
+            <span class="text-slate-600">{{ data.gender || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Date of Birth -->
         <Column field="dob" header="DATE OF BIRTH" style="width: 130px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-600">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
+            <span class="text-slate-600 font-mono text-[11px]">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Address -->
         <Column field="address" header="ADDRESS" style="min-width: 180px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-600">{{ data.address || 'N/A' }}</span>
+            <span class="text-slate-600 truncate block max-w-[200px]" :title="data.address">{{ data.address || 'N/A' }}</span>
           </template>
         </Column>
 
@@ -177,7 +182,7 @@
         <Column header="ROLE" sortable style="width: 150px">
           <template #body="{ data }">
             <span
-              class="text-xs font-semibold px-2.5 py-1 rounded-sm border inline-block"
+              class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border inline-block tracking-tight"
               :class="roleBadgeClass(data.role?.name)"
             >
               {{ data.role?.name || 'No role' }}
@@ -188,14 +193,16 @@
         <!-- Employee / Student Code -->
         <Column header="CODE" style="width: 130px">
           <template #body="{ data }">
-            <span class="text-xs font-semibold text-slate-700">{{ detailsFor(data).primary }}</span>
+            <span class="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/80">
+              {{ detailsFor(data).primary || 'N/A' }}
+            </span>
           </template>
         </Column>
 
         <!-- Department / Faculty / Admission -->
         <Column header="DEPARTMENT / FACULTY" style="min-width: 180px">
           <template #body="{ data }">
-            <span class="text-xs text-slate-500">{{ detailsFor(data).secondary }}</span>
+            <span class="text-slate-500 font-medium">{{ detailsFor(data).secondary || 'N/A' }}</span>
           </template>
         </Column>
 
@@ -203,35 +210,35 @@
         <Column field="status" header="STATUS" sortable style="width: 120px">
           <template #body="{ data }">
             <span
-              class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium"
-              :class="data.status ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border"
+              :class="data.status ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' : 'bg-rose-50 text-rose-700 border-rose-200/80'"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="data.status ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="data.status ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
               {{ data.status ? 'Active' : 'Inactive' }}
             </span>
           </template>
         </Column>
 
         <!-- Actions -->
-        <Column header="ACTIONS" style="width: 170px" class="!text-center users-actions-col">
+        <Column header="ACTIONS" style="width: 160px" class="!text-center users-actions-col">
           <template #body="{ data }">
-            <div class="flex items-center justify-center">
+            <div class="flex items-center justify-center gap-0.5">
               <button
                 type="button"
                 title="Edit user"
-                class="action-btn action-btn-edit"
+                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border border-slate-200/80 hover:border-blue-600 transition-all cursor-pointer"
                 @click="editUser(data)"
               >
-                <i class="pi pi-pencil"></i>
+                <i class="pi pi-pencil text-[11px]"></i>
                 <span>Edit</span>
               </button>
               <button
                 type="button"
                 title="Delete user"
-                class="action-btn action-btn-delete"
+                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-100 hover:bg-rose-200 border border-slate-200/80 hover:border-rose-800 transition-all cursor-pointer"
                 @click="confirmDeleteUser(data)"
               >
-                <i class="pi pi-trash"></i>
+                <i class="pi pi-trash text-[11px]"></i>
                 <span>Delete</span>
               </button>
             </div>
@@ -245,187 +252,211 @@
       v-model:visible="userDialog"
       :header="isEdit ? 'Edit User' : 'Create New User'"
       :modal="true"
-      class="w-full max-w-2xl"
+      class="w-full max-w-2xl !rounded-xl overflow-hidden"
+      :pt="{
+        root: { class: '!rounded-xl !border-0 shadow-2xl !bg-white' },
+        header: { class: '!border-b !border-slate-100 !p-5 !bg-slate-50/50' },
+        content: { class: '!p-6' },
+        footer: { class: '!border-t !border-slate-100 !p-4 !bg-slate-50/50' }
+      }"
     >
-      <div class="space-y-5 pt-2">
+      <div class="space-y-6">
 
         <!-- Avatar -->
-        <div v-if="isEdit" class="flex items-center gap-4">
+        <div v-if="isEdit" class="flex items-center gap-4 p-3 bg-slate-50/80 rounded-xl border border-slate-100">
           <Avatar
             :image="form.avatar_url || undefined"
             :label="!form.avatar_url ? (form.first_name || '?').charAt(0).toUpperCase() : undefined"
             shape="circle"
             size="large"
-            class="!bg-slate-100 !text-slate-600 font-bold !w-16 !h-16 !text-xl"
+            class="!bg-blue-100 !text-blue-700 font-bold !w-14 !h-14 !text-lg ring-2 ring-white shadow-xs"
           />
-          <FileUpload
-            mode="basic"
-            accept="image/*"
-            :maxFileSize="2000000"
-            chooseLabel="Upload Photo"
-            :auto="true"
-            customUpload
-            @uploader="onAvatarSelect"
-            class="!text-xs"
-          />
+          <div>
+            <p class="text-xs font-semibold text-slate-700 mb-1.5">Profile Picture</p>
+            <FileUpload
+              mode="basic"
+              accept="image/*"
+              :maxFileSize="2000000"
+              chooseLabel="Upload Photo"
+              :auto="true"
+              customUpload
+              @uploader="onAvatarSelect"
+              class="!text-xs"
+            />
+          </div>
         </div>
 
         <!-- Account Info -->
-        <div>
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Account</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200/70 shadow-2xs">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+            <i class="pi pi-user text-blue-600 text-xs"></i>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Account</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username *</label>
-              <InputText v-model="form.username" placeholder="jane.doe" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Username *</label>
+              <InputText v-model="form.username" placeholder="jane.doe" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email *</label>
-              <InputText v-model="form.email" type="email" placeholder="jane@example.com" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Email *</label>
+              <InputText v-model="form.email" type="email" placeholder="jane@example.com" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
-                Password {{ isEdit ? '(leave blank to keep current password)' : '*' }}
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Password {{ isEdit ? '(leave blank to keep current)' : '*' }}
               </label>
-              <Password v-model="form.password" :feedback="false" toggleMask inputClass="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" class="w-full" />
+              <Password v-model="form.password" :feedback="false" toggleMask inputClass="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" class="w-full" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Role *</label>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Role *</label>
               <Dropdown
                 v-model="form.role_id"
                 :options="roles"
                 optionLabel="name"
                 optionValue="id"
                 placeholder="Select Role"
-                class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm"
+                class="w-full !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs"
               />
             </div>
           </div>
         </div>
 
         <!-- Personal Info -->
-        <div>
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Personal Information</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200/70 shadow-2xs">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+            <i class="pi pi-id-card text-blue-600 text-xs"></i>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider m-0">Personal Information</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">First Name *</label>
-              <InputText v-model="form.first_name" placeholder="Jane" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">First Name *</label>
+              <InputText v-model="form.first_name" placeholder="Jane" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Last Name *</label>
-              <InputText v-model="form.last_name" placeholder="Doe" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Last Name *</label>
+              <InputText v-model="form.last_name" placeholder="Doe" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Name (Khmer)</label>
-              <InputText v-model="form.name_kh" placeholder="ឧ. សុខ ចាន់ថាន" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Name (Khmer)</label>
+              <InputText v-model="form.name_kh" placeholder="ឧ. សុខ ចាន់ថាន" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs font-khmer" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender</label>
-              <Dropdown v-model="form.gender" :options="['Male', 'Female']" placeholder="Select Gender" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Gender</label>
+              <Dropdown v-model="form.gender" :options="['Male', 'Female']" placeholder="Select Gender" showClear class="w-full !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date of Birth</label>
-              <DatePicker v-model="form.dob" dateFormat="yy-mm-dd" showIcon iconDisplay="input" placeholder="Select date" class="w-full" inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Date of Birth</label>
+              <DatePicker v-model="form.dob" dateFormat="yy-mm-dd" showIcon iconDisplay="input" placeholder="Select date" class="w-full" inputClass="!py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone</label>
-              <InputText v-model="form.phone" placeholder="012 345 678" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone</label>
+              <InputText v-model="form.phone" placeholder="012 345 678" class="w-full !py-2 !px-3 !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address</label>
-              <Textarea v-model="form.address" rows="2" placeholder="Street, city, province..." class="w-full !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Address</label>
+              <Textarea v-model="form.address" rows="2" placeholder="Street, city, province..." class="w-full !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Status</label>
               <Dropdown
                 v-model="form.status"
                 :options="[{ label: 'Active', value: true }, { label: 'Inactive', value: false }]"
                 optionLabel="label"
                 optionValue="value"
-                class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm"
+                class="w-full !bg-slate-50/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs"
               />
             </div>
           </div>
         </div>
 
         <!-- Teacher-specific fields -->
-        <div v-if="isTeacherRole">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Teacher Profile</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div v-if="isTeacherRole" class="bg-amber-50/30 p-4 rounded-xl border border-amber-200/60 shadow-2xs">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-amber-200/50">
+            <i class="pi pi-briefcase text-amber-600 text-xs"></i>
+            <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider m-0">Teacher Profile</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Employee Code *</label>
-              <InputText v-model="form.employee_code" placeholder="e.g. T-101" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Employee Code *</label>
+              <InputText v-model="form.employee_code" placeholder="e.g. T-101" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Employment Type</label>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Employment Type</label>
               <Dropdown
                 v-model="form.employment_type"
                 :options="[{ label: 'Full-Time', value: 'full_time' }, { label: 'Part-Time', value: 'part_time' }]"
                 optionLabel="label"
                 optionValue="value"
-                class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm"
+                class="w-full !bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs"
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
-              <Dropdown v-model="form.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id" placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Faculty *</label>
+              <Dropdown v-model="form.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id" placeholder="Select Faculty" class="w-full !bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree</label>
-              <Dropdown v-model="form.degree_id" :options="filteredDegrees" optionLabel="title_en" optionValue="id" placeholder="Select Degree" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Degree</label>
+              <Dropdown v-model="form.degree_id" :options="filteredDegrees" optionLabel="title_en" optionValue="id" placeholder="Select Degree" showClear class="w-full !bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
-              <Dropdown v-model="form.major_id" :options="filteredMajors" optionLabel="name_en" optionValue="id" placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-sm text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Major</label>
+              <Dropdown v-model="form.major_id" :options="filteredMajors" optionLabel="name_en" optionValue="id" placeholder="Select Major" showClear class="w-full !bg-white !border-slate-200 focus:!border-blue-500 !rounded-lg text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hire Date</label>
-              <DatePicker v-model="form.hire_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Hire Date</label>
+              <DatePicker v-model="form.hire_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Qualification</label>
-              <InputText v-model="form.qualification" placeholder="e.g. PhD in Computer Science" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Qualification</label>
+              <InputText v-model="form.qualification" placeholder="e.g. PhD in Computer Science" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Specialization</label>
-              <InputText v-model="form.specialization" placeholder="e.g. Machine Learning" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Specialization</label>
+              <InputText v-model="form.specialization" placeholder="e.g. Machine Learning" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
           </div>
         </div>
 
         <!-- Student-specific fields -->
-        <div v-if="isStudentRole">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Student Profile</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div v-if="isStudentRole" class="bg-indigo-50/30 p-4 rounded-xl border border-indigo-200/60 shadow-2xs">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-indigo-200/50">
+            <i class="pi pi-graduation-cap text-indigo-600 text-xs"></i>
+            <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-wider m-0">Student Profile</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Student Code *</label>
-              <InputText v-model="form.student_code" placeholder="e.g. STU-1001" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Student Code *</label>
+              <InputText v-model="form.student_code" placeholder="e.g. STU-1001" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Admission Date</label>
-              <DatePicker v-model="form.admission_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Admission Date</label>
+              <DatePicker v-model="form.admission_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
           </div>
         </div>
 
         <!-- Super Admin / Admin / Staff-specific fields -->
-        <div v-if="isStaffRole">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Staff Profile</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div v-if="isStaffRole" class="bg-emerald-50/30 p-4 rounded-xl border border-emerald-200/60 shadow-2xs">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-200/50">
+            <i class="pi pi-shield text-emerald-600 text-xs"></i>
+            <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider m-0">Staff Profile</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Employee Code</label>
-              <InputText v-model="form.employee_code" placeholder="e.g. EMP-001" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Employee Code</label>
+              <InputText v-model="form.employee_code" placeholder="e.g. EMP-001" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Position</label>
-              <InputText v-model="form.position" placeholder="e.g. Registrar" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Position</label>
+              <InputText v-model="form.position" placeholder="e.g. Registrar" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
-              <InputText v-model="form.department" placeholder="e.g. Academic Affairs" class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Department</label>
+              <InputText v-model="form.department" placeholder="e.g. Academic Affairs" class="w-full !py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hire Date</label>
-              <DatePicker v-model="form.hire_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-sm !text-sm" />
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Hire Date</label>
+              <DatePicker v-model="form.hire_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input" class="w-full" inputClass="!py-2 !px-3 !bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs" />
             </div>
           </div>
         </div>
@@ -433,9 +464,9 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2 pt-3">
-          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-sm !text-xs !font-semibold" @click="userDialog = false" />
-          <Button label="Save User" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-sm !text-xs !font-semibold" @click="saveUser" />
+        <div class="flex justify-end gap-2">
+          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 hover:!bg-slate-200/80 !text-slate-600 !border-0 !rounded-lg !px-4 !py-2 !text-xs !font-semibold transition-all cursor-pointer" @click="userDialog = false" />
+          <Button label="Save User" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 active:!bg-blue-800 !text-white !border-0 !rounded-lg !px-4 !py-2 !text-xs !font-semibold shadow-xs transition-all cursor-pointer" @click="saveUser" />
         </div>
       </template>
     </Dialog>
@@ -783,9 +814,9 @@ const onAvatarSelect = async (event) => {
 
 .users-table :deep(.p-datatable-header),
 .users-table :deep(.p-datatable-thead > tr > th) {
-  background: #f8fafc;
-  color: black;
-  font-size: 0.875rem;
+  background: #155dfc;
+  color: #fff;
+  font-size: 0.800rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   border: 1px solid #D4D4D4;
@@ -794,7 +825,7 @@ const onAvatarSelect = async (event) => {
 }
 
 .users-table :deep(.p-datatable-tbody > tr > td) {
-  border: 1px solid #D4D4D4;
+  border: 1px solid #d4d4d4;
   padding: 0.6rem 1rem;
   font-size: 0.8rem;
   white-space: nowrap;

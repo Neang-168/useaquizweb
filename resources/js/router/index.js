@@ -5,11 +5,7 @@ import AdminLayout from '../views/AdminContentView.vue'
 import LoginPageView from '../views/LoginPageView.vue' 
 import RoleProfileView from '../views/RoleProfileView.vue'
 import MyProfileView from '../views/MyProfileView.vue'
-import Faculties from '../views/pages/superAdmin/Faculties.vue'
-import Degrees from '../views/pages/superAdmin/Degrees.vue'
 import Subjects from '../views/pages/superAdmin/Subjects.vue'
-import AcademicYear from '../views/pages/superAdmin/AcademicYear.vue'
-import ShiftsStages from '../views/pages/superAdmin/ShiftsStages.vue'
 import Classes from '../views/pages/superAdmin/Classes.vue'
 import Teachers from '../views/pages/superAdmin/Teachers.vue'
 import Students from '../views/pages/superAdmin/Students.vue'
@@ -51,29 +47,9 @@ const routes = [
         component: () => import('../views/pages/superAdmin/Dashboard.vue'),
       },
       {
-        path: 'faculties',
-        name: 'admin.faculties',
-        component: Faculties,
-      },
-      {
-        path: 'degrees',
-        name: 'admin.degrees',
-        component: Degrees,
-      },
-      {
         path: 'subjects',
         name: 'admin.subjects',
         component: Subjects,
-      },
-      {
-        path: 'academic-years',
-        name: 'admin.academic-years',
-        component: AcademicYear,
-      },
-      {
-        path: 'shifts-stages',
-        name: 'admin.shifts-stages',
-        component: ShiftsStages,
       },
       {
         path: 'classes',

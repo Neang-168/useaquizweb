@@ -91,46 +91,11 @@
                 Academic Setup
               </span>
 
-              <router-link to="/admin/faculties"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-building text-base"></i>
-                <span>Faculties</span>
-              </router-link>
-
-              <router-link to="/admin/degrees"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-graduation-cap text-base"></i>
-                <span>Degrees & Majors</span>
-              </router-link>
-
               <router-link to="/admin/subjects"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-book text-base"></i>
                 <span>Subjects</span>
-              </router-link>
-            </div>
-
-            <!-- 3. SCHEDULING & TERMS -->
-            <div class="space-y-1">
-              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                Calendar & Terms
-              </span>
-
-              <router-link to="/admin/academic-years"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-calendar text-base"></i>
-                <span>Academic Years</span>
-              </router-link>
-
-              <router-link to="/admin/shifts-stages"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-clock text-base"></i>
-                <span>Shifts & Stages</span>
               </router-link>
             </div>
 

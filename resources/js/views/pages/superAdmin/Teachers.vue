@@ -5,186 +5,160 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
         <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
-          <i class="pi pi-briefcase text-blue-600 text-2xl"></i>
+          <i class="pi pi-briefcase text-emerald-600 text-2xl"></i>
           Teachers Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          គ្រប់គ្រងព័ត៌មានលោកគ្រូ-អ្នកគ្រូ កម្រិតវប្បធម៌ ជំនាញ និងទំនាក់ទំនង
+          Manage all teachers, their information, and subject/class assignments
         </p>
       </div>
 
       <Button 
         label="Add New Teacher" 
         icon="pi pi-plus" 
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        class="!bg-emerald-600 hover:!bg-emerald-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
         @click="openNewDialog"
       />
     </div>
 
-    <!-- ======= STATS CARDS ======= -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
-        <div>
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Teachers</span>
-          <span class="text-2xl font-bold text-slate-800">{{ teachers.length }}</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
-          <i class="pi pi-users"></i>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
-        <div>
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Full-time Staff</span>
-          <span class="text-2xl font-bold text-indigo-600">{{ fullTimeCount }}</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-          <i class="pi pi-id-card"></i>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
-        <div>
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Active Status</span>
-          <span class="text-2xl font-bold text-emerald-600">{{ activeTeachersCount }}</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
-          <i class="pi pi-check-circle"></i>
-        </div>
+    <!-- ======= TABLE HEADER BAR / SEARCH & FILTER ======= -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="relative w-full sm:w-80">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <InputText
+          v-model="filters['global'].value"
+          placeholder="Search teacher code, name, or phone..."
+          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
+        />
       </div>
     </div>
 
-    <!-- ======= DATA TABLE CARD ======= -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-      
-      <!-- Table Header Bar / Search & Filter -->
-      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="relative w-full sm:w-80">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <InputText 
-            v-model="filters['global'].value" 
-            placeholder="Search teacher code, name, or phone..." 
-            class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-          />
-        </div>
-        <div class="text-xs text-slate-400">
-          Showing <b>{{ teachers.length }}</b> entries
-        </div>
-      </div>
-
-      <!-- PrimeVue DataTable -->
-      <DataTable 
-        :value="teachers" 
-        v-model:filters="filters"
-        dataKey="id" 
-        paginator 
-        :rows="5" 
-        :rowsPerPageOptions="[5, 10, 20]"
-        responsiveLayout="scroll"
-        class="p-datatable-sm"
-      >
+    <!-- ======= DATA TABLE (floating card rows, scrolls when there are many rows/columns) ======= -->
+    <DataTable
+      :value="teachers"
+      v-model:filters="filters"
+      dataKey="id"
+      paginator
+      :rows="10"
+      :rowsPerPageOptions="[10, 20, 50]"
+      scrollable
+      scrollHeight="560px"
+      responsiveLayout="scroll"
+      class="p-datatable-sm teachers-table"
+    >
         <template #empty>
           <div class="text-center py-8 text-slate-400 text-sm">
             No teachers found.
           </div>
         </template>
 
-        <!-- Teacher Code -->
-        <Column field="code" header="CODE" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-              {{ data.code }}
-            </span>
+        <!-- No -->
+        <Column header="NO" style="width: 46px">
+          <template #body="{ index }">
+            <span class="text-slate-400 text-sm font-semibold">{{ index + 1 }}</span>
           </template>
         </Column>
 
-        <!-- Teacher Profile & Name -->
-        <Column field="name_en" header="TEACHER NAME" sortable class="!py-3.5">
+        <!-- Teacher Name (icon chip + name, khmer subtitle) -->
+        <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 200px">
           <template #body="{ data }">
-            <div class="flex items-center gap-3">
-              <Avatar :image="data.avatar" :label="data.name_en.charAt(0)" shape="circle" class="!bg-slate-100 !text-slate-600 font-bold" />
-              <div>
-                <div class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</div>
-                <div class="text-xs text-slate-400 mt-0.5">{{ data.name_kh }} • {{ data.gender }}</div>
+            <div class="flex items-center gap-2.5">
+              <!-- <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {{ data.name_en.charAt(0) }}
+              </div> -->
+              <div class="flex flex-col leading-tight">
+                <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
+                <span v-if="data.name_kh" class="text-[11px] text-slate-400 font-khmer">{{ data.name_kh }}</span>
               </div>
             </div>
           </template>
         </Column>
 
-        <!-- Specialty / Department -->
-        <Column field="department" header="SPECIALTY / DEGREE" sortable class="!py-3.5">
+        <!-- Teacher Code -->
+        <!-- <Column field="code" header="CODE" sortable style="min-width: 80px">
           <template #body="{ data }">
-            <div>
-              <div class="text-xs font-semibold text-slate-700">{{ data.department }}</div>
-              <div class="text-[11px] text-indigo-600 font-medium mt-0.5">{{ data.degree }}</div>
-            </div>
+            <span class="font-mono text-xs font-semibold text-slate-500">{{ data.code }}</span>
+          </template>
+        </Column> -->
+
+        <!-- Gender -->
+        <Column field="gender" header="GENDER" sortable style="min-width: 80px">
+          <template #body="{ data }">
+            <span class="text-slate-500 text-sm">{{ data.gender || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Contact Info -->
-        <Column header="CONTACT INFO" class="!py-3.5">
+        <!-- Faculty / Department -->
+        <Column field="department" header="FACULTY" sortable style="min-width: 150px">
           <template #body="{ data }">
-            <div class="flex flex-col gap-1 text-xs">
-              <span class="text-slate-700 flex items-center gap-1.5">
-                <i class="pi pi-phone text-slate-400 text-[11px]"></i>{{ data.phone }}
-              </span>
-              <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
-                <i class="pi pi-envelope text-slate-400 text-[11px]"></i>{{ data.email }}
-              </span>
-            </div>
+            <span class="text-slate-600 text-sm">{{ data.department || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Degree -->
+        <Column field="degree" header="DEGREE" style="min-width: 150px">
+          <template #body="{ data }">
+            <span class="text-slate-500 text-sm">{{ data.degree || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Phone -->
+        <Column field="phone" header="PHONE" style="min-width: 120px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.phone || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Email -->
+        <Column field="email" header="EMAIL" style="min-width: 170px">
+          <template #body="{ data }">
+            <span class="text-slate-500 text-sm">{{ data.email || '—' }}</span>
           </template>
         </Column>
 
         <!-- Employment Type -->
-        <Column field="type" header="EMPLOYMENT" sortable class="!py-3.5">
+        <Column field="type" header="EMPLOYMENT" sortable style="min-width: 100px">
           <template #body="{ data }">
-            <span 
-              class="text-xs font-semibold px-2.5 py-1 rounded-lg border"
-              :class="data.type === 'Full-Time' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-amber-50 text-amber-700 border-amber-100'"
-            >
+            <span class="text-sm font-medium" :class="data.type === 'Full-Time' ? 'text-emerald-600' : 'text-amber-600'">
               {{ data.type }}
             </span>
           </template>
         </Column>
 
         <!-- Status -->
-        <Column field="status" header="STATUS" sortable class="!py-3.5">
+        <Column field="status" header="STATUS" sortable style="min-width: 90px">
           <template #body="{ data }">
-            <span 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+            <span class="inline-flex items-center gap-1.5 text-sm font-medium" :class="data.status === 'Active' ? 'text-emerald-600' : 'text-rose-500'">
+              <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
               {{ data.status }}
             </span>
           </template>
         </Column>
 
         <!-- Actions -->
-        <Column header="ACTIONS" class="!text-right !py-3.5">
+        <Column header="ACTIONS" class="!text-right" style="min-width: 120px">
           <template #body="{ data }">
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-1">
               <Button
                 icon="pi pi-book"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-indigo-600 hover:!bg-indigo-50 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
                 title="Manage Assignments"
                 @click="openAssignmentsDialog(data)"
               />
               <Button
                 icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-blue-600 hover:!bg-slate-100 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
                 @click="editTeacher(data)"
               />
               <Button
                 icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
                 @click="confirmDeleteTeacher(data)"
               />
             </div>
           </template>
         </Column>
       </DataTable>
-    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog 
@@ -305,7 +279,7 @@
       <template #footer>
         <div class="flex justify-end gap-2 pt-3">
           <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="teacherDialog = false" />
-          <Button label="Save Teacher" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold" @click="saveTeacher" />
+          <Button label="Save Teacher" icon="pi pi-check" class="!bg-emerald-600 hover:!bg-emerald-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold" @click="saveTeacher" />
         </div>
       </template>
     </Dialog>
@@ -344,7 +318,7 @@
           <Button
             label="Add Assignment"
             icon="pi pi-plus"
-            class="!bg-indigo-600 hover:!bg-indigo-700 !border-0 !rounded-xl !text-xs !font-semibold"
+            class="!bg-emerald-600 hover:!bg-emerald-700 !border-0 !rounded-xl !text-xs !font-semibold"
             @click="addAssignment"
           />
         </div>
@@ -393,7 +367,6 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
-import Avatar from 'primevue/avatar'
 
 const teachers = ref([])
 const faculties = ref([])
@@ -571,3 +544,74 @@ const removeAssignment = async (assignment) => {
   }
 }
 </script>
+
+<style scoped>
+/* "Floating card row" table, styled to match the reference: green column
+   headers sitting directly on the page background, and each row as its
+   own white rounded card with a soft shadow — spacing does the
+   separating, not gridlines. */
+.teachers-table :deep(.p-datatable-table) {
+  border-collapse: separate;
+  border-spacing: 0 0.6rem;
+}
+
+/* Strip every border/outline PrimeVue's default theme puts on the table's
+   wrapper elements — otherwise a 1px frame survives around the scrollable
+   header/body even after the cells themselves go borderless. */
+.teachers-table :deep(.p-datatable-table-container),
+.teachers-table :deep(.p-datatable-header),
+.teachers-table :deep(.p-datatable-footer),
+.teachers-table :deep(.p-datatable-thead),
+.teachers-table :deep(.p-datatable),
+.teachers-table :deep(.p-datatable-mask) {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.teachers-table :deep(.p-datatable-thead > tr > th) {
+  background: transparent;
+  border: none;
+  color: #16a34a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 0.25rem 1rem 0.6rem;
+  white-space: nowrap;
+}
+
+.teachers-table :deep(.p-datatable-tbody > tr > td) {
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  padding: 0.7rem 1rem;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teachers-table :deep(.p-datatable-tbody > tr > td:first-child) {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+.teachers-table :deep(.p-datatable-tbody > tr > td:last-child) {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.teachers-table :deep(.p-datatable-tbody > tr:hover > td) {
+  background: #f8fafc;
+}
+
+.teachers-table :deep(.p-datatable-tbody > tr) {
+  outline: none;
+}
+
+.teachers-table :deep(.p-paginator) {
+  background: transparent;
+  border: none;
+  padding-top: 0.75rem;
+}
+</style>

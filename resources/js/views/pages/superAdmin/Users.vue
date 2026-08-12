@@ -226,7 +226,7 @@
               <button
                 type="button"
                 title="Edit user"
-                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-[#63c7df] hover:text-blue-500 bg-blue-100 hover:bg-blue-200 border border-slate-200/80 hover:border-blue-600 transition-all cursor-pointer"
+                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border border-slate-200/80 hover:border-blue-600 transition-all cursor-pointer"
                 @click="editUser(data)"
               >
                 <i class="pi pi-pencil text-[11px]"></i>
@@ -235,7 +235,7 @@
               <button
                 type="button"
                 title="Delete user"
-                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-[#d71818] hover:text-rose-700 bg-rose-100 hover:bg-rose-200 border border-slate-200/80 hover:border-rose-800 transition-all cursor-pointer"
+                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-100 hover:bg-rose-200 border border-slate-200/80 hover:border-rose-800 transition-all cursor-pointer"
                 @click="confirmDeleteUser(data)"
               >
                 <i class="pi pi-trash text-[11px]"></i>
@@ -814,7 +814,7 @@ const onAvatarSelect = async (event) => {
 
 .users-table :deep(.p-datatable-header),
 .users-table :deep(.p-datatable-thead > tr > th) {
-  background: #002060;
+  background: #155dfc;
   color: #fff;
   font-size: 0.800rem;
   font-weight: 700;

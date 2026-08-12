@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClassroomController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DegreeController;
 use App\Http\Controllers\Api\FacultyController;
 use App\Http\Controllers\Api\MajorController;
@@ -37,6 +38,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/me', [UserController::class, 'updateMe']);
     Route::post('/me/avatar', [UserController::class, 'uploadAvatar']);
     Route::put('/me/password', [UserController::class, 'changeMyPassword']);
+
+    // SuperAdmin dashboard overview
+    Route::get('/dashboard-stats', [DashboardController::class, 'index'])
+        ->middleware('permission:manage_users');
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index']);

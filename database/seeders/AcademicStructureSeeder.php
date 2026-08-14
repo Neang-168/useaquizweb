@@ -4,20 +4,23 @@ namespace Database\Seeders;
 
 use App\Models\AcademicYear;
 use App\Models\Degree;
+use App\Models\Department;
 use App\Models\Faculty;
 use App\Models\Major;
 use App\Models\Promotion;
 use App\Models\Semester;
 use App\Models\Shift;
 use App\Models\Stage;
+use App\Models\Term;
 use Illuminate\Database\Seeder;
 
 class AcademicStructureSeeder extends Seeder
 {
     /**
-     * Seed default lookup data (Faculty -> Degree -> Major, Stage, Shift,
-     * Academic Year -> Semester, Promotion) so Classes/Teachers/Students/
-     * Enrollments have real rows to reference. Idempotent: safe to re-run.
+     * Seed default lookup data (Faculty -> Department, Faculty -> Degree ->
+     * Major, Stage, Shift, Academic Year -> Semester/Term, Promotion) so
+     * Classes/Teachers/Students/Enrollments have real rows to reference.
+     * Idempotent: safe to re-run.
      */
     public function run(): void
     {
@@ -40,6 +43,43 @@ class AcademicStructureSeeder extends Seeder
                 'status' => true,
             ]
         );
+
+        $departments = [
+            ['faculty_id' => $it->id, 'code' => 'SE', 'name' => 'Software Engineering', 'name_kh' => 'វិស្វកម្មសូហ្វវែរ'],
+            ['faculty_id' => $it->id, 'code' => 'NIS', 'name' => 'Network & Information Systems', 'name_kh' => 'បណ្តាញ និងប្រព័ន្ធព័ត៌មាន'],
+            ['faculty_id' => $bus->id, 'code' => 'MGT', 'name' => 'Management', 'name_kh' => 'គ្រប់គ្រង'],
+            ['faculty_id' => $bus->id, 'code' => 'ACF', 'name' => 'Accounting & Finance', 'name_kh' => 'គណនេយ្យ និងហិរញ្ញវត្ថុ'],
+        ];
+        foreach ($departments as $department) {
+            Department::updateOrCreate(
+                ['code' => $department['code']],
+                [
+                    'faculty_id' => $department['faculty_id'],
+                    'name' => $department['name'],
+                    'name_kh' => $department['name_kh'],
+                    'description' => null,
+                    'status' => true,
+                ]
+            );
+        }
+
+        // Guarantee every faculty has at least one department, including
+        // ones created outside this seeder (e.g. through the API/UI), so
+        // the Teachers page never shows an empty Department dropdown.
+        Faculty::all()->each(function (Faculty $faculty) {
+            if (Department::where('faculty_id', $faculty->id)->exists()) {
+                return;
+            }
+
+            Department::create([
+                'faculty_id' => $faculty->id,
+                'code' => strtoupper($faculty->code) . '-GEN',
+                'name' => 'General Department',
+                'name_kh' => null,
+                'description' => null,
+                'status' => true,
+            ]);
+        });
 
         $itBachelor = Degree::updateOrCreate(
             ['faculty_id' => $it->id, 'code' => 'BA'],
@@ -140,6 +180,25 @@ class AcademicStructureSeeder extends Seeder
             ['academic_year_id' => $academicYear->id, 'order_no' => 2],
             ['name' => 'Semester 2', 'start_date' => '2026-02-01', 'end_date' => '2026-08-31', 'status' => true]
         );
+
+        $terms = [
+            ['order_no' => 1, 'name' => 'Term 1', 'name_kh' => 'ឆមាសទី១', 'code' => 'T1-2025-2026', 'start_date' => '2025-09-01', 'end_date' => '2025-12-31'],
+            ['order_no' => 2, 'name' => 'Term 2', 'name_kh' => 'ឆមាសទី២', 'code' => 'T2-2025-2026', 'start_date' => '2026-01-01', 'end_date' => '2026-04-30'],
+            ['order_no' => 3, 'name' => 'Term 3', 'name_kh' => 'ឆមាសទី៣', 'code' => 'T3-2025-2026', 'start_date' => '2026-05-01', 'end_date' => '2026-08-31'],
+        ];
+        foreach ($terms as $term) {
+            Term::updateOrCreate(
+                ['academic_year_id' => $academicYear->id, 'order_no' => $term['order_no']],
+                [
+                    'code' => $term['code'],
+                    'name' => $term['name'],
+                    'name_kh' => $term['name_kh'],
+                    'start_date' => $term['start_date'],
+                    'end_date' => $term['end_date'],
+                    'status' => true,
+                ]
+            );
+        }
 
         Promotion::firstOrCreate(['year_start' => 2025, 'year_end' => 2029], ['status' => true]);
         Promotion::firstOrCreate(['year_start' => 2026, 'year_end' => 2030], ['status' => true]);

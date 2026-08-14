@@ -11,7 +11,7 @@
           User Management
         </h1>
         <p class="text-xs sm:text-sm text-slate-500 m-0 mt-1 pl-0.5">
-          Manage every account in the system &mdash; Super Admins, Admins, Staff, Teachers, and Students &mdash; from one place.
+          Manage every account in the system &mdash; Admins, Teachers, and Students &mdash; from one place.
         </p>
       </div>
 
@@ -23,8 +23,8 @@
       />
     </div>
 
-    <!-- ======= DATA TABLE CARD ======= -->
-    <div class="bg-white rounded-xl shadow-xs border border-slate-200/80 overflow-hidden flex-1 flex flex-col">
+    <!-- ======= DATA TABLE ======= -->
+    <div class="flex-1 flex flex-col overflow-hidden">
 
       <!-- Tab Header Buttons -->
       <div class="flex flex-wrap border-b border-slate-200/80 bg-slate-50/70 p-2 gap-1.5 shrink-0">
@@ -43,14 +43,14 @@
 
         <button
           type="button"
-          @click="activeTab = 'staff'"
+          @click="activeTab = 'admin'"
           class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'staff' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
+          :class="activeTab === 'admin' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
         >
           <i class="pi pi-shield text-sm"></i>
-          <span>Super Admin, Admin &amp; Staff</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'staff' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
-            {{ countFor('staff') }}
+          <span>Admin</span>
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'admin' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
+            {{ countFor('admin') }}
           </span>
         </button>
 
@@ -220,27 +220,21 @@
         </Column>
 
         <!-- Actions -->
-        <Column header="ACTIONS" style="width: 160px" class="!text-center users-actions-col">
+        <Column header="ACTIONS" style="width: 100px" class="!text-center users-actions-col">
           <template #body="{ data }">
-            <div class="flex items-center justify-center gap-0.5">
-              <button
-                type="button"
-                title="Edit user"
-                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border border-slate-200/80 hover:border-blue-600 transition-all cursor-pointer"
+            <div class="flex items-center justify-center gap-1.5">
+              <Button
+                icon="pi pi-pencil"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                title="Edit User"
                 @click="editUser(data)"
-              >
-                <i class="pi pi-pencil text-[11px]"></i>
-                <span>Edit</span>
-              </button>
-              <button
-                type="button"
-                title="Delete user"
-                class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-100 hover:bg-rose-200 border border-slate-200/80 hover:border-rose-800 transition-all cursor-pointer"
+              />
+              <Button
+                icon="pi pi-trash"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                title="Delete User"
                 @click="confirmDeleteUser(data)"
-              >
-                <i class="pi pi-trash text-[11px]"></i>
-                <span>Delete</span>
-              </button>
+              />
             </div>
           </template>
         </Column>
@@ -435,11 +429,11 @@
           </div>
         </div>
 
-        <!-- Super Admin / Admin / Staff-specific fields -->
-        <div v-if="isStaffRole" class="bg-emerald-50/30 p-4 rounded-xl border border-emerald-200/60 shadow-2xs">
+        <!-- Admin-specific fields -->
+        <div v-if="isAdminRole" class="bg-emerald-50/30 p-4 rounded-xl border border-emerald-200/60 shadow-2xs">
           <div class="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-200/50">
             <i class="pi pi-shield text-emerald-600 text-xs"></i>
-            <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider m-0">Staff Profile</h4>
+            <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider m-0">Admin Profile</h4>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
@@ -531,7 +525,7 @@ onMounted(() => {
 // ======= Tabs =======
 const activeTab = ref('all')
 const roleGroups = {
-  staff: ['Super Admin', 'Admin', 'Staff'],
+  admin: ['Admin'],
   teacher: ['Teacher'],
   student: ['Student'],
 }
@@ -549,13 +543,14 @@ const filteredUsers = computed(() => {
 const defaultRoleForTab = computed(() => {
   if (activeTab.value === 'teacher') return 'Teacher'
   if (activeTab.value === 'student') return 'Student'
+  if (activeTab.value === 'admin') return 'Admin'
   return null
 })
 
 const addLabel = computed(() => {
   if (activeTab.value === 'teacher') return 'Add New Teacher'
   if (activeTab.value === 'student') return 'Add New Student'
-  if (activeTab.value === 'staff') return 'Add New Staff User'
+  if (activeTab.value === 'admin') return 'Add New Admin User'
   return 'Add New User'
 })
 
@@ -609,7 +604,7 @@ const form = ref(emptyForm())
 const selectedRoleName = computed(() => roles.value.find(r => r.id === form.value.role_id)?.name)
 const isTeacherRole = computed(() => selectedRoleName.value === 'Teacher')
 const isStudentRole = computed(() => selectedRoleName.value === 'Student')
-const isStaffRole = computed(() => roleGroups.staff.includes(selectedRoleName.value))
+const isAdminRole = computed(() => roleGroups.admin.includes(selectedRoleName.value))
 
 // ======= Formatting helpers =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -630,9 +625,7 @@ const formatDisplayDate = (value) => {
 
 const roleBadgeClass = (roleName) => {
   switch (roleName) {
-    case 'Super Admin': return 'bg-purple-50 text-purple-700 border-purple-200'
     case 'Admin': return 'bg-indigo-50 text-indigo-700 border-indigo-200'
-    case 'Staff': return 'bg-amber-50 text-amber-700 border-amber-200'
     case 'Teacher': return 'bg-blue-50 text-blue-700 border-blue-200'
     case 'Student': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
     default: return 'bg-slate-50 text-slate-600 border-slate-200'
@@ -656,7 +649,7 @@ const detailsFor = (data) => {
     }
   }
 
-  if (roleGroups.staff.includes(roleName) && data.admin_profile) {
+  if (roleGroups.admin.includes(roleName) && data.admin_profile) {
     return {
       primary: data.admin_profile.employee_code || 'N/A',
       secondary: data.admin_profile.position || data.admin_profile.department || 'No position set',
@@ -807,124 +800,90 @@ const onAvatarSelect = async (event) => {
 </script>
 
 <style scoped>
-/* Full-grid bordered table look (matches Faculties.vue) */
+/* "Floating card row" table, matching the Teachers page: header text
+   sitting directly on the page background, and each row as its own
+   white rounded card with a soft shadow — spacing does the separating,
+   not gridlines. */
 .users-table :deep(.p-datatable-table) {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 0.6rem;
 }
 
+.users-table :deep(.p-datatable-table-container),
 .users-table :deep(.p-datatable-header),
+.users-table :deep(.p-datatable-footer),
+.users-table :deep(.p-datatable-thead),
+.users-table :deep(.p-datatable),
+.users-table :deep(.p-datatable-mask) {
+  border: none !important;
+  box-shadow: none;
+  background: transparent;
+}
+
 .users-table :deep(.p-datatable-thead > tr > th) {
-  background: #155dfc;
-  color: #fff;
-  font-size: 0.800rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  border: 1px solid #D4D4D4;
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.5rem;
   padding: 1rem 1rem;
   white-space: nowrap;
 }
 
+.users-table :deep(.p-datatable-thead > tr > th:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.users-table :deep(.p-datatable-thead > tr > th:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+}
+
 .users-table :deep(.p-datatable-tbody > tr > td) {
-  border: 1px solid #d4d4d4;
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  line-height: 1.25rem;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 220px;
 }
 
+.users-table :deep(.p-datatable-tbody > tr > td:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
 .users-table :deep(.p-datatable-tbody > tr > td:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
   overflow: visible;
   max-width: none;
+}
+
+.users-table :deep(.p-datatable-tbody > tr:hover > td) {
+  background: #f8fafc;
+}
+
+.users-table :deep(.p-datatable-tbody > tr) {
+  outline: none;
 }
 
 .font-khmer {
   font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
 }
 
-.users-table :deep(.p-datatable-tbody > tr:hover) {
-  background: #f8fafc;
-}
-
-.users-table :deep(.p-datatable-tbody > tr:nth-child(even)) {
-  background: #fbfcfe;
-}
-
-.users-table :deep(.p-datatable-tbody > tr:nth-child(even):hover) {
-  background: #f1f5f9;
-}
-
-.users-table :deep(.p-datatable-table-container) {
-  border-radius: 0.25rem;
-  overflow: hidden;
-}
-
-/* ===== Action column buttons ===== */
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.7rem;
-  border-radius: 0;
-  border: 0;
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.action-btn:active {
-  transform: scale(0.94);
-}
-
-.action-btn-edit {
-  background: #2563eb;
-  border-radius: 0.25rem 0 0 0.25rem;
-}
-
-.action-btn-edit:hover {
-  background: #1d4ed8;
-}
-
-.action-btn-delete {
-  background: #dc2626;
-  border-radius: 0 0.25rem 0.25rem 0;
-}
-
-.action-btn-delete:hover {
-  background: #b91c1c;
-}
-
-/* Pinned, minimal paginator */
-.users-table :deep(.p-datatable-paginator-bottom) {
-  border-width: 0;
-}
-
 .users-table :deep(.p-paginator) {
-  border-radius: 0 0 0.25rem 0.25rem;
-  background: #ffffff;
-  padding: 0.6rem 1rem;
-  justify-content: flex-start;
-}
-
-.users-table :deep(.p-paginator .p-paginator-pages .p-paginator-page) {
-  border-radius: 0.25rem;
-  min-width: 2rem;
-  height: 2rem;
-  font-size: 0.75rem;
-}
-
-.users-table :deep(.p-paginator .p-paginator-page.p-highlight) {
-  background: #2563eb;
-  color: #fff;
-}
-
-.users-table :deep(.p-paginator-current) {
-  margin-left: auto;
-  font-size: 0.75rem;
-  color: #64748b;
+  background: transparent;
+  border: none;
+  padding-top: 0.75rem;
 }
 
 .users-table :deep(.p-datatable-wrapper) {

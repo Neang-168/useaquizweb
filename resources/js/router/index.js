@@ -39,7 +39,7 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
-    meta: { requiresAuth: true, roles: ['Super Admin', 'Admin'] },
+    meta: { requiresAuth: true, roles: ['Admin'] },
     children: [
       {
         path: 'dashboard',
@@ -199,7 +199,7 @@ const router = createRouter({
 // ================= Navigation Guard (ការពារតាម Role) =================
 router.beforeEach((to, from) => {
   const token = localStorage.getItem('auth_token')
-  const userRole = localStorage.getItem('auth_role') // "Super Admin", "Admin", ឬ "Teacher"
+  const userRole = localStorage.getItem('auth_role') // "Admin", "Teacher", ឬ "Student"
 
   // ១. បើ Route ត្រូវការ Auth តែមិនទាន់ Login ត្រូវរុញទៅ Login
   if (to.meta.requiresAuth && !token) {
@@ -208,7 +208,7 @@ router.beforeEach((to, from) => {
 
   // ២. បើ Login រួចហើយ តែព្យាយាមចូល Route ដែលខ្លួនគ្មានសិទ្ធិ (Role មិនត្រូវគ្នា)
   if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    if (userRole === 'Super Admin' || userRole === 'Admin') {
+    if (userRole === 'Admin') {
       return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
       return { name: 'teacher.dashboard' }
@@ -221,7 +221,7 @@ router.beforeEach((to, from) => {
 
   // ៣. បើ Login រួចហើយ តែព្យាយាមចូលទំព័រ /login ម្ដងទៀត ត្រូវរុញទៅ Dashboard តាម Role
   if (to.name === 'login' && token) {
-    if (userRole === 'Super Admin' || userRole === 'Admin') {
+    if (userRole === 'Admin') {
       return { name: 'admin.dashboard' }
     } else if (userRole === 'Teacher') {
       return { name: 'teacher.dashboard' }

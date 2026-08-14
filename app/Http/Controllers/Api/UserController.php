@@ -17,7 +17,7 @@ class UserController extends Controller
      * Roles that share the generic "admin profile" (employee code, position,
      * department) instead of a Teacher/Student specific profile table.
      */
-    private const ADMIN_LIKE_ROLES = ['Super Admin', 'Admin', 'Staff'];
+    private const ADMIN_LIKE_ROLES = ['Admin'];
 
     /**
      * Get authenticated user.
@@ -360,7 +360,7 @@ class UserController extends Controller
             'employment_type' => ['nullable', Rule::in(['full_time', 'part_time'])],
             'hire_date' => ['nullable', 'date'],
 
-            // Super Admin / Admin / Staff profile
+            // Admin profile
             'position' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
 

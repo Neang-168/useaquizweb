@@ -32,6 +32,11 @@ class Faculty extends Model
         return $this->hasMany(Degree::class);
     }
 
+    public function departments(): HasMany
+    {
+        return $this->hasMany(Department::class);
+    }
+
     /**
      * Faculty has many majors through degrees.
      */

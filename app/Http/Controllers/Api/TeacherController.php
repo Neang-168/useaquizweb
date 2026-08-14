@@ -25,7 +25,7 @@ class TeacherController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $teachers = TeacherProfile::query()
-            ->with('user', 'faculty', 'degree')
+            ->with('user', 'faculty', 'department', 'degree')
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('employee_code', 'like', "%{$q}%")
                     ->orWhereHas('user', function ($query) use ($q) {
@@ -69,12 +69,13 @@ class TeacherController extends Controller
                 'user_id' => $user->id,
                 'employee_code' => $validated['code'],
                 'faculty_id' => $validated['faculty_id'],
+                'department_id' => $validated['department_id'],
                 'degree_id' => $validated['degree_id'],
                 'employment_type' => $validated['employment_type'],
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree');
 
         return response()->json([
             'message' => 'Teacher created successfully.',
@@ -87,7 +88,7 @@ class TeacherController extends Controller
      */
     public function show(TeacherProfile $teacher)
     {
-        $teacher->load('user', 'faculty', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree');
 
         return response()->json([
             'teacher' => $this->transform($teacher),
@@ -115,12 +116,13 @@ class TeacherController extends Controller
             $teacher->update([
                 'employee_code' => $validated['code'],
                 'faculty_id' => $validated['faculty_id'],
+                'department_id' => $validated['department_id'],
                 'degree_id' => $validated['degree_id'],
                 'employment_type' => $validated['employment_type'],
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree');
 
         return response()->json([
             'message' => 'Teacher updated successfully.',
@@ -164,6 +166,7 @@ class TeacherController extends Controller
             ],
             'phone' => ['required', 'string', 'max:30'],
             'faculty_id' => ['required', 'exists:faculties,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
             'type' => ['required', Rule::in(['Full-Time', 'Part-Time'])],
             'status' => ['required', Rule::in(['Active', 'Inactive'])],
@@ -180,6 +183,7 @@ class TeacherController extends Controller
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'faculty_id' => $validated['faculty_id'],
+            'department_id' => $validated['department_id'] ?? null,
             'degree_id' => $validated['degree_id'] ?? null,
             'employment_type' => $validated['type'] === 'Full-Time' ? 'full_time' : 'part_time',
             'user_status' => $this->statusToBool($validated['status']),
@@ -207,6 +211,8 @@ class TeacherController extends Controller
             'email' => $user->email,
             'faculty_id' => $teacher->faculty_id,
             'department' => $teacher->faculty?->name,
+            'department_id' => $teacher->department_id,
+            'department_name' => $teacher->department?->name,
             'degree_id' => $teacher->degree_id,
             'degree' => $teacher->degree?->name,
             'type' => $teacher->employment_type === 'full_time' ? 'Full-Time' : 'Part-Time',

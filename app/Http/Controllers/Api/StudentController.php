@@ -27,7 +27,7 @@ class StudentController extends Controller
         $students = StudentProfile::query()
             ->with([
                 'user',
-                'enrollments' => fn ($query) => $query->latest('enrollment_date')->with('classroom.shift', 'major'),
+                'enrollments' => fn ($query) => $query->latest('enrollment_date')->with('classroom.shift', 'major', 'promotion'),
             ])
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('student_code', 'like', "%{$q}%")
@@ -78,7 +78,7 @@ class StudentController extends Controller
             return $profile;
         });
 
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major');
+        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
 
         return response()->json([
             'message' => 'Student created successfully.',
@@ -91,7 +91,7 @@ class StudentController extends Controller
      */
     public function show(StudentProfile $student)
     {
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major');
+        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
 
         return response()->json([
             'student' => $this->transform($student),
@@ -123,7 +123,7 @@ class StudentController extends Controller
             $this->syncEnrollment($student, $validated);
         });
 
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major');
+        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
 
         return response()->json([
             'message' => 'Student updated successfully.',
@@ -159,7 +159,7 @@ class StudentController extends Controller
             'faculty_id' => $class->major->degree->faculty_id,
             'degree_id' => $class->major->degree_id,
             'major_id' => $class->major_id,
-            'promotion_id' => $this->resolveCurrentPromotionId(),
+            'promotion_id' => $validated['promotion_id'] ?? $this->resolveCurrentPromotionId(),
             'stage_id' => $class->stage_id,
             'academic_year_id' => $class->academic_year_id,
             'semester_id' => $class->semester_id,
@@ -176,7 +176,7 @@ class StudentController extends Controller
 
     private function resolveCurrentPromotionId(): ?int
     {
-        // No UI manages promotions/cohorts yet, so this is best-effort: use
+        // Fallback when the admin doesn't pick a generation explicitly: use
         // the latest active one if any exist, otherwise leave it unset.
         return Promotion::where('status', true)->orderByDesc('year_start')->first()?->id;
     }
@@ -204,6 +204,7 @@ class StudentController extends Controller
             ],
             'phone' => ['required', 'string', 'max:30'],
             'class_id' => ['required', 'exists:classes,id'],
+            'promotion_id' => ['nullable', 'exists:promotions,id'],
             'status' => ['required', Rule::in(['Active', 'Inactive', 'Suspended'])],
         ]);
 
@@ -218,6 +219,7 @@ class StudentController extends Controller
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'class_id' => $validated['class_id'],
+            'promotion_id' => $validated['promotion_id'] ?? null,
             'status' => $validated['status'],
         ];
     }
@@ -247,6 +249,10 @@ class StudentController extends Controller
             'shift' => $enrollment?->classroom?->shift?->name,
             'major_id' => $enrollment?->major_id,
             'major' => $enrollment?->major?->name,
+            'promotion_id' => $enrollment?->promotion_id,
+            'generation' => $enrollment?->promotion
+                ? "{$enrollment->promotion->year_start}-{$enrollment->promotion->year_end}"
+                : null,
             'status' => $enrollment?->status ?? ($user->status ? 'Active' : 'Inactive'),
             'avatar' => $user->avatar,
         ];

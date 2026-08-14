@@ -54,26 +54,23 @@
       </div>
     </div>
 
-    <!-- ======= DATA TABLE CARD ======= -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-      
-      <!-- Table Header Bar / Search & Filter -->
-      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="relative w-full sm:w-80">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <InputText 
-            v-model="filters['global'].value" 
-            placeholder="Search subject code or name..." 
-            class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-          />
-        </div>
-        <div class="text-xs text-slate-400">
-          Showing <b>{{ subjects.length }}</b> entries
-        </div>
+    <!-- ======= TABLE HEADER BAR / SEARCH & FILTER ======= -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="relative w-full sm:w-80">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <InputText
+          v-model="filters['global'].value"
+          placeholder="Search subject code or name..."
+          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
+        />
       </div>
+      <div class="text-xs text-slate-400">
+        Showing <b>{{ subjects.length }}</b> entries
+      </div>
+    </div>
 
-      <!-- PrimeVue DataTable -->
-      <DataTable 
+    <!-- ======= DATA TABLE (floating card rows) ======= -->
+    <DataTable
         :value="subjects" 
         v-model:filters="filters"
         dataKey="id" 
@@ -81,7 +78,7 @@
         :rows="5" 
         :rowsPerPageOptions="[5, 10, 20]"
         responsiveLayout="scroll"
-        class="p-datatable-sm"
+        class="p-datatable-sm subjects-table"
       >
         <template #empty>
           <div class="text-center py-8 text-slate-400 text-sm">
@@ -98,13 +95,18 @@
           </template>
         </Column>
 
-        <!-- Subject Name (EN & KH) -->
+        <!-- Subject Name (English) -->
         <Column field="name_en" header="SUBJECT NAME" sortable class="!py-3.5">
           <template #body="{ data }">
-            <div>
-              <div class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</div>
-              <div class="text-xs text-slate-400 mt-0.5">{{ data.name_kh }}</div>
-            </div>
+            <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
+          </template>
+        </Column>
+
+        <!-- Subject Name (Khmer) -->
+        <Column field="name_kh" header="SUBJECT NAME (KH)" class="!py-3.5">
+          <template #body="{ data }">
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
+            <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
@@ -142,22 +144,23 @@
         <!-- Actions -->
         <Column header="ACTIONS" class="!text-right !py-3.5">
           <template #body="{ data }">
-            <div class="flex items-center justify-end gap-2">
-              <Button 
-                icon="pi pi-pencil" 
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-blue-600 hover:!bg-slate-100 !border-0"
+            <div class="flex items-center justify-end gap-1.5">
+              <Button
+                icon="pi pi-pencil"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                title="Edit Subject"
                 @click="editSubject(data)"
               />
-              <Button 
-                icon="pi pi-trash" 
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+              <Button
+                icon="pi pi-trash"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                title="Delete Subject"
                 @click="confirmDeleteSubject(data)"
               />
             </div>
           </template>
         </Column>
       </DataTable>
-    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog 
@@ -421,3 +424,85 @@ const confirmDeleteSubject = async (data) => {
   }
 }
 </script>
+
+<style scoped>
+/* "Floating card row" table, matching the Teachers page: header text
+   sitting directly on the page background, and each row as its own
+   white rounded card with a soft shadow — spacing does the separating,
+   not gridlines. */
+.subjects-table :deep(.p-datatable-table) {
+  border-collapse: separate;
+  border-spacing: 0 0.6rem;
+}
+
+.subjects-table :deep(.p-datatable-table-container),
+.subjects-table :deep(.p-datatable-header),
+.subjects-table :deep(.p-datatable-footer),
+.subjects-table :deep(.p-datatable-thead),
+.subjects-table :deep(.p-datatable),
+.subjects-table :deep(.p-datatable-mask) {
+  border: none !important;
+  box-shadow: none;
+  background: transparent;
+}
+
+.subjects-table :deep(.p-datatable-thead > tr > th) {
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.5rem;
+  padding: 1rem 1rem;
+  white-space: nowrap;
+}
+
+.subjects-table :deep(.p-datatable-thead > tr > th:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.subjects-table :deep(.p-datatable-thead > tr > th:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+}
+
+.subjects-table :deep(.p-datatable-tbody > tr > td) {
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  line-height: 1.25rem;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subjects-table :deep(.p-datatable-tbody > tr > td:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.subjects-table :deep(.p-datatable-tbody > tr > td:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+  overflow: visible;
+}
+
+.subjects-table :deep(.p-datatable-tbody > tr:hover > td) {
+  background: #f8fafc;
+}
+
+.subjects-table :deep(.p-datatable-tbody > tr) {
+  outline: none;
+}
+
+.subjects-table :deep(.p-paginator) {
+  background: transparent;
+  border: none;
+  padding-top: 0.75rem;
+}
+</style>

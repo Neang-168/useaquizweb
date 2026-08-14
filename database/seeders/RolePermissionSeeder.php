@@ -33,10 +33,12 @@ class RolePermissionSeeder extends Seeder
             );
         }
 
+        // Only three roles exist: Admin (full administrative access, including
+        // role management), Teacher, and Student. There is no separate
+        // "Super Admin" or "Staff" role — see the 2026_08_13_000005
+        // migration that retired them on already-seeded installs.
         $roles = [
-            'Super Admin' => ['manage_users', 'manage_roles', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule', 'manage_academic_structure', 'manage_teachers', 'manage_students'],
-            'Admin' => ['manage_users', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule', 'manage_academic_structure', 'manage_teachers', 'manage_students'],
-            'Staff' => ['view_dashboard', 'view_reports', 'manage_profile', 'view_schedule'],
+            'Admin' => ['manage_users', 'manage_roles', 'manage_courses', 'manage_exams', 'view_dashboard', 'view_reports', 'manage_profile', 'view_schedule', 'manage_academic_structure', 'manage_teachers', 'manage_students'],
             'Teacher' => ['manage_exams', 'view_dashboard', 'manage_profile', 'view_schedule'],
             'Student' => ['view_dashboard', 'manage_profile', 'view_schedule', 'take_exam'],
         ];

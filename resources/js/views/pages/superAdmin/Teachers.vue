@@ -59,53 +59,69 @@
           </template>
         </Column>
 
-        <!-- Teacher Name (icon chip + name, khmer subtitle) -->
-        <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 200px">
+        <!-- Teacher Name (English) -->
+        <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 210px">
           <template #body="{ data }">
             <div class="flex items-center gap-2.5">
-              <!-- <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+              <!-- <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
                 {{ data.name_en.charAt(0) }}
               </div> -->
-              <div class="flex flex-col leading-tight">
-                <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
-                <span v-if="data.name_kh" class="text-[11px] text-slate-400 font-khmer">{{ data.name_kh }}</span>
-              </div>
+              <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
             </div>
           </template>
         </Column>
 
-        <!-- Teacher Code -->
-        <!-- <Column field="code" header="CODE" sortable style="min-width: 80px">
+        <!-- Teacher Name (Khmer) -->
+        <Column field="name_kh" header="TEACHER NAME (KH)" sortable style="min-width: 170px">
           <template #body="{ data }">
-            <span class="font-mono text-xs font-semibold text-slate-500">{{ data.code }}</span>
-          </template>
-        </Column> -->
-
-        <!-- Gender -->
-        <Column field="gender" header="GENDER" sortable style="min-width: 80px">
-          <template #body="{ data }">
-            <span class="text-slate-500 text-sm">{{ data.gender || '—' }}</span>
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
+            <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
-        <!-- Faculty / Department -->
-        <Column field="department" header="FACULTY" sortable style="min-width: 150px">
+        <!-- Gender -->
+        <Column field="gender" header="GENDER" sortable style="min-width: 90px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.department || '—' }}</span>
+            <span
+              v-if="data.gender"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
+              :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200'"
+            >
+              <i class="text-[10px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
+              {{ data.gender }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Faculty -->
+        <Column field="department" header="FACULTY" sortable style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm font-medium">{{ data.department || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Department -->
+        <Column field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm font-medium">{{ data.department_name || '—' }}</span>
           </template>
         </Column>
 
         <!-- Degree -->
         <Column field="degree" header="DEGREE" style="min-width: 150px">
           <template #body="{ data }">
-            <span class="text-slate-500 text-sm">{{ data.degree || '—' }}</span>
+            <span v-if="data.degree" class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+              {{ data.degree }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
         <!-- Phone -->
         <Column field="phone" header="PHONE" style="min-width: 120px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.phone || '—' }}</span>
+            <span class="text-slate-600 text-sm font-mono">{{ data.phone || '—' }}</span>
           </template>
         </Column>
 
@@ -117,42 +133,50 @@
         </Column>
 
         <!-- Employment Type -->
-        <Column field="type" header="EMPLOYMENT" sortable style="min-width: 100px">
+        <Column field="type" header="EMPLOYMENT" sortable style="min-width: 110px">
           <template #body="{ data }">
-            <span class="text-sm font-medium" :class="data.type === 'Full-Time' ? 'text-emerald-600' : 'text-amber-600'">
+            <span
+              class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
+              :class="data.type === 'Full-Time' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'"
+            >
               {{ data.type }}
             </span>
           </template>
         </Column>
 
         <!-- Status -->
-        <Column field="status" header="STATUS" sortable style="min-width: 90px">
+        <Column field="status" header="STATUS" sortable style="min-width: 100px">
           <template #body="{ data }">
-            <span class="inline-flex items-center gap-1.5 text-sm font-medium" :class="data.status === 'Active' ? 'text-emerald-600' : 'text-rose-500'">
-              <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+            <span
+              class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full border"
+              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="data.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
               {{ data.status }}
             </span>
           </template>
         </Column>
 
         <!-- Actions -->
-        <Column header="ACTIONS" class="!text-right" style="min-width: 120px">
+        <Column header="ACTIONS" class="!text-right" style="min-width: 130px">
           <template #body="{ data }">
-            <div class="flex items-center justify-end gap-1">
+            <div class="flex items-center justify-end gap-1.5">
               <Button
                 icon="pi pi-book"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
                 title="Manage Assignments"
                 @click="openAssignmentsDialog(data)"
               />
               <Button
                 icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                title="Edit Teacher"
                 @click="editTeacher(data)"
               />
               <Button
                 icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-400 hover:!text-slate-600 hover:!bg-slate-100 !border-0"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                title="Delete Teacher"
                 @click="confirmDeleteTeacher(data)"
               />
             </div>
@@ -209,10 +233,10 @@
           </div>
         </div>
 
-        <!-- Department & Degree -->
+        <!-- Faculty & Department -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Faculty *</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
             <Dropdown
               v-model="teacherForm.faculty_id"
               :options="faculties"
@@ -220,19 +244,33 @@
               optionValue="id"
               placeholder="Select Faculty"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="teacherForm.department_id = null"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
             <Dropdown
-              v-model="teacherForm.degree_id"
-              :options="degrees"
-              optionLabel="title_en"
+              v-model="teacherForm.department_id"
+              :options="departmentOptions"
+              optionLabel="name_en"
               optionValue="id"
-              placeholder="Select Degree"
+              placeholder="Select Department"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
+        </div>
+
+        <!-- Degree -->
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level</label>
+          <Dropdown
+            v-model="teacherForm.degree_id"
+            :options="degrees"
+            optionLabel="title_en"
+            optionValue="id"
+            placeholder="Select Degree"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+          />
         </div>
 
         <!-- Phone & Email -->
@@ -297,7 +335,7 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject</label>
             <Dropdown
               v-model="assignmentForm.subject_id"
-              :options="subjects"
+              :options="assignmentSubjectOptions"
               optionLabel="name_en"
               optionValue="id"
               placeholder="Select Subject"
@@ -308,7 +346,7 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class</label>
             <Dropdown
               v-model="assignmentForm.class_id"
-              :options="classes"
+              :options="assignmentClassOptions"
               optionLabel="name"
               optionValue="id"
               placeholder="Select Class"
@@ -322,6 +360,9 @@
             @click="addAssignment"
           />
         </div>
+        <p class="text-[11px] text-slate-400 -mt-2">
+          Only subjects and classes within this teacher's faculty are shown, so a teacher can't be assigned to teach outside their own faculty.
+        </p>
 
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
           <div
@@ -370,6 +411,7 @@ import Dropdown from 'primevue/dropdown'
 
 const teachers = ref([])
 const faculties = ref([])
+const departments = ref([])
 const degrees = ref([])
 const subjects = ref([])
 const classes = ref([])
@@ -380,17 +422,25 @@ const fetchTeachers = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, degreesRes, subjectsRes, classesRes] = await Promise.all([
+  const [facultiesRes, departmentsRes, degreesRes, subjectsRes, classesRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/departments', { params: { per_page: 200 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
     api.get('/subjects', { params: { per_page: 200 } }),
     api.get('/classes', { params: { per_page: 200 } }),
   ])
   faculties.value = facultiesRes.data.data
+  departments.value = departmentsRes.data.data
   degrees.value = degreesRes.data.data
-  subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, name_en: `${s.name_en} (${s.code})` }))
+  subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, faculty_id: s.faculty_id, name_en: `${s.name_en} (${s.code})` }))
   classes.value = classesRes.data.data
 }
+
+// Department options are scoped to whichever faculty is currently selected
+// in the form, since a department belongs to exactly one faculty.
+const departmentOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === teacherForm.value.faculty_id)
+)
 
 onMounted(() => {
   fetchTeachers()
@@ -410,6 +460,7 @@ const teacherForm = ref({
   name_kh: '',
   gender: 'Male',
   faculty_id: null,
+  department_id: null,
   degree_id: null,
   phone: '',
   email: '',
@@ -431,6 +482,7 @@ const openNewDialog = () => {
     name_kh: '',
     gender: 'Male',
     faculty_id: null,
+    department_id: null,
     degree_id: null,
     phone: '',
     email: '',
@@ -460,6 +512,7 @@ const saveTeacher = async () => {
     name_kh: teacherForm.value.name_kh,
     gender: teacherForm.value.gender,
     faculty_id: teacherForm.value.faculty_id,
+    department_id: teacherForm.value.department_id,
     degree_id: teacherForm.value.degree_id,
     phone: teacherForm.value.phone,
     email: teacherForm.value.email,
@@ -497,6 +550,20 @@ const assignmentsDialog = ref(false)
 const assignmentTeacher = ref(null)
 const teacherAssignments = ref([])
 const assignmentForm = ref({ subject_id: null, class_id: null })
+
+// Subjects/classes are scoped to the faculty of whichever teacher's
+// assignment dialog is open, so a teacher can only be assigned within
+// their own faculty (backend enforces this too, see TeacherAssignmentController).
+const assignmentSubjectOptions = computed(() =>
+  assignmentTeacher.value
+    ? subjects.value.filter(s => s.faculty_id === assignmentTeacher.value.faculty_id)
+    : []
+)
+const assignmentClassOptions = computed(() =>
+  assignmentTeacher.value
+    ? classes.value.filter(c => c.faculty_id === assignmentTeacher.value.faculty_id)
+    : []
+)
 
 const fetchAssignments = async (teacherId) => {
   const { data } = await api.get('/teacher-assignments', { params: { teacher_profile_id: teacherId } })
@@ -564,27 +631,40 @@ const removeAssignment = async (assignment) => {
 .teachers-table :deep(.p-datatable-thead),
 .teachers-table :deep(.p-datatable),
 .teachers-table :deep(.p-datatable-mask) {
-  border: none;
+  border: none !important;
   box-shadow: none;
   background: transparent;
 }
 
 .teachers-table :deep(.p-datatable-thead > tr > th) {
-  background: transparent;
-  border: none;
-  color: #16a34a;
-  font-size: 0.68rem;
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  color: #047857;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.03em;
-  padding: 0.25rem 1rem 0.6rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5rem;
+  padding: 1rem 1rem;
   white-space: nowrap;
+}
+
+.teachers-table :deep(.p-datatable-thead > tr > th:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.teachers-table :deep(.p-datatable-thead > tr > th:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
 }
 
 .teachers-table :deep(.p-datatable-tbody > tr > td) {
   background: #ffffff;
-  border: none;
+  border: none !important;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  padding: 0.7rem 1rem;
+  line-height: 1.25rem;
+  padding: 0.75rem 1rem;
   transition: background-color 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
@@ -592,13 +672,14 @@ const removeAssignment = async (assignment) => {
 }
 
 .teachers-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.5rem;
-  border-bottom-left-radius: 0.5rem;
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
 }
 
 .teachers-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+  overflow: visible;
 }
 
 .teachers-table :deep(.p-datatable-tbody > tr:hover > td) {

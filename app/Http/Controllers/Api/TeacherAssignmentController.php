@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
+use App\Models\Subject;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,7 +39,16 @@ class TeacherAssignmentController extends Controller
             'class_id' => ['required', 'exists:classes,id'],
         ]);
 
-        $class = Classroom::findOrFail($validated['class_id']);
+        $class = Classroom::with('major.degree')->findOrFail($validated['class_id']);
+        $subject = Subject::findOrFail($validated['subject_id']);
+
+        $classFacultyId = $class->major?->degree?->faculty_id;
+
+        if ($classFacultyId && $subject->faculty_id !== $classFacultyId) {
+            throw ValidationException::withMessages([
+                'subject_id' => ['This subject belongs to a different faculty than the selected class.'],
+            ]);
+        }
 
         $exists = TeacherSubject::where('teacher_profile_id', $validated['teacher_profile_id'])
             ->where('subject_id', $validated['subject_id'])

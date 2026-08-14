@@ -180,7 +180,7 @@ async function submitLogin() {
       localStorage.setItem('remember_me', 'true')
     }
 
-   if (userRole === 'Super Admin' || userRole === 'Admin') {
+   if (userRole === 'Admin') {
       router.push({ name: 'admin.dashboard' })
     } else if (userRole === 'Teacher') {
       router.push({ name: 'teacher.dashboard' })

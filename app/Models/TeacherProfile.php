@@ -15,6 +15,7 @@ class TeacherProfile extends Model
         'user_id',
         'employee_code',
         'faculty_id',
+        'department_id',
         'degree_id',
         'major_id',
         'qualification',
@@ -35,6 +36,11 @@ class TeacherProfile extends Model
     public function faculty(): BelongsTo
     {
         return $this->belongsTo(Faculty::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function degree(): BelongsTo

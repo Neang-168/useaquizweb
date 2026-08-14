@@ -5,16 +5,20 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DegreeController;
+use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\FacultyController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\ShiftController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherAssignmentController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\Teacher\CalendarController as TeacherCalendarController;
 use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Api\Teacher\DashboardController as TeacherDashboardController;
@@ -78,12 +82,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Academic structure: faculties, degrees, majors, subjects, academic years, shifts, stages, classes
     Route::middleware('permission:manage_academic_structure')->group(function () {
         Route::apiResource('faculties', FacultyController::class)->parameters(['faculties' => 'faculty']);
+        Route::apiResource('departments', DepartmentController::class)->parameters(['departments' => 'department']);
         Route::apiResource('degrees', DegreeController::class)->parameters(['degrees' => 'degree']);
         Route::apiResource('majors', MajorController::class)->parameters(['majors' => 'major']);
         Route::apiResource('subjects', SubjectController::class)->parameters(['subjects' => 'subject']);
 
         Route::post('/academic-years/{academicYear}/set-current', [AcademicYearController::class, 'setCurrent']);
         Route::apiResource('academic-years', AcademicYearController::class)->parameters(['academic-years' => 'academicYear']);
+
+        Route::apiResource('semesters', SemesterController::class)->parameters(['semesters' => 'semester']);
+        Route::apiResource('terms', TermController::class)->parameters(['terms' => 'term']);
+        Route::apiResource('promotions', PromotionController::class)->parameters(['promotions' => 'promotion']);
 
         Route::apiResource('shifts', ShiftController::class)->parameters(['shifts' => 'shift']);
         Route::apiResource('stages', StageController::class)->parameters(['stages' => 'stage']);

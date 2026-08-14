@@ -22,7 +22,7 @@ class ClassroomController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $classes = Classroom::query()
-            ->with('major', 'stage', 'shift', 'academicYear')
+            ->with('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term')
             ->withCount('studentEnrollments as students_count')
             ->when($request->input('major_id'), fn ($query, $id) => $query->where('major_id', $id))
             ->when($request->input('stage_id'), fn ($query, $id) => $query->where('stage_id', $id))
@@ -50,7 +50,7 @@ class ClassroomController extends Controller
         $data = $this->validated($request);
 
         $class = Classroom::create($data);
-        $class->load('major', 'stage', 'shift', 'academicYear');
+        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -64,7 +64,7 @@ class ClassroomController extends Controller
      */
     public function show(Classroom $class)
     {
-        $class->load('major', 'stage', 'shift', 'academicYear');
+        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -80,7 +80,7 @@ class ClassroomController extends Controller
         $data = $this->validated($request, $class);
 
         $class->update($data);
-        $class->load('major', 'stage', 'shift', 'academicYear');
+        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -115,6 +115,8 @@ class ClassroomController extends Controller
             'stage_id' => ['required', 'exists:stages,id'],
             'shift_id' => ['required', 'exists:shifts,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
+            'semester_id' => ['nullable', 'exists:semesters,id'],
+            'term_id' => ['nullable', 'exists:terms,id'],
             'room' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:500'],
             'status' => ['required', Rule::in(['Active', 'Inactive'])],
@@ -127,6 +129,8 @@ class ClassroomController extends Controller
             'stage_id' => $validated['stage_id'],
             'shift_id' => $validated['shift_id'],
             'academic_year_id' => $validated['academic_year_id'] ?? $this->resolveCurrentAcademicYearId(),
+            'semester_id' => $validated['semester_id'] ?? null,
+            'term_id' => $validated['term_id'] ?? null,
             'room' => $validated['room'] ?? null,
             'capacity' => $validated['capacity'],
             'status' => $this->statusToBool($validated['status']),
@@ -155,12 +159,17 @@ class ClassroomController extends Controller
             'name' => $class->name,
             'major_id' => $class->major_id,
             'department' => $class->major?->name,
+            'faculty_id' => $class->major?->degree?->faculty_id,
             'stage_id' => $class->stage_id,
             'stage' => $class->stage?->name,
             'shift_id' => $class->shift_id,
             'shift' => $class->shift?->name,
             'academic_year_id' => $class->academic_year_id,
             'academic_year' => $class->academicYear?->name,
+            'semester_id' => $class->semester_id,
+            'semester' => $class->semester?->name,
+            'term_id' => $class->term_id,
+            'term' => $class->term?->name,
             'room' => $class->room,
             'capacity' => $class->capacity,
             'students_count' => $class->students_count ?? 0,

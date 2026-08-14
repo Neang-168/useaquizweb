@@ -75,7 +75,8 @@
           <!-- Navigation Links Area -->
           <div class="flex-1 overflow-y-auto pr-1 my-2 space-y-5 custom-scrollbar">
 
-            <!-- 1. OVERVIEW -->
+            <!-- Dashboard sits alone at the top, unlabeled — the entry
+                 point doesn't need its own section header. -->
             <div class="space-y-1">
               <router-link to="/admin/dashboard"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
@@ -85,10 +86,11 @@
               </router-link>
             </div>
 
-            <!-- 2. ACADEMIC STRUCTURE -->
+            <!-- Academic: the course/class catalog, in the order you'd set
+                 it up (subjects first, then the classes taught from them) -->
             <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                Academic Setup
+                Academic
               </span>
 
               <router-link to="/admin/subjects"
@@ -97,13 +99,6 @@
                 <i class="pi pi-book text-base"></i>
                 <span>Subjects</span>
               </router-link>
-            </div>
-
-            <!-- 4. PEOPLE MANAGEMENT -->
-            <div class="space-y-1">
-              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                People
-              </span>
 
               <router-link to="/admin/classes"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
@@ -111,6 +106,13 @@
                 <i class="pi pi-building text-base"></i>
                 <span>Classes</span>
               </router-link>
+            </div>
+
+            <!-- People: the individuals who use the system -->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                People
+              </span>
 
               <router-link to="/admin/teachers"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
@@ -127,7 +129,8 @@
               </router-link>
             </div>
 
-            <!-- 5. ADMINISTRATION -->
+            <!-- Administration: system-wide account management first,
+                 the admin's own profile last -->
             <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
                 Administration
@@ -144,7 +147,7 @@
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-user text-base"></i>
-                <span>User Profile</span>
+                <span>My Profile</span>
               </router-link>
 
               <!-- <router-link to="/admin/roles-permissions"
@@ -170,8 +173,8 @@
       </aside>
 
       <!-- ======= MAIN CONTENT ======= -->
-      <main class="flex-1 overflow-hidden bg-slate-100 p-6 flex flex-col">
-        <router-view :key="$route.fullPath" class="flex-1 min-h-0" />
+      <main class="flex-1 overflow-y-auto bg-slate-100 p-6 flex flex-col">
+        <router-view :key="$route.fullPath" class="flex-1" />
       </main>
 
     </div>

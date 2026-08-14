@@ -21,6 +21,7 @@ class Classroom extends Model
         'shift_id',
         'academic_year_id',
         'semester_id',
+        'term_id',
         'room',
         'capacity',
         'status',
@@ -54,6 +55,11 @@ class Classroom extends Model
     public function semester(): BelongsTo
     {
         return $this->belongsTo(Semester::class);
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
     }
 
     public function studentEnrollments(): HasMany

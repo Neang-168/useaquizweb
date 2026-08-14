@@ -20,19 +20,9 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
         $this->call(AcademicStructureSeeder::class);
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first();
         $adminRole = Role::where('name', 'Admin')->first();
         $teacherRole    = Role::where('name', 'Teacher')->first();
         $studentRole    = Role::where('name', 'Student')->first();
-
-        User::factory()->create([
-            'username' => 'super.admin',
-            'email' => 'superadmin@example.com',
-            'password' => Hash::make('password'),
-            'first_name' => 'Super',
-            'last_name' => 'Admin',
-            'role_id' => $superAdminRole?->id,
-        ]);
 
         User::factory()->create([
             'username' => 'admin.user',

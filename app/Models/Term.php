@@ -4,47 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class AcademicYear extends Model
+class Term extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'academic_year_id',
         'code',
         'name',
         'name_kh',
+        'order_no',
         'start_date',
         'end_date',
-        'is_current',
         'status',
     ];
 
     protected $casts = [
+        'order_no' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
-        'is_current' => 'boolean',
         'status' => 'boolean',
     ];
 
-    public function semesters(): HasMany
+    public function academicYear(): BelongsTo
     {
-        return $this->hasMany(Semester::class);
-    }
-
-    public function terms(): HasMany
-    {
-        return $this->hasMany(Term::class);
-    }
-
-    public function teacherSubjects(): HasMany
-    {
-        return $this->hasMany(TeacherSubject::class);
-    }
-
-    public function studentEnrollments(): HasMany
-    {
-        return $this->hasMany(StudentEnrollment::class);
+        return $this->belongsTo(AcademicYear::class);
     }
 
     public function classes(): HasMany

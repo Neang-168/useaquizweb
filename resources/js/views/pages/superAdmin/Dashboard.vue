@@ -2,13 +2,13 @@
   <div class="space-y-6 w-full pb-10">
 
     <!-- ======= HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60 backdrop-blur-md p-5 rounded-2xl border border-slate-200/60 shadow-xs">
+    <!-- <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60 backdrop-blur-md p-5 rounded-2xl border border-slate-200/60 shadow-xs">
       <div>
         <h1 class="text-2xl font-bold text-slate-800 m-0">Welcome back{{ firstName ? `, ${firstName}` : '' }} 👋</h1>
         <p class="text-slate-500 text-sm mt-1 m-0">ទំព័រគ្រប់គ្រងព័ត៌មានទូទៅ &mdash; here's what's happening across USEA Quiz today.</p>
       </div>
       <span class="text-xs font-semibold text-slate-400 shrink-0">{{ todayLabel }}</span>
-    </div>
+    </div> -->
 
     <!-- Error state -->
     <div v-if="error" class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-sm text-rose-700 flex items-center gap-2">
@@ -168,9 +168,7 @@ import { authUser } from '../../../store/authUser'
 // in the app (see roleBadgeClass in Users.vue) so a role's color/badge never
 // changes meaning between pages. Validated for CVD-safety as a set.
 const ROLE_COLORS = {
-  'Super Admin': '#2a78d6',
   'Admin': '#eb6834',
-  'Staff': '#1baf7a',
   'Teacher': '#eda100',
   'Student': '#e87ba4',
 }
@@ -219,9 +217,7 @@ const barHeight = (value) => {
 
 const roleBadgeClass = (roleName) => {
   switch (roleName) {
-    case 'Super Admin': return 'bg-purple-50 text-purple-700 border-purple-200'
     case 'Admin': return 'bg-indigo-50 text-indigo-700 border-indigo-200'
-    case 'Staff': return 'bg-amber-50 text-amber-700 border-amber-200'
     case 'Teacher': return 'bg-blue-50 text-blue-700 border-blue-200'
     case 'Student': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
     default: return 'bg-slate-50 text-slate-600 border-slate-200'

@@ -9,7 +9,7 @@
           Classes Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          គ្រប់គ្រងថ្នាក់សិក្សា កំណត់បន្ទប់សិក្សា វេនសិក្សា និងចំនួនសិស្ស/និស្សិតតាមថ្នាក់នីមួយៗ
+          Manage all classes, their details, and student enrollment information.
         </p>
       </div>
 
@@ -54,47 +54,44 @@
       </div>
     </div>
 
-    <!-- ======= MAIN CONTENT CARD ======= -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-      
-      <!-- Toolbar Bar: Search & View Mode Switcher -->
-      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="relative w-full sm:w-80">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <InputText 
-            v-model="filters['global'].value" 
-            placeholder="Search class code or name..." 
-            class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-          />
-        </div>
-
-        <div class="flex items-center justify-between w-full sm:w-auto gap-4">
-          <span class="text-xs text-slate-400">
-            Showing <b>{{ filteredClasses.length }}</b> entries
-          </span>
-
-          <!-- View Mode Switcher Buttons -->
-          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button 
-              @click="viewMode = 'grid'"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
-            >
-              <i class="pi pi-th-large"></i> Cards
-            </button>
-            <button 
-              @click="viewMode = 'list'"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
-            >
-              <i class="pi pi-list"></i> List
-            </button>
-          </div>
-        </div>
+    <!-- ======= TOOLBAR: SEARCH & VIEW MODE SWITCHER ======= -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="relative w-full sm:w-80">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <InputText
+          v-model="filters['global'].value"
+          placeholder="Search class code or name..."
+          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
+        />
       </div>
 
-      <!-- ======= 1. LIST VIEW (DataTable) ======= -->
-      <DataTable 
+      <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+        <span class="text-xs text-slate-400">
+          Showing <b>{{ filteredClasses.length }}</b> entries
+        </span>
+
+        <!-- View Mode Switcher Buttons -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button
+            @click="viewMode = 'grid'"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+          >
+            <i class="pi pi-th-large"></i> Cards
+          </button>
+          <button
+            @click="viewMode = 'list'"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+          >
+            <i class="pi pi-list"></i> List
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= 1. LIST VIEW (DataTable, floating card rows) ======= -->
+    <DataTable
         v-if="viewMode === 'list'"
         :value="filteredClasses" 
         dataKey="id" 
@@ -102,7 +99,7 @@
         :rows="5" 
         :rowsPerPageOptions="[5, 10, 20]"
         responsiveLayout="scroll"
-        class="p-datatable-sm"
+        class="p-datatable-sm classes-table"
       >
         <template #empty>
           <div class="text-center py-8 text-slate-400 text-sm">
@@ -122,24 +119,38 @@
         <!-- Class Name -->
         <Column field="name" header="CLASS NAME" sortable class="!py-3.5">
           <template #body="{ data }">
-            <div>
-              <div class="font-semibold text-slate-800 text-sm">{{ data.name }}</div>
-              <div class="text-xs text-slate-400 mt-0.5">{{ data.department }}</div>
-            </div>
+            <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
           </template>
         </Column>
 
-        <!-- Stage & Shift -->
-        <Column field="stage" header="STAGE / SHIFT" sortable class="!py-3.5">
+        <!-- Department -->
+        <Column field="department" header="DEPARTMENT" sortable class="!py-3.5">
           <template #body="{ data }">
-            <div class="flex flex-col gap-1">
-              <span class="text-xs font-medium text-slate-700">
-                <i class="pi pi-step-forward text-slate-400 mr-1"></i>{{ data.stage }}
-              </span>
-              <span class="text-[11px] text-slate-500">
-                <i class="pi pi-clock text-slate-400 mr-1"></i>{{ data.shift }}
-              </span>
-            </div>
+            <span class="text-xs text-slate-600 font-medium">{{ data.department || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Stage -->
+        <Column field="stage" header="STAGE" sortable class="!py-3.5">
+          <template #body="{ data }">
+            <span class="text-xs font-medium text-slate-700">{{ data.stage }}</span>
+          </template>
+        </Column>
+
+        <!-- Shift -->
+        <Column field="shift" header="SHIFT" class="!py-3.5">
+          <template #body="{ data }">
+            <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
+          </template>
+        </Column>
+
+        <!-- Term -->
+        <Column field="term" header="TERM" sortable class="!py-3.5">
+          <template #body="{ data }">
+            <span v-if="data.term" class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
+              {{ data.term }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
@@ -147,7 +158,7 @@
         <Column field="room" header="ROOM" sortable class="!py-3.5">
           <template #body="{ data }">
             <span class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
-              <i class="pi pi-building mr-1 text-indigo-400"></i>{{ data.room }}
+              {{ data.room }}
             </span>
           </template>
         </Column>
@@ -186,15 +197,17 @@
         <!-- Actions -->
         <Column header="ACTIONS" class="!text-right !py-3.5">
           <template #body="{ data }">
-            <div class="flex items-center justify-end gap-2">
-              <Button 
-                icon="pi pi-pencil" 
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-blue-600 hover:!bg-slate-100 !border-0"
+            <div class="flex items-center justify-end gap-1.5">
+              <Button
+                icon="pi pi-pencil"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                title="Edit Class"
                 @click="editClass(data)"
               />
-              <Button 
-                icon="pi pi-trash" 
-                class="!p-2 !w-8 !h-8 !rounded-lg !text-slate-500 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+              <Button
+                icon="pi pi-trash"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                title="Delete Class"
                 @click="confirmDeleteClass(data)"
               />
             </div>
@@ -258,6 +271,15 @@
                     {{ cls.room }}
                   </span>
                 </div>
+
+                <div v-if="cls.term" class="flex items-center justify-between">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <i class="pi pi-calendar text-slate-400"></i> Term
+                  </span>
+                  <span class="font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+                    {{ cls.term }}
+                  </span>
+                </div>
               </div>
 
               <!-- Students Progress Bar -->
@@ -294,8 +316,6 @@
           </div>
         </div>
       </div>
-
-    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog 
@@ -364,6 +384,32 @@
           </div>
         </div>
 
+        <!-- Semester & Term -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester</label>
+            <Dropdown
+              v-model="classForm.semester_id"
+              :options="semesters"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Semester"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
+            <Dropdown
+              v-model="classForm.term_id"
+              :options="terms"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Term"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+        </div>
+
         <!-- Room & Capacity -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -426,6 +472,8 @@ const classes = ref([])
 const majors = ref([])
 const stages = ref([])
 const shifts = ref([])
+const semesters = ref([])
+const terms = ref([])
 
 const fetchClasses = async () => {
   const { data } = await api.get('/classes', { params: { per_page: 100 } })
@@ -433,14 +481,18 @@ const fetchClasses = async () => {
 }
 
 const fetchLookups = async () => {
-  const [majorsRes, stagesRes, shiftsRes] = await Promise.all([
+  const [majorsRes, stagesRes, shiftsRes, semestersRes, termsRes] = await Promise.all([
     api.get('/majors', { params: { per_page: 100 } }),
     api.get('/stages', { params: { per_page: 100 } }),
     api.get('/shifts', { params: { per_page: 100 } }),
+    api.get('/semesters', { params: { per_page: 100 } }),
+    api.get('/terms', { params: { per_page: 100 } }),
   ])
   majors.value = majorsRes.data.data
   stages.value = stagesRes.data.data
   shifts.value = shiftsRes.data.data
+  semesters.value = semestersRes.data.data
+  terms.value = termsRes.data.data
 }
 
 onMounted(() => {
@@ -474,6 +526,8 @@ const classForm = ref({
   major_id: null,
   stage_id: null,
   shift_id: null,
+  semester_id: null,
+  term_id: null,
   room: '',
   capacity: 35,
   status: 'Active'
@@ -492,6 +546,8 @@ const openNewDialog = () => {
     major_id: null,
     stage_id: null,
     shift_id: null,
+    semester_id: null,
+    term_id: null,
     room: '',
     capacity: 35,
     status: 'Active'
@@ -518,6 +574,8 @@ const saveClass = async () => {
     major_id: classForm.value.major_id,
     stage_id: classForm.value.stage_id,
     shift_id: classForm.value.shift_id,
+    semester_id: classForm.value.semester_id,
+    term_id: classForm.value.term_id,
     room: classForm.value.room,
     capacity: classForm.value.capacity,
     status: classForm.value.status,
@@ -548,3 +606,85 @@ const confirmDeleteClass = async (data) => {
   }
 }
 </script>
+
+<style scoped>
+/* "Floating card row" table, matching the Teachers page: header text
+   sitting directly on the page background, and each row as its own
+   white rounded card with a soft shadow — spacing does the separating,
+   not gridlines. Only affects the List view; Card view is unaffected. */
+.classes-table :deep(.p-datatable-table) {
+  border-collapse: separate;
+  border-spacing: 0 0.6rem;
+}
+
+.classes-table :deep(.p-datatable-table-container),
+.classes-table :deep(.p-datatable-header),
+.classes-table :deep(.p-datatable-footer),
+.classes-table :deep(.p-datatable-thead),
+.classes-table :deep(.p-datatable),
+.classes-table :deep(.p-datatable-mask) {
+  border: none !important;
+  box-shadow: none;
+  background: transparent;
+}
+
+.classes-table :deep(.p-datatable-thead > tr > th) {
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.5rem;
+  padding: 1rem 1rem;
+  white-space: nowrap;
+}
+
+.classes-table :deep(.p-datatable-thead > tr > th:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.classes-table :deep(.p-datatable-thead > tr > th:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+}
+
+.classes-table :deep(.p-datatable-tbody > tr > td) {
+  background: #ffffff;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
+  line-height: 1.25rem;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.classes-table :deep(.p-datatable-tbody > tr > td:first-child) {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+}
+
+.classes-table :deep(.p-datatable-tbody > tr > td:last-child) {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
+  overflow: visible;
+}
+
+.classes-table :deep(.p-datatable-tbody > tr:hover > td) {
+  background: #f8fafc;
+}
+
+.classes-table :deep(.p-datatable-tbody > tr) {
+  outline: none;
+}
+
+.classes-table :deep(.p-paginator) {
+  background: transparent;
+  border: none;
+  padding-top: 0.75rem;
+}
+</style>

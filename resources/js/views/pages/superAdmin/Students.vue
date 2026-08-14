@@ -1,8 +1,9 @@
 <template>
   <div class="space-y-6">
-    
+
     <!-- ======= PAGE HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
         <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
           <i class="pi pi-id-card text-blue-600 text-2xl"></i>
@@ -13,12 +14,9 @@
         </p>
       </div>
 
-      <Button 
-        label="Add New Student" 
-        icon="pi pi-plus" 
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
-        @click="openNewDialog"
-      />
+      <Button label="Add New Student" icon="pi pi-plus"
+        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+        @click="openNewDialog" />
     </div>
 
     <!-- ======= STATS CARDS ======= -->
@@ -54,195 +52,175 @@
       </div>
     </div>
 
-    <!-- ======= TABLE HEADER BAR / SEARCH & FILTER ======= -->
+    <!-- ======= TABLE HEADER BAR / SEARCH & SHOW MORE/LESS TOGGLE ======= -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <!-- Search Input -->
       <div class="relative w-full sm:w-80">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <InputText
-          v-model="filters['global'].value"
-          placeholder="Search ID, student name, or class..."
-          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-        />
+        <InputText v-model="filters['global'].value" placeholder="Search ID, student name, or class..."
+          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white" />
       </div>
-      <div class="text-xs text-slate-400">
-        Showing <b>{{ students.length }}</b> entries
+
+      <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+        <div class="text-xs text-slate-400 shrink-0">
+          Showing <b>{{ students.length }}</b> entries
+        </div>
+        
+        <!-- Show More / Show Less Button -->
+        <Button :label="showAllColumns ? 'Show Less ' : 'Show More '"
+          :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+          class="!bg-blue-600 hover:!bg-blue-700 !text-white !border !border-slate-200 !rounded-xl !py-2 !px-3.5 !text-xs !font-semibold transition-all shadow-xs cursor-pointer"
+          @click="showAllColumns = !showAllColumns" />
+
       </div>
     </div>
 
-    <!-- ======= DATA TABLE (floating card rows) ======= -->
-    <DataTable
-        :value="students" 
-        v-model:filters="filters"
-        dataKey="id" 
-        paginator 
-        :rows="5" 
-        :rowsPerPageOptions="[5, 10, 20]"
-        responsiveLayout="scroll"
-        class="p-datatable-sm students-table"
-      >
-        <template #empty>
-          <div class="text-center py-8 text-slate-400 text-sm">
-            No students found.
+    <!-- ======= DATA TABLE ======= -->
+    <DataTable :value="students" v-model:filters="filters"
+      :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
+      paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll"
+      class="p-datatable-sm students-table">
+      <template #empty>
+        <div class="text-center py-6 text-slate-400 text-sm">
+          No students found.
+        </div>
+      </template>
+
+      <!-- Student ID -->
+      <Column field="student_id" header="STUDENT ID" sortable>
+        <template #body="{ data }">
+          <span
+            class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+            {{ data.student_id }}
+          </span>
+        </template>
+      </Column>
+
+      <!-- Student Name (English) -->
+      <Column field="name_en" header="STUDENT NAME" sortable>
+        <template #body="{ data }">
+          <span class="font-semibold text-slate-800 text-xs">{{ data.name_en }}</span>
+        </template>
+      </Column>
+
+      <!-- Student Name (Khmer) -->
+      <Column v-if="showAllColumns" field="name_kh" header="STUDENT NAME (KH)">
+        <template #body="{ data }">
+          <span v-if="data.name_kh" class="text-slate-600 text-xs font-khmer">{{ data.name_kh }}</span>
+          <span v-else class="text-slate-400 text-xs">—</span>
+        </template>
+      </Column>
+
+      <!-- Gender -->
+      <Column v-if="showAllColumns" field="gender" header="GENDER">
+        <template #body="{ data }">
+          <span v-if="data.gender"
+            class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+            :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200'">
+            <i class="text-[9px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
+            {{ data.gender }}
+          </span>
+          <span v-else class="text-slate-400 text-xs">—</span>
+        </template>
+      </Column>
+
+      <!-- Class -->
+      <Column field="class_name" header="CLASS" sortable>
+        <template #body="{ data }">
+          <span class="text-xs font-semibold text-slate-700">{{ data.class_name }}</span>
+        </template>
+      </Column>
+
+      <!-- Shift -->
+      <Column v-if="showAllColumns" field="shift" header="SHIFT">
+        <template #body="{ data }">
+          <span class="text-[11px] text-indigo-600 font-medium">{{ data.shift }}</span>
+        </template>
+      </Column>
+
+      <!-- Phone -->
+      <Column field="phone" header="PHONE">
+        <template #body="{ data }">
+          <span class="text-slate-700 text-xs">{{ data.phone }}</span>
+        </template>
+      </Column>
+
+      <!-- Email -->
+      <Column v-if="showAllColumns" field="email" header="EMAIL">
+        <template #body="{ data }">
+          <span class="text-slate-700 text-[11px]">{{ data.email }}</span>
+        </template>
+      </Column>
+
+      <!-- Major / Department -->
+      <Column v-if="showAllColumns" field="major" header="MAJOR" sortable>
+        <template #body="{ data }">
+          <span
+            class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+            {{ data.major }}
+          </span>
+        </template>
+      </Column>
+
+      <!-- Generation -->
+      <Column v-if="showAllColumns" field="generation" header="GENERATION" sortable>
+        <template #body="{ data }">
+          <span v-if="data.generation"
+            class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
+            {{ data.generation }}
+          </span>
+          <span v-else class="text-slate-400 text-xs">—</span>
+        </template>
+      </Column>
+
+      <!-- Status -->
+      <Column field="status" header="STATUS" sortable>
+        <template #body="{ data }">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium" :class="{
+            'bg-emerald-50 text-emerald-700 border border-emerald-200': data.status === 'Active',
+            'bg-rose-50 text-rose-700 border border-rose-200': data.status === 'Inactive',
+            'bg-amber-50 text-amber-700 border border-amber-200': data.status === 'Suspended'
+          }">
+            <span class="w-1.5 h-1.5 rounded-full" :class="{
+              'bg-emerald-500': data.status === 'Active',
+              'bg-rose-500': data.status === 'Inactive',
+              'bg-amber-500': data.status === 'Suspended'
+            }"></span>
+            {{ data.status }}
+          </span>
+        </template>
+      </Column>
+
+      <!-- Actions -->
+      <Column header="ACTIONS" class="!text-right">
+        <template #body="{ data }">
+          <div class="flex items-center justify-end gap-1">
+            <Button icon="pi pi-pencil"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100 cursor-pointer text-xs"
+              title="Edit Student" @click="editStudent(data)" />
+            <Button icon="pi pi-trash"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 cursor-pointer text-xs"
+              title="Delete Student" @click="confirmDeleteStudent(data)" />
           </div>
         </template>
-
-        <!-- Student ID -->
-        <Column field="student_id" header="STUDENT ID" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-              {{ data.student_id }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Student Name (English) -->
-        <Column field="name_en" header="STUDENT NAME" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
-          </template>
-        </Column>
-
-        <!-- Student Name (Khmer) -->
-        <Column field="name_kh" header="STUDENT NAME (KH)" class="!py-3.5">
-          <template #body="{ data }">
-            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
-            <span v-else class="text-slate-400 text-sm">—</span>
-          </template>
-        </Column>
-
-        <!-- Gender -->
-        <Column field="gender" header="GENDER" class="!py-3.5">
-          <template #body="{ data }">
-            <span
-              v-if="data.gender"
-              class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
-              :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200'"
-            >
-              <i class="text-[10px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
-              {{ data.gender }}
-            </span>
-            <span v-else class="text-slate-400 text-sm">—</span>
-          </template>
-        </Column>
-
-        <!-- Class -->
-        <Column field="class_name" header="CLASS" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-xs font-semibold text-slate-700">{{ data.class_name }}</span>
-          </template>
-        </Column>
-
-        <!-- Shift -->
-        <Column field="shift" header="SHIFT" class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-[11px] text-indigo-600 font-medium">{{ data.shift }}</span>
-          </template>
-        </Column>
-
-        <!-- Phone -->
-        <Column field="phone" header="PHONE" class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-slate-700 text-xs">{{ data.phone }}</span>
-          </template>
-        </Column>
-
-        <!-- Email -->
-        <Column field="email" header="EMAIL" class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-slate-400 text-[11px]">{{ data.email }}</span>
-          </template>
-        </Column>
-
-        <!-- Major / Department -->
-        <Column field="major" header="MAJOR" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
-              {{ data.major }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Generation -->
-        <Column field="generation" header="GENERATION" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span v-if="data.generation" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 border border-purple-100">
-              {{ data.generation }}
-            </span>
-            <span v-else class="text-slate-400 text-sm">—</span>
-          </template>
-        </Column>
-
-        <!-- Status -->
-        <Column field="status" header="STATUS" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              :class="{
-                'bg-emerald-50 text-emerald-700 border border-emerald-200': data.status === 'Active',
-                'bg-rose-50 text-rose-700 border border-rose-200': data.status === 'Inactive',
-                'bg-amber-50 text-amber-700 border border-amber-200': data.status === 'Suspended'
-              }"
-            >
-              <span 
-                class="w-1.5 h-1.5 rounded-full" 
-                :class="{
-                  'bg-emerald-500': data.status === 'Active',
-                  'bg-rose-500': data.status === 'Inactive',
-                  'bg-amber-500': data.status === 'Suspended'
-                }"
-              ></span>
-              {{ data.status }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Actions -->
-        <Column header="ACTIONS" class="!text-right !py-3.5">
-          <template #body="{ data }">
-            <div class="flex items-center justify-end gap-1.5">
-              <Button
-                icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
-                title="Edit Student"
-                @click="editStudent(data)"
-              />
-              <Button
-                icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
-                title="Delete Student"
-                @click="confirmDeleteStudent(data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
+      </Column>
+    </DataTable>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
-    <Dialog 
-      v-model:visible="studentDialog" 
-      :header="isEdit ? 'Edit Student Information' : 'Add New Student'" 
-      :modal="true" 
-      class="w-full max-w-xl"
-    >
+    <Dialog v-model:visible="studentDialog" :header="isEdit ? 'Edit Student Information' : 'Add New Student'"
+      :modal="true" class="w-full max-w-xl">
       <div class="space-y-4 pt-2">
         <!-- Student ID & Gender -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Student ID *</label>
-            <InputText 
-              v-model="studentForm.student_id" 
-              placeholder="e.g. STU-1001" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="studentForm.student_id" placeholder="e.g. STU-1001"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div class="sm:col-span-2">
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
-            <Dropdown 
-              v-model="studentForm.gender" 
-              :options="['Male', 'Female']" 
-              placeholder="Select Gender" 
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="studentForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
 
@@ -250,19 +228,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (English) *</label>
-            <InputText 
-              v-model="studentForm.name_en" 
-              placeholder="e.g. Sok Visal" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="studentForm.name_en" placeholder="e.g. Sok Visal"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (Khmer)</label>
-            <InputText 
-              v-model="studentForm.name_kh" 
-              placeholder="ឧ. សុខ វិសាល" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="studentForm.name_kh" placeholder="ឧ. សុខ វិសាល"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer" />
           </div>
         </div>
 
@@ -270,18 +242,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
-            <Dropdown
-              v-model="studentForm.class_id"
-              :options="classes"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Select Class"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="studentForm.class_id" :options="classes" optionLabel="name" optionValue="id"
+              placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift</label>
-            <InputText :model-value="selectedClassShift" disabled placeholder="Derived from class" class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
+            <InputText :model-value="selectedClassShift" disabled placeholder="Derived from class"
+              class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
@@ -289,56 +256,46 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major / Department</label>
-            <InputText :model-value="selectedClassMajor" disabled placeholder="Derived from class" class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
+            <InputText :model-value="selectedClassMajor" disabled placeholder="Derived from class"
+              class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
-            <InputText
-              v-model="studentForm.phone"
-              placeholder="012 345 678"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="studentForm.phone" placeholder="012 345 678"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
         <!-- Generation -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generation</label>
-          <Dropdown
-            v-model="studentForm.promotion_id"
-            :options="promotions"
-            optionLabel="name_en"
-            optionValue="id"
-            placeholder="Select Generation"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-          />
+          <Dropdown v-model="studentForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
+            placeholder="Select Generation" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
 
         <!-- Email & Status -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
-            <InputText 
-              v-model="studentForm.email" 
-              placeholder="student@school.edu.kh" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="studentForm.email" placeholder="student@school.edu.kh"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-            <Dropdown 
-              v-model="studentForm.status" 
-              :options="['Active', 'Inactive', 'Suspended']" 
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="studentForm.status" :options="['Active', 'Inactive', 'Suspended']"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
       </div>
 
       <template #footer>
         <div class="flex justify-end gap-2 pt-3">
-          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="studentDialog = false" />
-          <Button label="Save Student" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold" @click="saveStudent" />
+          <Button label="Cancel" icon="pi pi-times"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="studentDialog = false" />
+          <Button label="Save Student" icon="pi pi-check"
+            class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="saveStudent" />
         </div>
       </template>
     </Dialog>
@@ -357,6 +314,8 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+
+const showAllColumns = ref(false);
 
 const students = ref([])
 const classes = ref([])
@@ -403,9 +362,6 @@ const studentForm = ref({
   avatar: ''
 })
 
-// Shift & Major are derived from whichever class is selected, since a
-// student's enrollment inherits both from its class rather than being
-// chosen independently.
 const selectedClassShift = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.shift || '')
 const selectedClassMajor = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.department || '')
 
@@ -487,13 +443,10 @@ const confirmDeleteStudent = async (data) => {
 </script>
 
 <style scoped>
-/* "Floating card row" table, matching the Teachers page: header text
-   sitting directly on the page background, and each row as its own
-   white rounded card with a soft shadow — spacing does the separating,
-   not gridlines. */
+/* Spacing រវាង Card Rows */
 .students-table :deep(.p-datatable-table) {
   border-collapse: separate;
-  border-spacing: 0 0.6rem;
+  border-spacing: 0 0.35rem;
 }
 
 .students-table :deep(.p-datatable-table-container),
@@ -507,35 +460,39 @@ const confirmDeleteStudent = async (data) => {
   background: transparent;
 }
 
+/* TABLE HEADER: បន្ថែម Padding 0.75rem លើ-ក្រោម ឲ្យកម្ពស់ខ្ពស់ស្រឡះ */
 .students-table :deep(.p-datatable-thead > tr > th) {
   background: #ffffff;
   border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #1d4ed8;
-  font-size: 0.78rem;
-  font-weight: 800;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
   letter-spacing: 0.04em;
-  line-height: 1.5rem;
-  padding: 1rem 1rem;
+  padding: 0.75rem 0.85rem;
+  height: 40px !important;            /* កំណត់កម្ពស់ Header ឲ្យច្បាស់ (52px) */
+  padding: 0.85rem 0.85rem !important; /* បន្ថែម padding លើ-ក្រោម */
   white-space: nowrap;
+  background-color: #002060 ;
 }
 
 .students-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
 }
 
 .students-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
 }
 
+/* TABLE BODY CELLS: រក្សា Padding 0.38rem លើ-ក្រោម ឲ្យទាប Compact */
 .students-table :deep(.p-datatable-tbody > tr > td) {
   background: #ffffff;
   border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  line-height: 1.25rem;
-  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  line-height: 1.2;
+  padding: 0.38rem 0.85rem;
   transition: background-color 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
@@ -543,13 +500,13 @@ const confirmDeleteStudent = async (data) => {
 }
 
 .students-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
 }
 
 .students-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
   overflow: visible;
 }
 
@@ -564,6 +521,6 @@ const confirmDeleteStudent = async (data) => {
 .students-table :deep(.p-paginator) {
   background: transparent;
   border: none;
-  padding-top: 0.75rem;
+  padding-top: 0.5rem;
 }
 </style>

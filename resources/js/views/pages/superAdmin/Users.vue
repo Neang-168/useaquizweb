@@ -835,13 +835,14 @@ const onAvatarSelect = async (event) => {
   background: #ffffff;
   border: none !important;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #1d4ed8;
+  color: #fff;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1.5rem;
   padding: 1rem 1rem;
   white-space: nowrap;
+  background-color: #002060;
 }
 
 .users-table :deep(.p-datatable-thead > tr > th:first-child) {

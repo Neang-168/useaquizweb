@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <!-- ======= 1. LIST VIEW (DataTable, floating card rows) ======= -->
+    <!-- ======= 1. LIST VIEW (DataTable) ======= -->
     <DataTable
         v-if="viewMode === 'list'"
         :value="filteredClasses" 
@@ -215,107 +215,113 @@
         </Column>
       </DataTable>
 
-      <!-- ======= 2. CARD VIEW ======= -->
-      <div v-else class="p-6">
-        <div v-if="filteredClasses.length === 0" class="text-center py-8 text-slate-400 text-sm">
-          No classes found.
-        </div>
+    <!-- ======= 2. REDESIGNED COMPACT CARD VIEW ======= -->
+    <div v-else>
+      <div v-if="filteredClasses.length === 0" class="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
+        No classes found.
+      </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div 
-            v-for="cls in filteredClasses" 
-            :key="cls.id"
-            class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-          >
-            <!-- Card Top Bar -->
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-3">
-                <div>
-                  <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-                    {{ cls.code }}
-                  </span>
-                  <h3 class="font-bold text-slate-800 text-base mt-2 mb-0">{{ cls.name }}</h3>
-                  <p class="text-xs text-slate-400 m-0">{{ cls.department }}</p>
-                </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div 
+          v-for="cls in filteredClasses" 
+          :key="cls.id"
+          class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group"
+        >
+          <div>
+            <!-- Header Row: Code & Status -->
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100/80">
+                {{ cls.code }}
+              </span>
 
-                <span 
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0"
-                  :class="cls.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="cls.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
-                  {{ cls.status }}
+              <span 
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                :class="cls.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60' : 'bg-rose-50 text-rose-600 border border-rose-200/60'"
+              >
+                <span class="w-1.5 h-1.5 rounded-full" :class="cls.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                {{ cls.status }}
+              </span>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <div class="mb-3">
+              <h3 class="font-bold text-slate-800 text-sm line-clamp-1 m-0" :title="cls.name">{{ cls.name }}</h3>
+              <p class="text-[11px] text-slate-400 m-0 mt-0.5 line-clamp-1">{{ cls.department || 'No Department' }}</p>
+            </div>
+
+            <!-- Detailed Grid Info -->
+            <div class="space-y-1.5 py-2.5 border-t border-b border-slate-100 text-xs">
+              <!-- Stage -->
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
+                  <i class="pi pi-graduation-cap text-slate-400 text-xs"></i> Stage
+                </span>
+                <span class="font-semibold text-slate-700 text-xs">{{ cls.stage }}</span>
+              </div>
+
+              <!-- Shift -->
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
+                  <i class="pi pi-clock text-slate-400 text-xs"></i> Shift
+                </span>
+                <span class="font-medium text-slate-700 text-xs">{{ cls.shift }}</span>
+              </div>
+
+              <!-- Room -->
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
+                  <i class="pi pi-building text-slate-400 text-xs"></i> Room
+                </span>
+                <span class="font-semibold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded text-[11px] border border-indigo-100/60">
+                  {{ cls.room }}
                 </span>
               </div>
 
-              <!-- Card Information Rows -->
-              <div class="space-y-2 py-3 border-y border-slate-100 my-3 text-xs text-slate-600">
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-400 flex items-center gap-1.5">
-                    <i class="pi pi-step-forward text-slate-400"></i> Stage
-                  </span>
-                  <span class="font-medium text-slate-700">{{ cls.stage }}</span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-400 flex items-center gap-1.5">
-                    <i class="pi pi-clock text-slate-400"></i> Shift
-                  </span>
-                  <span class="font-medium text-slate-700">{{ cls.shift }}</span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-400 flex items-center gap-1.5">
-                    <i class="pi pi-building text-slate-400"></i> Room
-                  </span>
-                  <span class="font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                    {{ cls.room }}
-                  </span>
-                </div>
-
-                <div v-if="cls.term" class="flex items-center justify-between">
-                  <span class="text-slate-400 flex items-center gap-1.5">
-                    <i class="pi pi-calendar text-slate-400"></i> Term
-                  </span>
-                  <span class="font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                    {{ cls.term }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Students Progress Bar -->
-              <div class="mt-3">
-                <div class="flex justify-between text-xs font-semibold mb-1.5">
-                  <span class="text-slate-500">Students Enrolled</span>
-                  <span class="text-slate-800">{{ cls.students_count }} / {{ cls.capacity }}</span>
-                </div>
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full rounded-full transition-all duration-300" 
-                    :class="cls.students_count >= cls.capacity ? 'bg-rose-500' : 'bg-blue-600'"
-                    :style="{ width: Math.min((cls.students_count / cls.capacity) * 100, 100) + '%' }"
-                  ></div>
-                </div>
+              <!-- Term -->
+              <div v-if="cls.term" class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
+                  <i class="pi pi-calendar text-slate-400 text-xs"></i> Term
+                </span>
+                <span class="font-semibold text-amber-700 bg-amber-50/80 px-2 py-0.5 rounded text-[11px] border border-amber-100/60">
+                  {{ cls.term }}
+                </span>
               </div>
             </div>
 
-            <!-- Card Bottom Actions -->
-            <div class="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
-              <Button 
-                label="Edit" 
-                icon="pi pi-pencil" 
-                class="!py-1.5 !px-3 !text-xs !bg-slate-50 hover:!bg-slate-100 !text-slate-600 !border-slate-200 !rounded-xl"
-                @click="editClass(cls)"
-              />
-              <Button 
-                label="Delete" 
-                icon="pi pi-trash" 
-                class="!py-1.5 !px-3 !text-xs !bg-rose-50 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-xl"
-                @click="confirmDeleteClass(cls)"
-              />
+            <!-- Students Enrolled Progress -->
+            <div class="mt-3">
+              <div class="flex justify-between items-center text-[11px] font-semibold mb-1">
+                <span class="text-slate-400">Students Enrolled</span>
+                <span class="text-slate-700 font-bold">{{ cls.students_count || 0 }} / {{ cls.capacity }}</span>
+              </div>
+              <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                <div 
+                  class="h-full rounded-full transition-all duration-300" 
+                  :class="cls.students_count >= cls.capacity ? 'bg-rose-500' : 'bg-blue-600'"
+                  :style="{ width: Math.min(((cls.students_count || 0) / cls.capacity) * 100, 100) + '%' }"
+                ></div>
+              </div>
             </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
+            <Button 
+              label="Edit" 
+              icon="pi pi-pencil" 
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-blue-50 hover:!text-blue-600 !text-slate-600 !border-slate-200 !rounded-lg"
+              @click="editClass(cls)"
+            />
+            <Button 
+              label="Delete" 
+              icon="pi pi-trash" 
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-rose-50/60 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-lg"
+              @click="confirmDeleteClass(cls)"
+            />
           </div>
         </div>
       </div>
+    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog 
@@ -608,15 +614,17 @@ const confirmDeleteClass = async (data) => {
 </script>
 
 <style scoped>
-/* "Floating card row" table, matching the Teachers page: header text
-   sitting directly on the page background, and each row as its own
-   white rounded card with a soft shadow — spacing does the separating,
-   not gridlines. Only affects the List view; Card view is unaffected. */
+/* =========================================================
+   1. TABLE LIST VIEW - FLOATING CARD ROWS STYLE
+   ========================================================= */
+
+/* បង្កើតចន្លោះឃ្លាតរវាង Row នីមួយៗ (Floating Cards) */
 .classes-table :deep(.p-datatable-table) {
-  border-collapse: separate;
-  border-spacing: 0 0.6rem;
+  border-collapse: separate !important;
+  border-spacing: 0 0.5rem !important;
 }
 
+/* លុប Container Border & Background ចាស់ចេញ */
 .classes-table :deep(.p-datatable-table-container),
 .classes-table :deep(.p-datatable-header),
 .classes-table :deep(.p-datatable-footer),
@@ -624,67 +632,94 @@ const confirmDeleteClass = async (data) => {
 .classes-table :deep(.p-datatable),
 .classes-table :deep(.p-datatable-mask) {
   border: none !important;
-  box-shadow: none;
-  background: transparent;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
+/* --- TABLE HEADER STYLE --- */
+/* បង្ខំកម្ពស់ Header ឲ្យខ្ពស់ស្រឡះជាង Data Rows */
 .classes-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff;
+  background: #ffffff !important;
   border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #1d4ed8;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.5rem;
-  padding: 1rem 1rem;
-  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  color: #1d4ed8 !important;            /* ពណ៌អក្សរខៀវ Primary */
+  font-size: 0.75rem !important;        /* Font Header */
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  
+  height: 52px !important;              /* បង្ខំកម្ពស់ 52px */
+  padding: 0.75rem 1rem !important;
+  
+  vertical-align: middle !important;
+  white-space: nowrap !important;
 }
 
+/* កោងជ្រុងខាងឆ្វេង និងស្ដាំនៃ Header */
 .classes-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
+  border-top-left-radius: 0.75rem !important;
+  border-bottom-left-radius: 0.75rem !important;
 }
 
 .classes-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  border-top-right-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
 }
 
+/* --- TABLE BODY ROWS (STU-xxxx) STYLE --- */
+/* Data Rows ទាប និង Compact ជាង Header */
 .classes-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff;
+  background: #ffffff !important;
   border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  line-height: 1.25rem;
-  padding: 0.75rem 1rem;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  color: #334155 !important;
+  font-size: 0.82rem !important;
+  
+  height: 44px !important;              /* កម្ពស់ Data Row */
+  padding: 0.5rem 1rem !important;
+  
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  transition: all 0.15s ease !important;
 }
 
+/* កោងជ្រុងខាងឆ្វេង និងស្ដាំនៃ Body Rows */
 .classes-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
+  border-top-left-radius: 0.75rem !important;
+  border-bottom-left-radius: 0.75rem !important;
 }
 
 .classes-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
-  overflow: visible;
+  border-top-right-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
+  overflow: visible !important;
 }
 
+/* Effect ពេល Hover លើ Row */
 .classes-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc;
+  background: #f8fafc !important;
 }
 
 .classes-table :deep(.p-datatable-tbody > tr) {
-  outline: none;
+  outline: none !important;
 }
 
+/* --- PAGINATOR STYLE --- */
 .classes-table :deep(.p-paginator) {
-  background: transparent;
-  border: none;
-  padding-top: 0.75rem;
+  background: transparent !important;
+  border: none !important;
+  padding-top: 1rem !important;
+}
+
+
+/* =========================================================
+   2. UTILITY HELPER STYLES
+   ========================================================= */
+
+/* បង្ខំកាត់ Text វែងៗកុំឲ្យធ្លាក់ជួរ (សម្រាប់ Card View) */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

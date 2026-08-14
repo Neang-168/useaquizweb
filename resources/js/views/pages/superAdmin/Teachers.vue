@@ -21,8 +21,9 @@
       />
     </div>
 
-    <!-- ======= TABLE HEADER BAR / SEARCH & FILTER ======= -->
+    <!-- ======= TABLE HEADER BAR / SEARCH & SHOW MORE/LESS TOGGLE ======= -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <!-- Search Input -->
       <div class="relative w-full sm:w-80">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
         <InputText
@@ -31,6 +32,14 @@
           class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
         />
       </div>
+
+      <!-- Show More / Show Less Toggle Button -->
+      <Button
+        :label="showAllColumns ? 'Show Less ' : 'Show More '"
+        :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+        class="!bg-emerald-600 hover:!bg-emerald-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        @click="showAllColumns = !showAllColumns"
+      />
     </div>
 
     <!-- ======= DATA TABLE (floating card rows, scrolls when there are many rows/columns) ======= -->
@@ -59,28 +68,25 @@
           </template>
         </Column>
 
-        <!-- Teacher Name (English) -->
+        <!-- Teacher Name (English) - តែងតែបង្ហាញ -->
         <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 210px">
           <template #body="{ data }">
             <div class="flex items-center gap-2.5">
-              <!-- <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
-                {{ data.name_en.charAt(0) }}
-              </div> -->
               <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
             </div>
           </template>
         </Column>
 
-        <!-- Teacher Name (Khmer) -->
-        <Column field="name_kh" header="TEACHER NAME (KH)" sortable style="min-width: 170px">
+        <!-- Teacher Name (Khmer) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="name_kh" header="TEACHER NAME (KH)" sortable style="min-width: 170px">
           <template #body="{ data }">
             <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
             <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
-        <!-- Gender -->
-        <Column field="gender" header="GENDER" sortable style="min-width: 90px">
+        <!-- Gender - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="gender" header="GENDER" sortable style="min-width: 90px">
           <template #body="{ data }">
             <span
               v-if="data.gender"
@@ -94,22 +100,22 @@
           </template>
         </Column>
 
-        <!-- Faculty -->
+        <!-- Faculty - តែងតែបង្ហាញ -->
         <Column field="department" header="FACULTY" sortable style="min-width: 160px">
           <template #body="{ data }">
             <span class="text-slate-600 text-sm font-medium">{{ data.department || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Department -->
-        <Column field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
+        <!-- Department - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
           <template #body="{ data }">
             <span class="text-slate-600 text-sm font-medium">{{ data.department_name || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Degree -->
-        <Column field="degree" header="DEGREE" style="min-width: 150px">
+        <!-- Degree - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="degree" header="DEGREE" style="min-width: 150px">
           <template #body="{ data }">
             <span v-if="data.degree" class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
               {{ data.degree }}
@@ -118,22 +124,22 @@
           </template>
         </Column>
 
-        <!-- Phone -->
+        <!-- Phone - តែងតែបង្ហាញ -->
         <Column field="phone" header="PHONE" style="min-width: 120px">
           <template #body="{ data }">
             <span class="text-slate-600 text-sm font-mono">{{ data.phone || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Email -->
-        <Column field="email" header="EMAIL" style="min-width: 170px">
+        <!-- Email - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="email" header="EMAIL" style="min-width: 170px">
           <template #body="{ data }">
             <span class="text-slate-500 text-sm">{{ data.email || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Employment Type -->
-        <Column field="type" header="EMPLOYMENT" sortable style="min-width: 110px">
+        <!-- Employment Type - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="type" header="EMPLOYMENT" sortable style="min-width: 110px">
           <template #body="{ data }">
             <span
               class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
@@ -144,7 +150,7 @@
           </template>
         </Column>
 
-        <!-- Status -->
+        <!-- Status - តែងតែបង្ហាញ -->
         <Column field="status" header="STATUS" sortable style="min-width: 100px">
           <template #body="{ data }">
             <span
@@ -157,7 +163,7 @@
           </template>
         </Column>
 
-        <!-- Actions -->
+        <!-- Actions - តែងតែបង្ហាញ -->
         <Column header="ACTIONS" class="!text-right" style="min-width: 130px">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
@@ -182,7 +188,7 @@
             </div>
           </template>
         </Column>
-      </DataTable>
+    </DataTable>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog 
@@ -408,6 +414,9 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+
+//show column more and less
+const showAllColumns = ref(false);
 
 const teachers = ref([])
 const faculties = ref([])

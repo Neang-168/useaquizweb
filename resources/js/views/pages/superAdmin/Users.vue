@@ -81,8 +81,9 @@
         </button>
       </div>
 
-      <!-- Table Header Bar / Search -->
+      <!-- Table Header Bar / Search & Show More/Less Toggle -->
       <div class="flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 p-4 pb-0">
+        <!-- Search Input -->
         <div class="relative w-full sm:w-80">
           <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
           <InputText
@@ -91,6 +92,14 @@
             class="w-full !pl-9 !pr-3.5 !py-2 !bg-slate-50/80 hover:!bg-slate-100/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs transition-all placeholder:text-slate-400"
           />
         </div>
+
+        <!-- Show More / Show Less Toggle Button -->
+        <Button
+          :label="showAllColumns ? 'Show Less ' : 'Show More '"
+          :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+          class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+          @click="showAllColumns = !showAllColumns"
+        />
       </div>
 
       <!-- PrimeVue DataTable -->
@@ -120,7 +129,7 @@
           </div>
         </template>
 
-        <!-- Username -->
+        <!-- Username - តែងតែបង្ហាញ -->
         <Column field="username" header="USERNAME" sortable style="min-width: 130px">
           <template #body="{ data }">
             <span class="font-mono text-[11px] font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100 inline-block tracking-tight">
@@ -129,56 +138,56 @@
           </template>
         </Column>
 
-        <!-- Full Name -->
+        <!-- Full Name - តែងតែបង្ហាញ -->
         <Column field="first_name" header="FULL NAME" sortable style="min-width: 180px">
           <template #body="{ data }">
             <span class="font-medium text-slate-800">{{ data.first_name }} {{ data.last_name }}</span>
           </template>
         </Column>
 
-        <!-- Name (Khmer) -->
-        <Column field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
+        <!-- Name (Khmer) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
           <template #body="{ data }">
             <span class="text-slate-600 font-khmer">{{ data.name_kh || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Email -->
+        <!-- Email - តែងតែបង្ហាញ -->
         <Column field="email" header="EMAIL" sortable style="min-width: 190px">
           <template #body="{ data }">
             <span class="text-slate-600 hover:text-slate-900 transition-colors">{{ data.email }}</span>
           </template>
         </Column>
 
-        <!-- Phone -->
-        <Column field="phone" header="PHONE" style="min-width: 130px">
+        <!-- Phone - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="phone" header="PHONE" style="min-width: 130px">
           <template #body="{ data }">
             <span class="text-slate-600 font-mono text-[11px]">{{ data.phone || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Gender -->
-        <Column field="gender" header="GENDER" style="width: 100px">
+        <!-- Gender - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="gender" header="GENDER" style="width: 100px">
           <template #body="{ data }">
             <span class="text-slate-600">{{ data.gender || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Date of Birth -->
-        <Column field="dob" header="DATE OF BIRTH" style="width: 130px">
+        <!-- Date of Birth - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="dob" header="DATE OF BIRTH" style="width: 130px">
           <template #body="{ data }">
             <span class="text-slate-600 font-mono text-[11px]">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Address -->
-        <Column field="address" header="ADDRESS" style="min-width: 180px">
+        <!-- Address - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="address" header="ADDRESS" style="min-width: 180px">
           <template #body="{ data }">
             <span class="text-slate-600 truncate block max-w-[200px]" :title="data.address">{{ data.address || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Role -->
+        <!-- Role - តែងតែបង្ហាញ -->
         <Column header="ROLE" sortable style="width: 150px">
           <template #body="{ data }">
             <span
@@ -190,8 +199,8 @@
           </template>
         </Column>
 
-        <!-- Employee / Student Code -->
-        <Column header="CODE" style="width: 130px">
+        <!-- Employee / Student Code - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="CODE" style="width: 130px">
           <template #body="{ data }">
             <span class="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/80">
               {{ detailsFor(data).primary || 'N/A' }}
@@ -199,14 +208,14 @@
           </template>
         </Column>
 
-        <!-- Department / Faculty / Admission -->
-        <Column header="DEPARTMENT / FACULTY" style="min-width: 180px">
+        <!-- Department / Faculty / Admission - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="DEPARTMENT / FACULTY" style="min-width: 180px">
           <template #body="{ data }">
             <span class="text-slate-500 font-medium">{{ detailsFor(data).secondary || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Status -->
+        <!-- Status - តែងតែបង្ហាញ -->
         <Column field="status" header="STATUS" sortable style="width: 120px">
           <template #body="{ data }">
             <span
@@ -219,7 +228,7 @@
           </template>
         </Column>
 
-        <!-- Actions -->
+        <!-- Actions - តែងតែបង្ហាញ -->
         <Column header="ACTIONS" style="width: 100px" class="!text-center users-actions-col">
           <template #body="{ data }">
             <div class="flex items-center justify-center gap-1.5">
@@ -487,7 +496,7 @@ import DatePicker from 'primevue/datepicker'
 import FileUpload from 'primevue/fileupload'
 
 
-
+const showAllColumns = ref(false);
 // ======= Data =======
 const users = ref([])
 const roles = ref([])

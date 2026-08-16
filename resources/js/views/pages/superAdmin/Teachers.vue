@@ -42,9 +42,27 @@
       />
     </div>
 
+    <!-- ======= FILTER BAR ======= -->
+    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+      <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="departmentFilter" :options="departments" optionLabel="name_en" optionValue="id"
+        placeholder="All Departments" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="degreeFilter" :options="degrees" optionLabel="title_en" optionValue="id"
+        placeholder="All Degrees" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="typeFilter" :options="['Full-Time', 'Part-Time']"
+        placeholder="All Employment Types" showClear class="w-48 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
+        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
+        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+        @click="clearFilters" />
+    </div>
+
     <!-- ======= DATA TABLE (floating card rows, scrolls when there are many rows/columns) ======= -->
     <DataTable
-      :value="teachers"
+      :value="filteredTeachers"
       v-model:filters="filters"
       dataKey="id"
       paginator
@@ -458,6 +476,34 @@ onMounted(() => {
 
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+
+// ======= Filter Bar (Faculty / Department / Degree / Type / Status) =======
+const facultyFilter = ref(null)
+const departmentFilter = ref(null)
+const degreeFilter = ref(null)
+const typeFilter = ref(null)
+const statusFilter = ref(null)
+
+const hasActiveFilters = computed(() =>
+  !!(facultyFilter.value || departmentFilter.value || degreeFilter.value || typeFilter.value || statusFilter.value)
+)
+
+const clearFilters = () => {
+  facultyFilter.value = null
+  departmentFilter.value = null
+  degreeFilter.value = null
+  typeFilter.value = null
+  statusFilter.value = null
+}
+
+const filteredTeachers = computed(() => teachers.value.filter((t) => {
+  if (facultyFilter.value && t.faculty_id !== facultyFilter.value) return false
+  if (departmentFilter.value && t.department_id !== departmentFilter.value) return false
+  if (degreeFilter.value && t.degree_id !== degreeFilter.value) return false
+  if (typeFilter.value && t.type !== typeFilter.value) return false
+  if (statusFilter.value && t.status !== statusFilter.value) return false
+  return true
+}))
 
 // Dialog States & Form
 const teacherDialog = ref(false)

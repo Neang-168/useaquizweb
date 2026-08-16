@@ -111,6 +111,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->middleware('permission:manage_teachers');
 
     // Students
+    Route::patch('students/{student}/assign', [StudentController::class, 'assign'])
+        ->middleware('permission:manage_students');
     Route::apiResource('students', StudentController::class)
         ->parameters(['students' => 'student'])
         ->middleware('permission:manage_students');

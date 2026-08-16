@@ -20,6 +20,8 @@ class TeacherAssignmentController extends Controller
         $assignments = TeacherSubject::query()
             ->with(['teacherProfile.user', 'subject', 'classroom'])
             ->when($request->input('teacher_profile_id'), fn ($query, $id) => $query->where('teacher_profile_id', $id))
+            ->when($request->input('class_id'), fn ($query, $id) => $query->where('class_id', $id))
+            ->when($request->input('subject_id'), fn ($query, $id) => $query->where('subject_id', $id))
             ->orderByDesc('created_at')
             ->get();
 

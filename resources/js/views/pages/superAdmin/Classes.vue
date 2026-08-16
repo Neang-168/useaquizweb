@@ -90,6 +90,24 @@
       </div>
     </div>
 
+    <!-- ======= FILTER BAR ======= -->
+    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+      <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
+        placeholder="All Departments/Majors" showClear class="w-52 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
+        placeholder="All Stages" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="shiftFilter" :options="shifts" optionLabel="name_en" optionValue="id"
+        placeholder="All Shifts" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="termFilter" :options="terms" optionLabel="name_en" optionValue="id"
+        placeholder="All Terms" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
+        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
+        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+        @click="clearFilters" />
+    </div>
+
     <!-- ======= 1. LIST VIEW (DataTable) ======= -->
     <DataTable
         v-if="viewMode === 'list'"
@@ -199,6 +217,12 @@
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <Button
+                icon="pi pi-book"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
+                title="Subjects Taught"
+                @click="openSubjectsDialog(data)"
+              />
+              <Button
                 icon="pi pi-pencil"
                 class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
                 title="Edit Class"
@@ -306,15 +330,21 @@
 
           <!-- Bottom Action Buttons -->
           <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
-            <Button 
-              label="Edit" 
-              icon="pi pi-pencil" 
+            <Button
+              label="Subjects"
+              icon="pi pi-book"
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 !rounded-lg"
+              @click="openSubjectsDialog(cls)"
+            />
+            <Button
+              label="Edit"
+              icon="pi pi-pencil"
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-blue-50 hover:!text-blue-600 !text-slate-600 !border-slate-200 !rounded-lg"
               @click="editClass(cls)"
             />
-            <Button 
-              label="Delete" 
-              icon="pi pi-trash" 
+            <Button
+              label="Delete"
+              icon="pi pi-trash"
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-rose-50/60 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-lg"
               @click="confirmDeleteClass(cls)"
             />
@@ -456,6 +486,78 @@
       </template>
     </Dialog>
 
+    <!-- ======= SUBJECTS TAUGHT DIALOG (Subject + Teacher per Class) ======= -->
+    <Dialog
+      v-model:visible="subjectsDialog"
+      :header="assignmentClass ? `Subjects Taught - ${assignmentClass.name}` : 'Subjects Taught'"
+      :modal="true"
+      class="w-full max-w-2xl"
+    >
+      <div class="space-y-4 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject</label>
+            <Dropdown
+              v-model="subjectAssignForm.subject_id"
+              :options="subjectOptionsForClass"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Subject"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teacher</label>
+            <Dropdown
+              v-model="subjectAssignForm.teacher_profile_id"
+              :options="teacherOptionsForClass"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Teacher"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <Button
+            label="Add Subject"
+            icon="pi pi-plus"
+            class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="addSubjectToClass"
+          />
+        </div>
+        <p class="text-[11px] text-slate-400 -mt-2">
+          Only subjects and teachers within this class's faculty are shown.
+        </p>
+
+        <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
+          <div
+            v-for="assignment in classSubjectAssignments"
+            :key="assignment.id"
+            class="flex items-center justify-between px-4 py-2.5"
+          >
+            <div>
+              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{{ assignment.subject_code }}</span>
+              <span class="text-sm font-semibold text-slate-800">{{ assignment.subject_name }}</span>
+              <span class="text-xs text-slate-400 ml-2">taught by {{ assignment.teacher_name }}</span>
+            </div>
+            <Button
+              icon="pi pi-trash"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+              @click="removeSubjectFromClass(assignment)"
+            />
+          </div>
+          <div v-if="classSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
+            No subjects assigned to this class yet.
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end pt-3">
+          <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="subjectsDialog = false" />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -480,6 +582,8 @@ const stages = ref([])
 const shifts = ref([])
 const semesters = ref([])
 const terms = ref([])
+const subjects = ref([])
+const teachers = ref([])
 
 const fetchClasses = async () => {
   const { data } = await api.get('/classes', { params: { per_page: 100 } })
@@ -487,18 +591,22 @@ const fetchClasses = async () => {
 }
 
 const fetchLookups = async () => {
-  const [majorsRes, stagesRes, shiftsRes, semestersRes, termsRes] = await Promise.all([
+  const [majorsRes, stagesRes, shiftsRes, semestersRes, termsRes, subjectsRes, teachersRes] = await Promise.all([
     api.get('/majors', { params: { per_page: 100 } }),
     api.get('/stages', { params: { per_page: 100 } }),
     api.get('/shifts', { params: { per_page: 100 } }),
     api.get('/semesters', { params: { per_page: 100 } }),
     api.get('/terms', { params: { per_page: 100 } }),
+    api.get('/subjects', { params: { per_page: 200 } }),
+    api.get('/teachers', { params: { per_page: 200 } }),
   ])
   majors.value = majorsRes.data.data
   stages.value = stagesRes.data.data
   shifts.value = shiftsRes.data.data
   semesters.value = semestersRes.data.data
   terms.value = termsRes.data.data
+  subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, faculty_id: s.faculty_id, name_en: `${s.name_en} (${s.code})` }))
+  teachers.value = teachersRes.data.data.map(t => ({ id: t.id, faculty_id: t.faculty_id, name_en: t.name_en }))
 }
 
 onMounted(() => {
@@ -509,17 +617,44 @@ onMounted(() => {
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 
+// ======= Filter Bar (Major / Stage / Shift / Term / Status) =======
+const majorFilter = ref(null)
+const stageFilter = ref(null)
+const shiftFilter = ref(null)
+const termFilter = ref(null)
+const statusFilter = ref(null)
+
+const hasActiveFilters = computed(() =>
+  !!(majorFilter.value || stageFilter.value || shiftFilter.value || termFilter.value || statusFilter.value)
+)
+
+const clearFilters = () => {
+  majorFilter.value = null
+  stageFilter.value = null
+  shiftFilter.value = null
+  termFilter.value = null
+  statusFilter.value = null
+}
+
 // Computed Filter for Grid View Search Integration
 const filteredClasses = computed(() => {
   const query = filters.value.global.value?.toLowerCase().trim()
-  if (!query) return classes.value
-  
-  return classes.value.filter(c =>
-    c.code.toLowerCase().includes(query) ||
-    c.name.toLowerCase().includes(query) ||
-    (c.department || '').toLowerCase().includes(query) ||
-    (c.room || '').toLowerCase().includes(query)
-  )
+
+  return classes.value.filter((c) => {
+    if (query) {
+      const matchesQuery = c.code.toLowerCase().includes(query) ||
+        c.name.toLowerCase().includes(query) ||
+        (c.department || '').toLowerCase().includes(query) ||
+        (c.room || '').toLowerCase().includes(query)
+      if (!matchesQuery) return false
+    }
+    if (majorFilter.value && c.major_id !== majorFilter.value) return false
+    if (stageFilter.value && c.stage_id !== stageFilter.value) return false
+    if (shiftFilter.value && c.shift_id !== shiftFilter.value) return false
+    if (termFilter.value && c.term_id !== termFilter.value) return false
+    if (statusFilter.value && c.status !== statusFilter.value) return false
+    return true
+  })
 })
 
 // Dialog States & Form
@@ -609,6 +744,71 @@ const confirmDeleteClass = async (data) => {
     } catch (error) {
       alert(extractError(error))
     }
+  }
+}
+
+// ======= Subjects Taught Dialog (Subject + Teacher per Class) =======
+const subjectsDialog = ref(false)
+const assignmentClass = ref(null)
+const classSubjectAssignments = ref([])
+const subjectAssignForm = ref({ subject_id: null, teacher_profile_id: null })
+
+// Subjects/teachers are scoped to the faculty of whichever class's dialog
+// is open, mirroring the same faculty-scoping used on the Teachers page.
+const subjectOptionsForClass = computed(() =>
+  assignmentClass.value
+    ? subjects.value.filter(s => s.faculty_id === assignmentClass.value.faculty_id)
+    : []
+)
+const teacherOptionsForClass = computed(() =>
+  assignmentClass.value
+    ? teachers.value.filter(t => t.faculty_id === assignmentClass.value.faculty_id)
+    : []
+)
+
+const fetchClassSubjectAssignments = async (classId) => {
+  const { data } = await api.get('/teacher-assignments', { params: { class_id: classId } })
+  classSubjectAssignments.value = data.data
+}
+
+const openSubjectsDialog = async (data) => {
+  assignmentClass.value = data
+  subjectAssignForm.value = { subject_id: null, teacher_profile_id: null }
+  subjectsDialog.value = true
+  try {
+    await fetchClassSubjectAssignments(data.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const addSubjectToClass = async () => {
+  if (!subjectAssignForm.value.subject_id || !subjectAssignForm.value.teacher_profile_id) {
+    alert('Please select both a subject and a teacher.')
+    return
+  }
+
+  try {
+    await api.post('/teacher-assignments', {
+      teacher_profile_id: subjectAssignForm.value.teacher_profile_id,
+      subject_id: subjectAssignForm.value.subject_id,
+      class_id: assignmentClass.value.id,
+    })
+    subjectAssignForm.value = { subject_id: null, teacher_profile_id: null }
+    await fetchClassSubjectAssignments(assignmentClass.value.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const removeSubjectFromClass = async (assignment) => {
+  if (!confirm(`Remove ${assignment.subject_name} (${assignment.teacher_name}) from this class?`)) return
+
+  try {
+    await api.delete(`/teacher-assignments/${assignment.id}`)
+    await fetchClassSubjectAssignments(assignmentClass.value.id)
+  } catch (error) {
+    alert(extractError(error))
   }
 }
 </script>

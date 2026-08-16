@@ -132,6 +132,29 @@ class StudentController extends Controller
     }
 
     /**
+     * Quick action: (re)assign a student to a class/generation without
+     * touching the rest of their profile. Powers the "Assign" button on
+     * the Student & Enrollment page, separate from the full edit form.
+     */
+    public function assign(Request $request, StudentProfile $student)
+    {
+        $validated = $request->validate([
+            'class_id' => ['required', 'exists:classes,id'],
+            'promotion_id' => ['nullable', 'exists:promotions,id'],
+            'status' => ['required', Rule::in(['Active', 'Inactive', 'Suspended'])],
+        ]);
+
+        $this->syncEnrollment($student, $validated);
+
+        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
+
+        return response()->json([
+            'message' => 'Student assigned successfully.',
+            'student' => $this->transform($student),
+        ]);
+    }
+
+    /**
      * Delete student (soft-deletes the underlying user).
      */
     public function destroy(StudentProfile $student)

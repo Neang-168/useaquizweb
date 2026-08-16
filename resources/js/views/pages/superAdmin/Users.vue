@@ -102,6 +102,20 @@
         />
       </div>
 
+      <!-- ======= FILTER BAR ======= -->
+      <div class="flex flex-wrap items-center gap-2.5 shrink-0 px-4 pt-3">
+        <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+        <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+          placeholder="Faculty (Teachers)" showClear class="w-48 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
+        <Dropdown v-model="genderFilter" :options="['Male', 'Female']"
+          placeholder="All Genders" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
+        <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
+          placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
+        <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
+          class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-lg !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+          @click="clearFilters" />
+      </div>
+
       <!-- PrimeVue DataTable -->
       <DataTable
         :value="filteredUsers"
@@ -546,9 +560,30 @@ const countFor = (key) => {
   return users.value.filter(u => roleGroups[key].includes(u.role?.name)).length
 }
 
+// ======= Filter Bar (Faculty / Gender / Status), layered on top of the tab =======
+const facultyFilter = ref(null)
+const genderFilter = ref(null)
+const statusFilter = ref(null)
+
+const hasActiveFilters = computed(() => !!(facultyFilter.value || genderFilter.value || statusFilter.value))
+
+const clearFilters = () => {
+  facultyFilter.value = null
+  genderFilter.value = null
+  statusFilter.value = null
+}
+
 const filteredUsers = computed(() => {
-  if (activeTab.value === 'all') return users.value
-  return users.value.filter(u => roleGroups[activeTab.value].includes(u.role?.name))
+  const byTab = activeTab.value === 'all'
+    ? users.value
+    : users.value.filter(u => roleGroups[activeTab.value].includes(u.role?.name))
+
+  return byTab.filter((u) => {
+    if (facultyFilter.value && u.teacher_profile?.faculty_id !== facultyFilter.value) return false
+    if (genderFilter.value && u.gender !== genderFilter.value) return false
+    if (statusFilter.value && (u.status ? 'Active' : 'Inactive') !== statusFilter.value) return false
+    return true
+  })
 })
 
 const defaultRoleForTab = computed(() => {

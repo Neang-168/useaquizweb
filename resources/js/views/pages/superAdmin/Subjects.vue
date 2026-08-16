@@ -65,13 +65,29 @@
         />
       </div>
       <div class="text-xs text-slate-400">
-        Showing <b>{{ subjects.length }}</b> entries
+        Showing <b>{{ filteredSubjects.length }}</b> entries
       </div>
+    </div>
+
+    <!-- ======= FILTER BAR ======= -->
+    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+      <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="degreeFilter" :options="degrees" optionLabel="title_en" optionValue="id"
+        placeholder="All Degrees" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
+        placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
+        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
+        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+        @click="clearFilters" />
     </div>
 
     <!-- ======= DATA TABLE (floating card rows) ======= -->
     <DataTable
-        :value="subjects" 
+        :value="filteredSubjects"
         v-model:filters="filters"
         dataKey="id" 
         paginator 
@@ -145,6 +161,12 @@
         <Column header="ACTIONS" class="!text-right !py-3.5">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
+              <Button
+                icon="pi pi-sitemap"
+                class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
+                title="Classes Teaching This Subject"
+                @click="openClassesDialog(data)"
+              />
               <Button
                 icon="pi pi-pencil"
                 class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
@@ -284,6 +306,77 @@
       </template>
     </Dialog>
 
+    <!-- ======= CLASSES TEACHING THIS SUBJECT DIALOG (Class + Teacher per Subject) ======= -->
+    <Dialog
+      v-model:visible="classesDialog"
+      :header="assignmentSubject ? `Classes - ${assignmentSubject.name_en}` : 'Classes'"
+      :modal="true"
+      class="w-full max-w-2xl"
+    >
+      <div class="space-y-4 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class</label>
+            <Dropdown
+              v-model="classAssignForm.class_id"
+              :options="classOptionsForSubject"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select Class"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teacher</label>
+            <Dropdown
+              v-model="classAssignForm.teacher_profile_id"
+              :options="teacherOptionsForSubject"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Teacher"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
+            />
+          </div>
+          <Button
+            label="Add Class"
+            icon="pi pi-plus"
+            class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="addClassToSubject"
+          />
+        </div>
+        <p class="text-[11px] text-slate-400 -mt-2">
+          Only classes and teachers within this subject's faculty are shown.
+        </p>
+
+        <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
+          <div
+            v-for="assignment in subjectClassAssignments"
+            :key="assignment.id"
+            class="flex items-center justify-between px-4 py-2.5"
+          >
+            <div>
+              <span class="text-sm font-semibold text-slate-800">{{ assignment.class_name }}</span>
+              <span class="text-xs text-slate-400 ml-2">taught by {{ assignment.teacher_name }}</span>
+            </div>
+            <Button
+              icon="pi pi-trash"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
+              @click="removeClassFromSubject(assignment)"
+            />
+          </div>
+          <div v-if="subjectClassAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
+            No classes teach this subject yet.
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end pt-3">
+          <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="classesDialog = false" />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -304,6 +397,8 @@ const subjects = ref([])
 const faculties = ref([])
 const degrees = ref([])
 const majors = ref([])
+const classes = ref([])
+const teachers = ref([])
 
 const fetchSubjects = async () => {
   const { data } = await api.get('/subjects', { params: { per_page: 100 } })
@@ -311,14 +406,18 @@ const fetchSubjects = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, degreesRes, majorsRes] = await Promise.all([
+  const [facultiesRes, degreesRes, majorsRes, classesRes, teachersRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
     api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/classes', { params: { per_page: 200 } }),
+    api.get('/teachers', { params: { per_page: 200 } }),
   ])
   faculties.value = facultiesRes.data.data
   degrees.value = degreesRes.data.data
   majors.value = majorsRes.data.data
+  classes.value = classesRes.data.data
+  teachers.value = teachersRes.data.data.map(t => ({ id: t.id, faculty_id: t.faculty_id, name_en: t.name_en }))
 }
 
 onMounted(() => {
@@ -328,6 +427,31 @@ onMounted(() => {
 
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+
+// ======= Filter Bar (Faculty / Degree / Major / Status) =======
+const facultyFilter = ref(null)
+const degreeFilter = ref(null)
+const majorFilter = ref(null)
+const statusFilter = ref(null)
+
+const hasActiveFilters = computed(() =>
+  !!(facultyFilter.value || degreeFilter.value || majorFilter.value || statusFilter.value)
+)
+
+const clearFilters = () => {
+  facultyFilter.value = null
+  degreeFilter.value = null
+  majorFilter.value = null
+  statusFilter.value = null
+}
+
+const filteredSubjects = computed(() => subjects.value.filter((s) => {
+  if (facultyFilter.value && s.faculty_id !== facultyFilter.value) return false
+  if (degreeFilter.value && s.degree_id !== degreeFilter.value) return false
+  if (majorFilter.value && s.major_id !== majorFilter.value) return false
+  if (statusFilter.value && s.status !== statusFilter.value) return false
+  return true
+}))
 
 // Dialog States & Form
 const subjectDialog = ref(false)
@@ -421,6 +545,71 @@ const confirmDeleteSubject = async (data) => {
     } catch (error) {
       alert(extractError(error))
     }
+  }
+}
+
+// ======= Classes Teaching This Subject Dialog (Class + Teacher per Subject) =======
+const classesDialog = ref(false)
+const assignmentSubject = ref(null)
+const subjectClassAssignments = ref([])
+const classAssignForm = ref({ class_id: null, teacher_profile_id: null })
+
+// Classes/teachers are scoped to the faculty of whichever subject's dialog
+// is open, mirroring the same faculty-scoping used on the Teachers page.
+const classOptionsForSubject = computed(() =>
+  assignmentSubject.value
+    ? classes.value.filter(c => c.faculty_id === assignmentSubject.value.faculty_id)
+    : []
+)
+const teacherOptionsForSubject = computed(() =>
+  assignmentSubject.value
+    ? teachers.value.filter(t => t.faculty_id === assignmentSubject.value.faculty_id)
+    : []
+)
+
+const fetchSubjectClassAssignments = async (subjectId) => {
+  const { data } = await api.get('/teacher-assignments', { params: { subject_id: subjectId } })
+  subjectClassAssignments.value = data.data
+}
+
+const openClassesDialog = async (data) => {
+  assignmentSubject.value = data
+  classAssignForm.value = { class_id: null, teacher_profile_id: null }
+  classesDialog.value = true
+  try {
+    await fetchSubjectClassAssignments(data.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const addClassToSubject = async () => {
+  if (!classAssignForm.value.class_id || !classAssignForm.value.teacher_profile_id) {
+    alert('Please select both a class and a teacher.')
+    return
+  }
+
+  try {
+    await api.post('/teacher-assignments', {
+      teacher_profile_id: classAssignForm.value.teacher_profile_id,
+      subject_id: assignmentSubject.value.id,
+      class_id: classAssignForm.value.class_id,
+    })
+    classAssignForm.value = { class_id: null, teacher_profile_id: null }
+    await fetchSubjectClassAssignments(assignmentSubject.value.id)
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+const removeClassFromSubject = async (assignment) => {
+  if (!confirm(`Remove ${assignment.class_name} (${assignment.teacher_name}) from this subject?`)) return
+
+  try {
+    await api.delete(`/teacher-assignments/${assignment.id}`)
+    await fetchSubjectClassAssignments(assignmentSubject.value.id)
+  } catch (error) {
+    alert(extractError(error))
   }
 }
 </script>

@@ -63,9 +63,9 @@
 
       <div class="flex items-center justify-between w-full sm:w-auto gap-4">
         <div class="text-xs text-slate-400 shrink-0">
-          Showing <b>{{ students.length }}</b> entries
+          Showing <b>{{ filteredStudents.length }}</b> entries
         </div>
-        
+
         <!-- Show More / Show Less Button -->
         <Button :label="showAllColumns ? 'Show Less ' : 'Show More '"
           :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
@@ -75,8 +75,26 @@
       </div>
     </div>
 
+    <!-- ======= FILTER BAR ======= -->
+    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+      <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
+        placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id"
+        placeholder="All Classes" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
+        placeholder="All Generations" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']"
+        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
+        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+        @click="clearFilters" />
+    </div>
+
     <!-- ======= DATA TABLE ======= -->
-    <DataTable :value="students" v-model:filters="filters"
+    <DataTable :value="filteredStudents" v-model:filters="filters"
       :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
       paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll"
       class="p-datatable-sm students-table">
@@ -195,6 +213,9 @@
       <Column header="ACTIONS" class="!text-right">
         <template #body="{ data }">
           <div class="flex items-center justify-end gap-1">
+            <Button icon="pi pi-sitemap"
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-emerald-50 !text-emerald-600 hover:!bg-emerald-100 hover:!text-emerald-700 !border !border-emerald-100 cursor-pointer text-xs"
+              title="Assign Class" @click="openAssignDialog(data)" />
             <Button icon="pi pi-pencil"
               class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100 cursor-pointer text-xs"
               title="Edit Student" @click="editStudent(data)" />
@@ -300,11 +321,74 @@
       </template>
     </Dialog>
 
+    <!-- ======= ASSIGN CLASS DIALOG ======= -->
+    <Dialog v-model:visible="assignDialog" header="Assign Class" :modal="true" class="w-full max-w-md">
+      <div class="space-y-4 pt-2">
+        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
+            {{ assignForm.name_en?.charAt(0) || '?' }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-slate-800 truncate m-0">{{ assignForm.name_en }}</p>
+            <p class="text-[11px] text-slate-500 m-0">{{ assignForm.student_id }}</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
+          <Dropdown v-model="assignForm.class_id" :options="classes" optionLabel="name" optionValue="id"
+            placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+        </div>
+
+        <!-- Subjects for the selected class are automatic: whichever subjects a
+             teacher is assigned to teach for this class (see Teachers > Assignments). -->
+        <div v-if="assignForm.class_id">
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subjects</label>
+          <div class="flex flex-wrap gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 min-h-[2.5rem]">
+            <span v-for="subject in assignClassSubjects" :key="subject"
+              class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+              {{ subject }}
+            </span>
+            <span v-if="assignClassSubjects.length === 0" class="text-[11px] text-slate-400">
+              No subjects assigned to this class yet.
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">
+            Subjects follow the class automatically. Assign teachers to subjects for this class on the Teachers page.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generation</label>
+            <Dropdown v-model="assignForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
+              placeholder="Select Generation" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+            <Dropdown v-model="assignForm.status" :options="['Active', 'Inactive', 'Suspended']"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2 pt-3">
+          <Button label="Cancel" icon="pi pi-times"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="assignDialog = false" />
+          <Button label="Assign" icon="pi pi-check"
+            class="!bg-emerald-600 hover:!bg-emerald-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="saveAssign" />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
@@ -320,6 +404,7 @@ const showAllColumns = ref(false);
 const students = ref([])
 const classes = ref([])
 const promotions = ref([])
+const faculties = ref([])
 
 const fetchStudents = async () => {
   const { data } = await api.get('/students', { params: { per_page: 100 } })
@@ -336,14 +421,60 @@ const fetchPromotions = async () => {
   promotions.value = data.data
 }
 
+const fetchFaculties = async () => {
+  const { data } = await api.get('/faculties', { params: { per_page: 100 } })
+  faculties.value = data.data
+}
+
 onMounted(() => {
   fetchStudents()
   fetchClasses()
   fetchPromotions()
+  fetchFaculties()
 })
 
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+
+// ======= Filter Bar (Faculty / Major / Class / Generation / Status) =======
+const facultyFilter = ref(null)
+const majorFilter = ref(null)
+const classFilter = ref(null)
+const promotionFilter = ref(null)
+const statusFilter = ref(null)
+
+// Majors don't have their own fetch on this page; build the option list
+// from whatever majors already appear among enrolled students.
+const majorOptions = computed(() => {
+  const seen = new Map()
+  students.value.forEach((s) => {
+    if (s.major_id && !seen.has(s.major_id)) seen.set(s.major_id, s.major)
+  })
+  return Array.from(seen, ([id, name]) => ({ id, name }))
+})
+
+const classFacultyId = (classId) => classes.value.find((c) => c.id === classId)?.faculty_id
+
+const hasActiveFilters = computed(() =>
+  !!(facultyFilter.value || majorFilter.value || classFilter.value || promotionFilter.value || statusFilter.value)
+)
+
+const clearFilters = () => {
+  facultyFilter.value = null
+  majorFilter.value = null
+  classFilter.value = null
+  promotionFilter.value = null
+  statusFilter.value = null
+}
+
+const filteredStudents = computed(() => students.value.filter((s) => {
+  if (facultyFilter.value && classFacultyId(s.class_id) !== facultyFilter.value) return false
+  if (majorFilter.value && s.major_id !== majorFilter.value) return false
+  if (classFilter.value && s.class_id !== classFilter.value) return false
+  if (promotionFilter.value && s.promotion_id !== promotionFilter.value) return false
+  if (statusFilter.value && s.status !== statusFilter.value) return false
+  return true
+}))
 
 // Dialog States & Form
 const studentDialog = ref(false)
@@ -438,6 +569,58 @@ const confirmDeleteStudent = async (data) => {
     } catch (error) {
       alert(extractError(error))
     }
+  }
+}
+
+// ======= Assign Class (quick action, separate from full Edit) =======
+const assignDialog = ref(false)
+const assignForm = ref({ id: null, name_en: '', student_id: '', class_id: null, promotion_id: null, status: 'Active' })
+const assignClassSubjects = ref([])
+
+const openAssignDialog = (data) => {
+  assignForm.value = {
+    id: data.id,
+    name_en: data.name_en,
+    student_id: data.student_id,
+    class_id: data.class_id,
+    promotion_id: data.promotion_id,
+    status: data.status,
+  }
+  assignClassSubjects.value = []
+  assignDialog.value = true
+  if (data.class_id) fetchClassSubjects(data.class_id)
+}
+
+const fetchClassSubjects = async (classId) => {
+  try {
+    const { data } = await api.get('/teacher-assignments', { params: { class_id: classId } })
+    assignClassSubjects.value = [...new Set(data.data.map((a) => a.subject_name).filter(Boolean))]
+  } catch (error) {
+    assignClassSubjects.value = []
+  }
+}
+
+watch(() => assignForm.value.class_id, (classId) => {
+  if (assignDialog.value && classId) fetchClassSubjects(classId)
+})
+
+const saveAssign = async () => {
+  if (!assignForm.value.class_id) {
+    alert('Please select a class.')
+    return
+  }
+
+  try {
+    await api.patch(`/students/${assignForm.value.id}/assign`, {
+      class_id: assignForm.value.class_id,
+      promotion_id: assignForm.value.promotion_id,
+      status: assignForm.value.status,
+    })
+
+    assignDialog.value = false
+    await fetchStudents()
+  } catch (error) {
+    alert(extractError(error))
   }
 }
 </script>

@@ -10,7 +10,7 @@
           Students Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          គ្រប់គ្រងទិន្នន័យសិស្ស/និស្សិត ថ្នាក់សិក្សា ទំនាក់ទំនង និងស្ថានភាពសិក្សា
+          Manage Student and enrollment.
         </p>
       </div>
 
@@ -192,6 +192,20 @@
         </template>
       </Column>
 
+      <!-- Faculty -->
+      <Column v-if="showAllColumns" field="faculty_name" header="FACULTY" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.faculty_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Department -->
+      <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
+        </template>
+      </Column>
+
       <!-- Major / Department -->
       <Column v-if="showAllColumns" field="major" header="MAJOR" sortable>
         <template #body="{ data }">
@@ -210,6 +224,34 @@
             {{ data.generation }}
           </span>
           <span v-else class="text-slate-400 text-xs">—</span>
+        </template>
+      </Column>
+
+      <!-- Academic Year -->
+      <Column v-if="showAllColumns" field="academic_year_name" header="ACADEMIC YEAR" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.academic_year_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Stage -->
+      <Column v-if="showAllColumns" field="stage_name" header="STAGE" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.stage_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Semester -->
+      <Column v-if="showAllColumns" field="semester_name" header="SEMESTER" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.semester_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Term -->
+      <Column v-if="showAllColumns" field="term_name" header="TERM" sortable>
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-600 font-medium">{{ data.term_name || '—' }}</span>
         </template>
       </Column>
 
@@ -251,24 +293,21 @@
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="studentDialog" :header="isEdit ? 'Edit Student Information' : 'Add New Student'"
-      :modal="true" class="w-full max-w-xl">
-      <div class="space-y-4 pt-2">
-        <!-- Student ID & Gender -->
+      :modal="true" class="w-full max-w-3xl">
+      <div class="space-y-5 pt-2">
+        <!-- ======= SECTION: PERSONAL INFORMATION ======= -->
+        <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 border-b border-slate-200">
+          <i class="pi pi-user text-blue-600 text-sm"></i>
+          <span>Personal Information</span>
+        </div>
+
+        <!-- Student ID / Full Name (English) / Full Name (Khmer) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Student ID *</label>
             <InputText v-model="studentForm.student_id" placeholder="e.g. STU-1001"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
-            <Dropdown v-model="studentForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-        </div>
-
-        <!-- Name English & Khmer -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (English) *</label>
             <InputText v-model="studentForm.name_en" placeholder="e.g. Sok Visal"
@@ -281,52 +320,118 @@
           </div>
         </div>
 
-        <!-- Class (Shift & Major are derived from the selected class) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Gender / Phone / Email -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
-            <Dropdown v-model="studentForm.class_id" :options="classes" optionLabel="name" optionValue="id"
-              placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift</label>
-            <InputText :model-value="selectedClassShift" disabled placeholder="Derived from class"
-              class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
-          </div>
-        </div>
-
-        <!-- Major & Phone -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major / Department</label>
-            <InputText :model-value="selectedClassMajor" disabled placeholder="Derived from class"
-              class="w-full !py-2.5 !px-3 !bg-slate-100 !border-slate-200 !rounded-xl !text-sm" />
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
+            <Dropdown v-model="studentForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
             <InputText v-model="studentForm.phone" placeholder="012 345 678"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-        </div>
-
-        <!-- Generation -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generation</label>
-          <Dropdown v-model="studentForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
-            placeholder="Select Generation" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-        </div>
-
-        <!-- Email & Status -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
             <InputText v-model="studentForm.email" placeholder="student@school.edu.kh"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
+        </div>
+
+        <!-- Date of Birth / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date of Birth</label>
+            <DatePicker v-model="studentForm.dob" dateFormat="yy-mm-dd" showIcon iconDisplay="input"
+              placeholder="Select date" class="w-full"
+              inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
             <Dropdown v-model="studentForm.status" :options="['Active', 'Inactive', 'Suspended']"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Address (last Personal Information field, full width) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-3">
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address</label>
+            <Textarea v-model="studentForm.address" rows="2" placeholder="Street, city, country"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
+        </div>
+
+        <!-- ======= SECTION: ACADEMIC INFORMATION ======= -->
+        <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 pt-2 border-b border-slate-200">
+          <i class="pi pi-graduation-cap text-emerald-600 text-sm"></i>
+          <span>Academic Information</span>
+        </div>
+
+        <!-- Class / Faculty / Department -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
+            <Dropdown v-model="studentForm.class_id" :options="classes" optionLabel="name" optionValue="id"
+              placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty</label>
+            <Dropdown v-model="studentForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
+              placeholder="Select Faculty" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
+            <Dropdown v-model="studentForm.department_id" :options="departments" optionLabel="name_en" optionValue="id"
+              placeholder="Select Department" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Major / Promotion / Academic Year -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
+            <Dropdown v-model="studentForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
+              placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion</label>
+            <Dropdown v-model="studentForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
+              placeholder="Select Promotion" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Academic Year</label>
+            <Dropdown v-model="studentForm.academic_year_id" :options="academicYears" optionLabel="name_en" optionValue="id"
+              placeholder="Select Academic Year" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Stage / Semester / Term -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage</label>
+            <Dropdown v-model="studentForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
+              placeholder="Select Stage" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester</label>
+            <Dropdown v-model="studentForm.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
+              placeholder="Select Semester" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
+            <Dropdown v-model="studentForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
+              placeholder="Select Term" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Shift -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift</label>
+            <Dropdown v-model="studentForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
+              placeholder="Select Shift" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
       </div>
@@ -381,7 +486,7 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <!-- <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generation</label>
             <Dropdown v-model="assignForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
@@ -392,7 +497,7 @@
             <Dropdown v-model="assignForm.status" :options="['Active', 'Inactive', 'Suspended']"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
-        </div>
+        </div> -->
       </div>
 
       <template #footer>
@@ -421,6 +526,20 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+import Textarea from 'primevue/textarea'
+import DatePicker from 'primevue/datepicker'
+
+// ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
+const parseApiDate = (value) => (value ? new Date(value) : null)
+
+const formatDateForApi = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
 
 const showAllColumns = ref(false);
 
@@ -428,6 +547,13 @@ const students = ref([])
 const classes = ref([])
 const promotions = ref([])
 const faculties = ref([])
+const departments = ref([])
+const majors = ref([])
+const academicYears = ref([])
+const stages = ref([])
+const semesters = ref([])
+const terms = ref([])
+const shifts = ref([])
 
 const fetchStudents = async () => {
   const { data } = await api.get('/students', { params: { per_page: 100 } })
@@ -444,16 +570,32 @@ const fetchPromotions = async () => {
   promotions.value = data.data
 }
 
-const fetchFaculties = async () => {
-  const { data } = await api.get('/faculties', { params: { per_page: 100 } })
-  faculties.value = data.data
+const fetchLookups = async () => {
+  const [facultiesRes, departmentsRes, majorsRes, academicYearsRes, stagesRes, semestersRes, termsRes, shiftsRes] = await Promise.all([
+    api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/departments', { params: { per_page: 100 } }),
+    api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/academic-years', { params: { per_page: 100 } }),
+    api.get('/stages', { params: { per_page: 100 } }),
+    api.get('/semesters', { params: { per_page: 100 } }),
+    api.get('/terms', { params: { per_page: 100 } }),
+    api.get('/shifts', { params: { per_page: 100 } }),
+  ])
+  faculties.value = facultiesRes.data.data
+  departments.value = departmentsRes.data.data
+  majors.value = majorsRes.data.data
+  academicYears.value = academicYearsRes.data.data
+  stages.value = stagesRes.data.data
+  semesters.value = semestersRes.data.data
+  terms.value = termsRes.data.data
+  shifts.value = shiftsRes.data.data
 }
 
 onMounted(() => {
   fetchStudents()
   fetchClasses()
   fetchPromotions()
-  fetchFaculties()
+  fetchLookups()
 })
 
 // Search Filter
@@ -508,16 +650,23 @@ const studentForm = ref({
   name_en: '',
   name_kh: '',
   gender: 'Male',
+  dob: null,
+  address: '',
   class_id: null,
+  faculty_id: null,
+  department_id: null,
+  major_id: null,
   promotion_id: null,
+  academic_year_id: null,
+  stage_id: null,
+  semester_id: null,
+  term_id: null,
+  shift_id: null,
   phone: '',
   email: '',
   status: 'Active',
   avatar: ''
 })
-
-const selectedClassShift = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.shift || '')
-const selectedClassMajor = computed(() => classes.value.find(c => c.id === studentForm.value.class_id)?.department || '')
 
 // Computed Properties
 const activeStudentsCount = computed(() => students.value.filter(s => s.status === 'Active').length)
@@ -531,8 +680,18 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     gender: 'Male',
+    dob: null,
+    address: '',
     class_id: null,
+    faculty_id: null,
+    department_id: null,
+    major_id: null,
     promotion_id: null,
+    academic_year_id: null,
+    stage_id: null,
+    semester_id: null,
+    term_id: null,
+    shift_id: null,
     phone: '',
     email: '',
     status: 'Active',
@@ -543,7 +702,10 @@ const openNewDialog = () => {
 }
 
 const editStudent = (data) => {
-  studentForm.value = { ...data }
+  studentForm.value = {
+    ...data,
+    dob: parseApiDate(data.dob),
+  }
   isEdit.value = true
   studentDialog.value = true
 }
@@ -563,8 +725,18 @@ const saveStudent = async () => {
     name_en: studentForm.value.name_en,
     name_kh: studentForm.value.name_kh,
     gender: studentForm.value.gender,
+    dob: formatDateForApi(studentForm.value.dob),
+    address: studentForm.value.address,
     class_id: studentForm.value.class_id,
+    faculty_id: studentForm.value.faculty_id,
+    department_id: studentForm.value.department_id,
+    major_id: studentForm.value.major_id,
     promotion_id: studentForm.value.promotion_id,
+    academic_year_id: studentForm.value.academic_year_id,
+    stage_id: studentForm.value.stage_id,
+    semester_id: studentForm.value.semester_id,
+    term_id: studentForm.value.term_id,
+    shift_id: studentForm.value.shift_id,
     phone: studentForm.value.phone,
     email: studentForm.value.email,
     status: studentForm.value.status,

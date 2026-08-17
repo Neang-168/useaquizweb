@@ -25,7 +25,7 @@ class TeacherController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $teachers = TeacherProfile::query()
-            ->with('user', 'faculty', 'department', 'degree')
+            ->with('user', 'faculty', 'department', 'degree', 'major')
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('employee_code', 'like', "%{$q}%")
                     ->orWhereHas('user', function ($query) use ($q) {
@@ -61,7 +61,9 @@ class TeacherController extends Controller
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
                 'gender' => $validated['gender'],
+                'dob' => $validated['dob'],
                 'phone' => $validated['phone'],
+                'address' => $validated['address'],
                 'status' => $validated['user_status'],
             ]);
 
@@ -71,11 +73,15 @@ class TeacherController extends Controller
                 'faculty_id' => $validated['faculty_id'],
                 'department_id' => $validated['department_id'],
                 'degree_id' => $validated['degree_id'],
+                'major_id' => $validated['major_id'],
+                'qualification' => $validated['qualification'],
+                'specialization' => $validated['specialization'],
                 'employment_type' => $validated['employment_type'],
+                'hire_date' => $validated['hire_date'],
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'department', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
 
         return response()->json([
             'message' => 'Teacher created successfully.',
@@ -88,7 +94,7 @@ class TeacherController extends Controller
      */
     public function show(TeacherProfile $teacher)
     {
-        $teacher->load('user', 'faculty', 'department', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
 
         return response()->json([
             'teacher' => $this->transform($teacher),
@@ -109,7 +115,9 @@ class TeacherController extends Controller
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
                 'gender' => $validated['gender'],
+                'dob' => $validated['dob'],
                 'phone' => $validated['phone'],
+                'address' => $validated['address'],
                 'status' => $validated['user_status'],
             ]);
 
@@ -118,11 +126,15 @@ class TeacherController extends Controller
                 'faculty_id' => $validated['faculty_id'],
                 'department_id' => $validated['department_id'],
                 'degree_id' => $validated['degree_id'],
+                'major_id' => $validated['major_id'],
+                'qualification' => $validated['qualification'],
+                'specialization' => $validated['specialization'],
                 'employment_type' => $validated['employment_type'],
+                'hire_date' => $validated['hire_date'],
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'department', 'degree');
+        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
 
         return response()->json([
             'message' => 'Teacher updated successfully.',
@@ -157,6 +169,7 @@ class TeacherController extends Controller
             'name_en' => ['required', 'string', 'max:255'],
             'name_kh' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', Rule::in(['Male', 'Female'])],
+            'dob' => ['nullable', 'date'],
             'email' => [
                 'nullable',
                 'string',
@@ -165,10 +178,15 @@ class TeacherController extends Controller
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'phone' => ['required', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:1000'],
             'faculty_id' => ['required', 'exists:faculties,id'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
+            'major_id' => ['nullable', 'exists:majors,id'],
+            'qualification' => ['nullable', 'string', 'max:255'],
+            'specialization' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(['Full-Time', 'Part-Time'])],
+            'hire_date' => ['nullable', 'date'],
             'status' => ['required', Rule::in(['Active', 'Inactive'])],
         ]);
 
@@ -180,12 +198,18 @@ class TeacherController extends Controller
             'last_name' => $lastName,
             'name_kh' => $validated['name_kh'] ?? null,
             'gender' => $validated['gender'],
+            'dob' => $validated['dob'] ?? null,
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
+            'address' => $validated['address'] ?? null,
             'faculty_id' => $validated['faculty_id'],
             'department_id' => $validated['department_id'] ?? null,
             'degree_id' => $validated['degree_id'] ?? null,
+            'major_id' => $validated['major_id'] ?? null,
+            'qualification' => $validated['qualification'] ?? null,
+            'specialization' => $validated['specialization'] ?? null,
             'employment_type' => $validated['type'] === 'Full-Time' ? 'full_time' : 'part_time',
+            'hire_date' => $validated['hire_date'] ?? null,
             'user_status' => $this->statusToBool($validated['status']),
         ];
     }
@@ -207,15 +231,25 @@ class TeacherController extends Controller
             'name_en' => trim($user->first_name . ' ' . $user->last_name),
             'name_kh' => $user->name_kh,
             'gender' => $user->gender,
+            'dob' => $user->dob?->toDateString(),
             'phone' => $user->phone,
             'email' => $user->email,
+            'address' => $user->address,
             'faculty_id' => $teacher->faculty_id,
+            'faculty_name' => $teacher->faculty?->name,
+            // Legacy field kept for existing UI compatibility: historically held the
+            // faculty's name under a misleading key.
             'department' => $teacher->faculty?->name,
             'department_id' => $teacher->department_id,
             'department_name' => $teacher->department?->name,
             'degree_id' => $teacher->degree_id,
             'degree' => $teacher->degree?->name,
+            'major_id' => $teacher->major_id,
+            'major_name' => $teacher->major?->name,
+            'qualification' => $teacher->qualification,
+            'specialization' => $teacher->specialization,
             'type' => $teacher->employment_type === 'full_time' ? 'Full-Time' : 'Part-Time',
+            'hire_date' => $teacher->hire_date?->toDateString(),
             'status' => $this->statusToLabel((bool) $user->status),
             'avatar' => $user->avatar,
         ];

@@ -16,4 +16,24 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+import api from './api'
+import { setAuthUser } from './store/authUser'
+
+// Refresh the shared user store from the server on every app load so the
+// header/sidebars show the real name and avatar immediately, instead of only
+// after the user happens to visit My Profile (which is the only other place
+// that calls /me). Login already seeds full profile data too; this just
+// keeps existing sessions (older localStorage, profile edited elsewhere) in sync.
+onMounted(async () => {
+  if (!localStorage.getItem('auth_token')) return
+
+  try {
+    const { data } = await api.get('/me')
+    setAuthUser(data)
+  } catch (error) {
+    // A 401 is already handled globally by the axios interceptor (logout + redirect);
+    // any other failure here just leaves the existing cached profile in place.
+  }
+})
 </script>

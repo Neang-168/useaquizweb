@@ -124,9 +124,9 @@
       </Column>
 
       <!-- Faculty - តែងតែបង្ហាញ -->
-      <Column field="department" header="FACULTY" sortable style="min-width: 160px">
+      <Column field="faculty_name" header="FACULTY" sortable style="min-width: 160px">
         <template #body="{ data }">
-          <span class="text-slate-600 text-sm font-medium">{{ data.department || '—' }}</span>
+          <span class="text-slate-600 text-sm font-medium">{{ data.faculty_name || '—' }}</span>
         </template>
       </Column>
 
@@ -134,6 +134,13 @@
       <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
         <template #body="{ data }">
           <span class="text-slate-600 text-sm font-medium">{{ data.department_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Major - លាក់/បង្ហាញ -->
+      <Column v-if="showAllColumns" field="major_name" header="MAJOR" sortable style="min-width: 160px">
+        <template #body="{ data }">
+          <span class="text-slate-600 text-sm font-medium">{{ data.major_name || '—' }}</span>
         </template>
       </Column>
 
@@ -188,9 +195,9 @@
       <Column header="ACTIONS" class="!text-right" style="min-width: 130px">
         <template #body="{ data }">
           <div class="flex items-center justify-end gap-1.5">
-            <Button icon="pi pi-book"
+            <!-- <Button icon="pi pi-book"
               class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
-              title="Manage Assignments" @click="openAssignmentsDialog(data)" />
+              title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
             <Button icon="pi pi-pencil"
               class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
               title="Edit Teacher" @click="editTeacher(data)" />
@@ -204,24 +211,21 @@
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="teacherDialog" :header="isEdit ? 'Edit Teacher Information' : 'Add New Teacher'"
-      :modal="true" class="w-full max-w-xl">
-      <div class="space-y-4 pt-2">
-        <!-- Code & Gender -->
+      :modal="true" class="w-full max-w-3xl">
+      <div class="space-y-5 pt-2">
+        <!-- ======= SECTION: PERSONAL INFORMATION ======= -->
+        <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 border-b border-slate-200">
+          <i class="pi pi-user text-blue-600 text-sm"></i>
+          <span>Personal Information</span>
+        </div>
+
+        <!-- Code / Full Name (English) / Full Name (Khmer) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teacher Code *</label>
             <InputText v-model="teacherForm.code" placeholder="e.g. T-101"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
-            <Dropdown v-model="teacherForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-        </div>
-
-        <!-- Name English & Khmer -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (English) *</label>
             <InputText v-model="teacherForm.name_en" placeholder="e.g. Sok Chantha"
@@ -234,31 +238,13 @@
           </div>
         </div>
 
-        <!-- Faculty & Department -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Gender / Phone / Email -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
-            <Dropdown v-model="teacherForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
-              placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              @change="teacherForm.department_id = null" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
-            <Dropdown v-model="teacherForm.department_id" :options="departmentOptions" optionLabel="name_en"
-              optionValue="id" placeholder="Select Department"
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
+            <Dropdown v-model="teacherForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
-        </div>
-
-        <!-- Degree -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree Level</label>
-          <Dropdown v-model="teacherForm.degree_id" :options="degrees" optionLabel="title_en" optionValue="id"
-            placeholder="Select Degree" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-        </div>
-
-        <!-- Phone & Email -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
             <InputText v-model="teacherForm.phone" placeholder="012 345 678"
@@ -271,8 +257,14 @@
           </div>
         </div>
 
-        <!-- Employment Type & Status -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Date of Birth / Employment Type / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date of Birth</label>
+            <DatePicker v-model="teacherForm.dob" dateFormat="yy-mm-dd" showIcon iconDisplay="input"
+              placeholder="Select date" class="w-full"
+              inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Employment Type</label>
             <Dropdown v-model="teacherForm.type" :options="['Full-Time', 'Part-Time']"
@@ -282,6 +274,63 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
             <Dropdown v-model="teacherForm.status" :options="['Active', 'Inactive']"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Address (last Personal Information field, full width) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-3">
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address</label>
+            <Textarea v-model="teacherForm.address" rows="2" placeholder="Street, city, country"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
+        </div>
+
+        <!-- ======= SECTION: ACADEMIC INFORMATION ======= -->
+        <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 pt-2 border-b border-slate-200">
+          <i class="pi pi-graduation-cap text-emerald-600 text-sm"></i>
+          <span>Academic Information</span>
+        </div>
+
+        <!-- Faculty / Department / Major -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
+            <Dropdown v-model="teacherForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
+              placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="teacherForm.department_id = null; teacherForm.major_id = null; teacherForm.degree_id = null" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
+            <Dropdown v-model="teacherForm.department_id" :options="departmentOptions" optionLabel="name_en"
+              optionValue="id" placeholder="Select Department" showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
+            <Dropdown v-model="teacherForm.major_id" :options="majorsForSelectedFaculty" optionLabel="name_en"
+              optionValue="id" placeholder="Select Major" showClear :disabled="!teacherForm.faculty_id"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" @change="onMajorChange" />
+          </div>
+        </div>
+
+        <!-- Qualification / Specialization / Hire Date -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Qualification</label>
+            <InputText v-model="teacherForm.qualification" placeholder="e.g. MSc Computer Science"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Specialization</label>
+            <InputText v-model="teacherForm.specialization" placeholder="e.g. Database Systems"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hire Date</label>
+            <DatePicker v-model="teacherForm.hire_date" dateFormat="yy-mm-dd" showIcon iconDisplay="input"
+              placeholder="Select date" class="w-full"
+              inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
       </div>
@@ -368,6 +417,20 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+import Textarea from 'primevue/textarea'
+import DatePicker from 'primevue/datepicker'
+
+// ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
+const parseApiDate = (value) => (value ? new Date(value) : null)
+
+const formatDateForApi = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
 
 //show column more and less
 const showAllColumns = ref(false);
@@ -376,6 +439,7 @@ const teachers = ref([])
 const faculties = ref([])
 const departments = ref([])
 const degrees = ref([])
+const majors = ref([])
 const subjects = ref([])
 const classes = ref([])
 
@@ -385,16 +449,18 @@ const fetchTeachers = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, departmentsRes, degreesRes, subjectsRes, classesRes] = await Promise.all([
+  const [facultiesRes, departmentsRes, degreesRes, majorsRes, subjectsRes, classesRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
     api.get('/departments', { params: { per_page: 200 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
+    api.get('/majors', { params: { per_page: 100 } }),
     api.get('/subjects', { params: { per_page: 200 } }),
     api.get('/classes', { params: { per_page: 200 } }),
   ])
   faculties.value = facultiesRes.data.data
   departments.value = departmentsRes.data.data
   degrees.value = degreesRes.data.data
+  majors.value = majorsRes.data.data
   subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, faculty_id: s.faculty_id, name_en: `${s.name_en} (${s.code})` }))
   classes.value = classesRes.data.data
 }
@@ -404,6 +470,21 @@ const fetchLookups = async () => {
 const departmentOptions = computed(() =>
   departments.value.filter(d => d.faculty_id === teacherForm.value.faculty_id)
 )
+
+// Major options narrow down by Faculty (via the Faculty -> Degree -> Major chain).
+// Degree itself is resolved automatically from the picked Major and never shown in the UI.
+const majorsForSelectedFaculty = computed(() => {
+  if (!teacherForm.value.faculty_id) return []
+  const degreeIds = degrees.value
+    .filter(d => d.faculty_id === teacherForm.value.faculty_id)
+    .map(d => d.id)
+  return majors.value.filter(m => degreeIds.includes(m.degree_id))
+})
+
+const onMajorChange = () => {
+  const major = majors.value.find(m => m.id === teacherForm.value.major_id)
+  teacherForm.value.degree_id = major?.degree_id ?? null
+}
 
 onMounted(() => {
   fetchTeachers()
@@ -450,9 +531,15 @@ const teacherForm = ref({
   name_en: '',
   name_kh: '',
   gender: 'Male',
+  dob: null,
+  address: '',
   faculty_id: null,
   department_id: null,
   degree_id: null,
+  major_id: null,
+  qualification: '',
+  specialization: '',
+  hire_date: null,
   phone: '',
   email: '',
   type: 'Full-Time',
@@ -472,9 +559,15 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     gender: 'Male',
+    dob: null,
+    address: '',
     faculty_id: null,
     department_id: null,
     degree_id: null,
+    major_id: null,
+    qualification: '',
+    specialization: '',
+    hire_date: null,
     phone: '',
     email: '',
     type: 'Full-Time',
@@ -486,7 +579,11 @@ const openNewDialog = () => {
 }
 
 const editTeacher = (data) => {
-  teacherForm.value = { ...data }
+  teacherForm.value = {
+    ...data,
+    dob: parseApiDate(data.dob),
+    hire_date: parseApiDate(data.hire_date),
+  }
   isEdit.value = true
   teacherDialog.value = true
 }
@@ -502,9 +599,15 @@ const saveTeacher = async () => {
     name_en: teacherForm.value.name_en,
     name_kh: teacherForm.value.name_kh,
     gender: teacherForm.value.gender,
+    dob: formatDateForApi(teacherForm.value.dob),
+    address: teacherForm.value.address,
     faculty_id: teacherForm.value.faculty_id,
     department_id: teacherForm.value.department_id,
     degree_id: teacherForm.value.degree_id,
+    major_id: teacherForm.value.major_id,
+    qualification: teacherForm.value.qualification,
+    specialization: teacherForm.value.specialization,
+    hire_date: formatDateForApi(teacherForm.value.hire_date),
     phone: teacherForm.value.phone,
     email: teacherForm.value.email,
     type: teacherForm.value.type,

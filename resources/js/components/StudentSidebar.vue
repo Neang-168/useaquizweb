@@ -96,24 +96,16 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import LogoUsea from '../images/usea_logo.png'
+import { authUser, clearAuthUser } from '../store/authUser'
 
 const router = useRouter()
 
-// ទាញយកព័ត៌មាន User ពី localStorage
-const authUser = computed(() => {
-  try {
-    return JSON.parse(localStorage.getItem('auth_user')) || {}
-  } catch (e) {
-    return {}
-  }
-})
-
 // បង្ហាញឈ្មោះពេញ
 const userFullName = computed(() => {
-  if (authUser.value.first_name || authUser.value.last_name) {
-    return `${authUser.value.first_name || ''} ${authUser.value.last_name || ''}`.trim()
+  if (authUser.first_name || authUser.last_name) {
+    return `${authUser.first_name || ''} ${authUser.last_name || ''}`.trim()
   }
-  return authUser.value.username || 'Student'
+  return authUser.username || 'Student'
 })
 
 // ទាញយកអក្សរកាត់ឈ្មោះ
@@ -124,10 +116,10 @@ const userInitial = computed(() => {
 // Function Logout
 function handleLogout() {
   localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
   localStorage.removeItem('auth_role')
   localStorage.removeItem('remember_me')
-  
+  clearAuthUser()
+
   router.push({ name: 'login' })
 }
 </script>

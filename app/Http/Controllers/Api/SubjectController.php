@@ -20,10 +20,12 @@ class SubjectController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $subjects = Subject::query()
-            ->with('faculty', 'degree', 'major')
+            ->with('faculty', 'department', 'degree', 'major', 'academicYear')
             ->when($request->input('faculty_id'), fn ($query, $facultyId) => $query->where('faculty_id', $facultyId))
+            ->when($request->input('department_id'), fn ($query, $departmentId) => $query->where('department_id', $departmentId))
             ->when($request->input('degree_id'), fn ($query, $degreeId) => $query->where('degree_id', $degreeId))
             ->when($request->input('major_id'), fn ($query, $majorId) => $query->where('major_id', $majorId))
+            ->when($request->input('academic_year_id'), fn ($query, $id) => $query->where('academic_year_id', $id))
             ->when($request->input('q'), function ($query, $q) {
                 $query->where(function ($query) use ($q) {
                     $query->where('code', 'like', "%{$q}%")
@@ -46,7 +48,7 @@ class SubjectController extends Controller
         $data = $this->validated($request);
 
         $subject = Subject::create($data);
-        $subject->load('faculty', 'degree', 'major');
+        $subject->load('faculty', 'department', 'degree', 'major', 'academicYear');
 
         return response()->json([
             'message' => 'Subject created successfully.',
@@ -59,7 +61,7 @@ class SubjectController extends Controller
      */
     public function show(Subject $subject)
     {
-        $subject->load('faculty', 'degree', 'major');
+        $subject->load('faculty', 'department', 'degree', 'major', 'academicYear');
 
         return response()->json([
             'subject' => $this->transform($subject),
@@ -74,7 +76,7 @@ class SubjectController extends Controller
         $data = $this->validated($request, $subject);
 
         $subject->update($data);
-        $subject->load('faculty', 'degree', 'major');
+        $subject->load('faculty', 'department', 'degree', 'major', 'academicYear');
 
         return response()->json([
             'message' => 'Subject updated successfully.',
@@ -98,8 +100,10 @@ class SubjectController extends Controller
     {
         $validated = $request->validate([
             'faculty_id' => ['required', 'exists:faculties,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
             'major_id' => ['nullable', 'exists:majors,id'],
+            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'code' => [
                 'required',
                 'string',
@@ -117,8 +121,10 @@ class SubjectController extends Controller
 
         return [
             'faculty_id' => $validated['faculty_id'],
+            'department_id' => $validated['department_id'] ?? null,
             'degree_id' => $validated['degree_id'] ?? null,
             'major_id' => $validated['major_id'] ?? null,
+            'academic_year_id' => $validated['academic_year_id'] ?? null,
             'code' => $validated['code'],
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
@@ -134,8 +140,13 @@ class SubjectController extends Controller
             'id' => $subject->id,
             'faculty_id' => $subject->faculty_id,
             'faculty_name' => $subject->faculty?->name,
+            'department_id' => $subject->department_id,
+            'department_name' => $subject->department?->name,
             'degree_id' => $subject->degree_id,
             'major_id' => $subject->major_id,
+            'major_name' => $subject->major?->name,
+            'academic_year_id' => $subject->academic_year_id,
+            'academic_year_name' => $subject->academicYear?->name,
             'code' => $subject->code,
             'name_en' => $subject->name,
             'name_kh' => $subject->name_kh,

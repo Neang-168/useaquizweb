@@ -14,12 +14,14 @@ class StudentEnrollment extends Model
         'student_profile_id',
         'class_id',
         'faculty_id',
+        'department_id',
         'degree_id',
         'major_id',
         'promotion_id',
         'stage_id',
         'academic_year_id',
         'semester_id',
+        'term_id',
         'shift_id',
         'enrollment_date',
         'status',
@@ -42,6 +44,11 @@ class StudentEnrollment extends Model
     public function faculty(): BelongsTo
     {
         return $this->belongsTo(Faculty::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function degree(): BelongsTo
@@ -72,6 +79,11 @@ class StudentEnrollment extends Model
     public function semester(): BelongsTo
     {
         return $this->belongsTo(Semester::class);
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
     }
 
     public function shift(): BelongsTo

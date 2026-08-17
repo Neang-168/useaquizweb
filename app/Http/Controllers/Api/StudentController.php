@@ -27,7 +27,18 @@ class StudentController extends Controller
         $students = StudentProfile::query()
             ->with([
                 'user',
-                'enrollments' => fn ($query) => $query->latest('enrollment_date')->with('classroom.shift', 'major', 'promotion'),
+                'enrollments' => fn ($query) => $query->latest('enrollment_date')->with(
+                    'classroom.shift',
+                    'faculty',
+                    'department',
+                    'major',
+                    'promotion',
+                    'stage',
+                    'academicYear',
+                    'semester',
+                    'term',
+                    'shift'
+                ),
             ])
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('student_code', 'like', "%{$q}%")
@@ -63,7 +74,9 @@ class StudentController extends Controller
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
                 'gender' => $validated['gender'],
+                'dob' => $validated['dob'],
                 'phone' => $validated['phone'],
+                'address' => $validated['address'],
                 'status' => $validated['status'] !== 'Inactive',
             ]);
 
@@ -78,7 +91,19 @@ class StudentController extends Controller
             return $profile;
         });
 
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
+        $student->load(
+            'user',
+            'enrollments.classroom.shift',
+            'enrollments.faculty',
+            'enrollments.department',
+            'enrollments.major',
+            'enrollments.promotion',
+            'enrollments.stage',
+            'enrollments.academicYear',
+            'enrollments.semester',
+            'enrollments.term',
+            'enrollments.shift'
+        );
 
         return response()->json([
             'message' => 'Student created successfully.',
@@ -91,7 +116,19 @@ class StudentController extends Controller
      */
     public function show(StudentProfile $student)
     {
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
+        $student->load(
+            'user',
+            'enrollments.classroom.shift',
+            'enrollments.faculty',
+            'enrollments.department',
+            'enrollments.major',
+            'enrollments.promotion',
+            'enrollments.stage',
+            'enrollments.academicYear',
+            'enrollments.semester',
+            'enrollments.term',
+            'enrollments.shift'
+        );
 
         return response()->json([
             'student' => $this->transform($student),
@@ -112,7 +149,9 @@ class StudentController extends Controller
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
                 'gender' => $validated['gender'],
+                'dob' => $validated['dob'],
                 'phone' => $validated['phone'],
+                'address' => $validated['address'],
                 'status' => $validated['status'] !== 'Inactive',
             ]);
 
@@ -123,7 +162,19 @@ class StudentController extends Controller
             $this->syncEnrollment($student, $validated);
         });
 
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
+        $student->load(
+            'user',
+            'enrollments.classroom.shift',
+            'enrollments.faculty',
+            'enrollments.department',
+            'enrollments.major',
+            'enrollments.promotion',
+            'enrollments.stage',
+            'enrollments.academicYear',
+            'enrollments.semester',
+            'enrollments.term',
+            'enrollments.shift'
+        );
 
         return response()->json([
             'message' => 'Student updated successfully.',
@@ -146,7 +197,19 @@ class StudentController extends Controller
 
         $this->syncEnrollment($student, $validated);
 
-        $student->load('user', 'enrollments.classroom.shift', 'enrollments.major', 'enrollments.promotion');
+        $student->load(
+            'user',
+            'enrollments.classroom.shift',
+            'enrollments.faculty',
+            'enrollments.department',
+            'enrollments.major',
+            'enrollments.promotion',
+            'enrollments.stage',
+            'enrollments.academicYear',
+            'enrollments.semester',
+            'enrollments.term',
+            'enrollments.shift'
+        );
 
         return response()->json([
             'message' => 'Student assigned successfully.',
@@ -179,14 +242,16 @@ class StudentController extends Controller
 
         $attributes = [
             'class_id' => $class->id,
-            'faculty_id' => $class->major->degree->faculty_id,
-            'degree_id' => $class->major->degree_id,
-            'major_id' => $class->major_id,
+            'faculty_id' => $validated['faculty_id'] ?? $class->major->degree->faculty_id,
+            'department_id' => $validated['department_id'] ?? $class->department_id,
+            'degree_id' => $validated['degree_id'] ?? $class->major->degree_id,
+            'major_id' => $validated['major_id'] ?? $class->major_id,
             'promotion_id' => $validated['promotion_id'] ?? $this->resolveCurrentPromotionId(),
-            'stage_id' => $class->stage_id,
-            'academic_year_id' => $class->academic_year_id,
-            'semester_id' => $class->semester_id,
-            'shift_id' => $class->shift_id,
+            'stage_id' => $validated['stage_id'] ?? $class->stage_id,
+            'academic_year_id' => $validated['academic_year_id'] ?? $class->academic_year_id,
+            'semester_id' => $validated['semester_id'] ?? $class->semester_id,
+            'term_id' => $validated['term_id'] ?? $class->term_id,
+            'shift_id' => $validated['shift_id'] ?? $class->shift_id,
             'status' => $validated['status'],
         ];
 
@@ -218,6 +283,7 @@ class StudentController extends Controller
             'name_en' => ['required', 'string', 'max:255'],
             'name_kh' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', Rule::in(['Male', 'Female'])],
+            'dob' => ['nullable', 'date'],
             'email' => [
                 'nullable',
                 'string',
@@ -226,8 +292,18 @@ class StudentController extends Controller
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'phone' => ['required', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:1000'],
             'class_id' => ['required', 'exists:classes,id'],
+            'faculty_id' => ['nullable', 'exists:faculties,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'degree_id' => ['nullable', 'exists:degrees,id'],
+            'major_id' => ['nullable', 'exists:majors,id'],
             'promotion_id' => ['nullable', 'exists:promotions,id'],
+            'stage_id' => ['nullable', 'exists:stages,id'],
+            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
+            'semester_id' => ['nullable', 'exists:semesters,id'],
+            'term_id' => ['nullable', 'exists:terms,id'],
+            'shift_id' => ['nullable', 'exists:shifts,id'],
             'status' => ['required', Rule::in(['Active', 'Inactive', 'Suspended'])],
         ]);
 
@@ -239,10 +315,21 @@ class StudentController extends Controller
             'last_name' => $lastName,
             'name_kh' => $validated['name_kh'] ?? null,
             'gender' => $validated['gender'],
+            'dob' => $validated['dob'] ?? null,
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
+            'address' => $validated['address'] ?? null,
             'class_id' => $validated['class_id'],
+            'faculty_id' => $validated['faculty_id'] ?? null,
+            'department_id' => $validated['department_id'] ?? null,
+            'degree_id' => $validated['degree_id'] ?? null,
+            'major_id' => $validated['major_id'] ?? null,
             'promotion_id' => $validated['promotion_id'] ?? null,
+            'stage_id' => $validated['stage_id'] ?? null,
+            'academic_year_id' => $validated['academic_year_id'] ?? null,
+            'semester_id' => $validated['semester_id'] ?? null,
+            'term_id' => $validated['term_id'] ?? null,
+            'shift_id' => $validated['shift_id'] ?? null,
             'status' => $validated['status'],
         ];
     }
@@ -265,17 +352,33 @@ class StudentController extends Controller
             'name_en' => trim($user->first_name . ' ' . $user->last_name),
             'name_kh' => $user->name_kh,
             'gender' => $user->gender,
+            'dob' => $user->dob?->toDateString(),
             'phone' => $user->phone,
             'email' => $user->email,
+            'address' => $user->address,
             'class_id' => $enrollment?->class_id,
             'class_name' => $enrollment?->classroom?->name,
-            'shift' => $enrollment?->classroom?->shift?->name,
+            'faculty_id' => $enrollment?->faculty_id,
+            'faculty_name' => $enrollment?->faculty?->name,
+            'department_id' => $enrollment?->department_id,
+            'department_name' => $enrollment?->department?->name,
             'major_id' => $enrollment?->major_id,
             'major' => $enrollment?->major?->name,
+            'major_name' => $enrollment?->major?->name,
             'promotion_id' => $enrollment?->promotion_id,
             'generation' => $enrollment?->promotion
                 ? "{$enrollment->promotion->year_start}-{$enrollment->promotion->year_end}"
                 : null,
+            'stage_id' => $enrollment?->stage_id,
+            'stage_name' => $enrollment?->stage?->name,
+            'academic_year_id' => $enrollment?->academic_year_id,
+            'academic_year_name' => $enrollment?->academicYear?->name,
+            'semester_id' => $enrollment?->semester_id,
+            'semester_name' => $enrollment?->semester?->name,
+            'term_id' => $enrollment?->term_id,
+            'term_name' => $enrollment?->term?->name,
+            'shift_id' => $enrollment?->shift_id,
+            'shift' => $enrollment?->shift?->name ?? $enrollment?->classroom?->shift?->name,
             'status' => $enrollment?->status ?? ($user->status ? 'Active' : 'Inactive'),
             'avatar' => $user->avatar,
         ];

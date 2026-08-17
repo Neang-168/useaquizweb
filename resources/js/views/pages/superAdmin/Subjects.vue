@@ -9,7 +9,7 @@
           Subjects Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          គ្រប់គ្រង និងកំណត់បញ្ជីមុខវិជ្ជាសិក្សា ព្រមទាំងចំនួនក្រេឌីត (Credits) តាមមុខវិជ្ជានីមួយៗ
+          Manage  all the subject here.
         </p>
       </div>
 
@@ -74,10 +74,12 @@
       <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
       <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
         placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="degreeFilter" :options="degrees" optionLabel="title_en" optionValue="id"
-        placeholder="All Degrees" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="departmentFilter" :options="departments" optionLabel="name_en" optionValue="id"
+        placeholder="All Departments" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
       <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
         placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
+      <Dropdown v-model="academicYearFilter" :options="academicYears" optionLabel="name_en" optionValue="id"
+        placeholder="All Academic Years" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
       <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
         placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
       <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
@@ -135,6 +137,27 @@
           </template>
         </Column>
 
+        <!-- Department -->
+        <Column field="department_name" header="DEPARTMENT" sortable class="!py-3.5">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Major -->
+        <Column field="major_name" header="MAJOR" sortable class="!py-3.5">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-600 font-medium">{{ data.major_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Academic Year -->
+        <Column field="academic_year_name" header="ACADEMIC YEAR" sortable class="!py-3.5">
+          <template #body="{ data }">
+            <span class="text-xs text-slate-600 font-medium">{{ data.academic_year_name || '—' }}</span>
+          </template>
+        </Column>
+
         <!-- Credits -->
         <Column field="credits" header="CREDITS" sortable class="!py-3.5">
           <template #body="{ data }">
@@ -161,12 +184,12 @@
         <Column header="ACTIONS" class="!text-right !py-3.5">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
-              <Button
+              <!-- <Button
                 icon="pi pi-sitemap"
                 class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
                 title="Classes Teaching This Subject"
                 @click="openClassesDialog(data)"
-              />
+              /> -->
               <Button
                 icon="pi pi-pencil"
                 class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
@@ -185,114 +208,122 @@
       </DataTable>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
-    <Dialog 
-      v-model:visible="subjectDialog" 
-      :header="isEdit ? 'Edit Subject' : 'Create New Subject'" 
-      :modal="true" 
-      class="w-full max-w-lg"
+    <Dialog
+      v-model:visible="subjectDialog"
+      :header="isEdit ? 'Edit Subject' : 'Create New Subject'"
+      :modal="true"
+      class="w-full max-w-3xl"
     >
       <div class="space-y-4 pt-2">
-        <!-- Faculty / Degree / Major Selection -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
-          <Dropdown
-            v-model="subjectForm.faculty_id"
-            :options="faculties"
-            optionLabel="name_en"
-            optionValue="id"
-            placeholder="Select Faculty"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            @change="subjectForm.degree_id = null; subjectForm.major_id = null"
-          />
+        <!-- Subject Code / Name / Name (Khmer) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Code *</label>
+            <InputText
+              v-model="subjectForm.code"
+              placeholder="e.g. CS101"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Name (English) *</label>
+            <InputText
+              v-model="subjectForm.name_en"
+              placeholder="e.g. Database Management Systems"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Name (Khmer)</label>
+            <InputText
+              v-model="subjectForm.name_kh"
+              placeholder="ឧ. ប្រព័ន្ធគ្រប់គ្រងមូលដ្ឋានទិន្នន័យ"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            />
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Faculty / Department / Major -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
             <Dropdown
-              v-model="subjectForm.degree_id"
-              :options="degreesForSelectedFaculty"
-              optionLabel="title_en"
+              v-model="subjectForm.faculty_id"
+              :options="faculties"
+              optionLabel="name_en"
               optionValue="id"
-              placeholder="Any degree"
+              placeholder="Select Faculty"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="subjectForm.degree_id = null; subjectForm.major_id = null"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
+            <Dropdown
+              v-model="subjectForm.department_id"
+              :options="departments"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Department"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              :disabled="!subjectForm.faculty_id"
-              @change="subjectForm.major_id = null"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
             <Dropdown
               v-model="subjectForm.major_id"
-              :options="majorsForSelectedDegree"
+              :options="majorsForSelectedFaculty"
               optionLabel="name_en"
               optionValue="id"
               placeholder="Any major"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              :disabled="!subjectForm.degree_id"
+              :disabled="!subjectForm.faculty_id"
+              @change="onMajorChange"
             />
           </div>
         </div>
 
-        <!-- Subject Code & Credits -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Academic Year / Credits / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Code *</label>
-            <InputText 
-              v-model="subjectForm.code" 
-              placeholder="e.g. CS101" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Academic Year</label>
+            <Dropdown
+              v-model="subjectForm.academic_year_id"
+              :options="academicYears"
+              optionLabel="name_en"
+              optionValue="id"
+              placeholder="Select Academic Year"
+              showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Credits *</label>
-            <InputText 
-              v-model="subjectForm.credits" 
-              type="number" 
-              placeholder="3" 
+            <InputText
+              v-model="subjectForm.credits"
+              type="number"
+              placeholder="3"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+            <Dropdown
+              v-model="subjectForm.status"
+              :options="['Active', 'Inactive']"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
             />
           </div>
         </div>
 
-        <!-- Subject Name EN -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Name (English) *</label>
-          <InputText 
-            v-model="subjectForm.name_en" 
-            placeholder="e.g. Database Management Systems" 
-            class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-          />
-        </div>
-
-        <!-- Subject Name KH -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Name (Khmer)</label>
-          <InputText 
-            v-model="subjectForm.name_kh" 
-            placeholder="ឧ. ប្រព័ន្ធគ្រប់គ្រងមូលដ្ឋានទិន្នន័យ" 
-            class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-          />
-        </div>
-
-        <!-- Status & Description -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-          <Dropdown 
-            v-model="subjectForm.status" 
-            :options="['Active', 'Inactive']" 
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-          />
-        </div>
-
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Description</label>
-          <Textarea 
-            v-model="subjectForm.description" 
-            rows="3" 
-            placeholder="Brief course overview..." 
+          <Textarea
+            v-model="subjectForm.description"
+            rows="3"
+            placeholder="Brief course overview..."
             class="w-full !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
           />
         </div>
@@ -307,7 +338,7 @@
     </Dialog>
 
     <!-- ======= CLASSES TEACHING THIS SUBJECT DIALOG (Class + Teacher per Subject) ======= -->
-    <Dialog
+    <!-- <Dialog
       v-model:visible="classesDialog"
       :header="assignmentSubject ? `Classes - ${assignmentSubject.name_en}` : 'Classes'"
       :modal="true"
@@ -375,7 +406,7 @@
           <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="classesDialog = false" />
         </div>
       </template>
-    </Dialog>
+    </Dialog> -->
 
   </div>
 </template>
@@ -395,8 +426,10 @@ import Textarea from 'primevue/textarea'
 
 const subjects = ref([])
 const faculties = ref([])
+const departments = ref([])
 const degrees = ref([])
 const majors = ref([])
+const academicYears = ref([])
 const classes = ref([])
 const teachers = ref([])
 
@@ -406,16 +439,20 @@ const fetchSubjects = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, degreesRes, majorsRes, classesRes, teachersRes] = await Promise.all([
+  const [facultiesRes, departmentsRes, degreesRes, majorsRes, academicYearsRes, classesRes, teachersRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/departments', { params: { per_page: 100 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
     api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/academic-years', { params: { per_page: 100 } }),
     api.get('/classes', { params: { per_page: 200 } }),
     api.get('/teachers', { params: { per_page: 200 } }),
   ])
   faculties.value = facultiesRes.data.data
+  departments.value = departmentsRes.data.data
   degrees.value = degreesRes.data.data
   majors.value = majorsRes.data.data
+  academicYears.value = academicYearsRes.data.data
   classes.value = classesRes.data.data
   teachers.value = teachersRes.data.data.map(t => ({ id: t.id, faculty_id: t.faculty_id, name_en: t.name_en }))
 }
@@ -428,27 +465,30 @@ onMounted(() => {
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 
-// ======= Filter Bar (Faculty / Degree / Major / Status) =======
+// ======= Filter Bar (Faculty / Department / Major / Academic Year / Status) =======
 const facultyFilter = ref(null)
-const degreeFilter = ref(null)
+const departmentFilter = ref(null)
 const majorFilter = ref(null)
+const academicYearFilter = ref(null)
 const statusFilter = ref(null)
 
 const hasActiveFilters = computed(() =>
-  !!(facultyFilter.value || degreeFilter.value || majorFilter.value || statusFilter.value)
+  !!(facultyFilter.value || departmentFilter.value || majorFilter.value || academicYearFilter.value || statusFilter.value)
 )
 
 const clearFilters = () => {
   facultyFilter.value = null
-  degreeFilter.value = null
+  departmentFilter.value = null
   majorFilter.value = null
+  academicYearFilter.value = null
   statusFilter.value = null
 }
 
 const filteredSubjects = computed(() => subjects.value.filter((s) => {
   if (facultyFilter.value && s.faculty_id !== facultyFilter.value) return false
-  if (degreeFilter.value && s.degree_id !== degreeFilter.value) return false
+  if (departmentFilter.value && s.department_id !== departmentFilter.value) return false
   if (majorFilter.value && s.major_id !== majorFilter.value) return false
+  if (academicYearFilter.value && s.academic_year_id !== academicYearFilter.value) return false
   if (statusFilter.value && s.status !== statusFilter.value) return false
   return true
 }))
@@ -462,20 +502,29 @@ const subjectForm = ref({
   name_en: '',
   name_kh: '',
   faculty_id: null,
+  department_id: null,
   degree_id: null,
   major_id: null,
+  academic_year_id: null,
   credits: 3,
   description: '',
   status: 'Active'
 })
 
-// Degree/Major options narrow down as Faculty, then Degree, is picked
-const degreesForSelectedFaculty = computed(() =>
-  degrees.value.filter(d => d.faculty_id === subjectForm.value.faculty_id)
-)
-const majorsForSelectedDegree = computed(() =>
-  majors.value.filter(m => m.degree_id === subjectForm.value.degree_id)
-)
+// Major options narrow down by Faculty (via the Faculty -> Degree -> Major chain).
+// Degree itself is resolved automatically from the picked Major and never shown in the UI.
+const majorsForSelectedFaculty = computed(() => {
+  if (!subjectForm.value.faculty_id) return []
+  const degreeIds = degrees.value
+    .filter(d => d.faculty_id === subjectForm.value.faculty_id)
+    .map(d => d.id)
+  return majors.value.filter(m => degreeIds.includes(m.degree_id))
+})
+
+const onMajorChange = () => {
+  const major = majors.value.find(m => m.id === subjectForm.value.major_id)
+  subjectForm.value.degree_id = major?.degree_id ?? null
+}
 
 // Computed Properties
 const activeSubjectsCount = computed(() => subjects.value.filter(s => s.status === 'Active').length)
@@ -489,8 +538,10 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     faculty_id: null,
+    department_id: null,
     degree_id: null,
     major_id: null,
+    academic_year_id: null,
     credits: 3,
     description: '',
     status: 'Active'
@@ -513,8 +564,10 @@ const saveSubject = async () => {
 
   const payload = {
     faculty_id: subjectForm.value.faculty_id,
+    department_id: subjectForm.value.department_id,
     degree_id: subjectForm.value.degree_id,
     major_id: subjectForm.value.major_id,
+    academic_year_id: subjectForm.value.academic_year_id,
     code: subjectForm.value.code,
     name_en: subjectForm.value.name_en,
     name_kh: subjectForm.value.name_kh,

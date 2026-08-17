@@ -22,12 +22,16 @@ class ClassroomController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $classes = Classroom::query()
-            ->with('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term')
+            ->with('major.degree.faculty', 'faculty', 'department', 'promotion', 'stage', 'shift', 'academicYear', 'semester', 'term', 'studySession')
             ->withCount('studentEnrollments as students_count')
             ->when($request->input('major_id'), fn ($query, $id) => $query->where('major_id', $id))
+            ->when($request->input('faculty_id'), fn ($query, $id) => $query->where('faculty_id', $id))
+            ->when($request->input('department_id'), fn ($query, $id) => $query->where('department_id', $id))
+            ->when($request->input('promotion_id'), fn ($query, $id) => $query->where('promotion_id', $id))
             ->when($request->input('stage_id'), fn ($query, $id) => $query->where('stage_id', $id))
             ->when($request->input('shift_id'), fn ($query, $id) => $query->where('shift_id', $id))
             ->when($request->input('academic_year_id'), fn ($query, $id) => $query->where('academic_year_id', $id))
+            ->when($request->input('study_session_id'), fn ($query, $id) => $query->where('study_session_id', $id))
             ->when($request->input('q'), function ($query, $q) {
                 $query->where(function ($query) use ($q) {
                     $query->where('code', 'like', "%{$q}%")
@@ -50,7 +54,7 @@ class ClassroomController extends Controller
         $data = $this->validated($request);
 
         $class = Classroom::create($data);
-        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
+        $class->load('major.degree.faculty', 'faculty', 'department', 'promotion', 'stage', 'shift', 'academicYear', 'semester', 'term', 'studySession');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -64,7 +68,7 @@ class ClassroomController extends Controller
      */
     public function show(Classroom $class)
     {
-        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
+        $class->load('major.degree.faculty', 'faculty', 'department', 'promotion', 'stage', 'shift', 'academicYear', 'semester', 'term', 'studySession');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -80,7 +84,7 @@ class ClassroomController extends Controller
         $data = $this->validated($request, $class);
 
         $class->update($data);
-        $class->load('major.degree', 'stage', 'shift', 'academicYear', 'semester', 'term');
+        $class->load('major.degree.faculty', 'faculty', 'department', 'promotion', 'stage', 'shift', 'academicYear', 'semester', 'term', 'studySession');
         $class->loadCount('studentEnrollments as students_count');
 
         return response()->json([
@@ -111,12 +115,17 @@ class ClassroomController extends Controller
                 Rule::unique('classes', 'code')->ignore($class?->id),
             ],
             'name' => ['required', 'string', 'max:255'],
+            'name_kh' => ['nullable', 'string', 'max:255'],
             'major_id' => ['required', 'exists:majors,id'],
+            'faculty_id' => ['nullable', 'exists:faculties,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'promotion_id' => ['nullable', 'exists:promotions,id'],
             'stage_id' => ['required', 'exists:stages,id'],
             'shift_id' => ['required', 'exists:shifts,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'semester_id' => ['nullable', 'exists:semesters,id'],
             'term_id' => ['nullable', 'exists:terms,id'],
+            'study_session_id' => ['nullable', 'exists:study_sessions,id'],
             'room' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:500'],
             'status' => ['required', Rule::in(['Active', 'Inactive'])],
@@ -125,12 +134,17 @@ class ClassroomController extends Controller
         return [
             'code' => $validated['code'],
             'name' => $validated['name'],
+            'name_kh' => $validated['name_kh'] ?? null,
             'major_id' => $validated['major_id'],
+            'faculty_id' => $validated['faculty_id'] ?? null,
+            'department_id' => $validated['department_id'] ?? null,
+            'promotion_id' => $validated['promotion_id'] ?? null,
             'stage_id' => $validated['stage_id'],
             'shift_id' => $validated['shift_id'],
             'academic_year_id' => $validated['academic_year_id'] ?? $this->resolveCurrentAcademicYearId(),
             'semester_id' => $validated['semester_id'] ?? null,
             'term_id' => $validated['term_id'] ?? null,
+            'study_session_id' => $validated['study_session_id'] ?? null,
             'room' => $validated['room'] ?? null,
             'capacity' => $validated['capacity'],
             'status' => $this->statusToBool($validated['status']),
@@ -157,9 +171,20 @@ class ClassroomController extends Controller
             'id' => $class->id,
             'code' => $class->code,
             'name' => $class->name,
+            'name_kh' => $class->name_kh,
             'major_id' => $class->major_id,
+            'major_name' => $class->major?->name,
+            // Legacy field kept for existing UI compatibility: historically held the major's
+            // name under a misleading key, before `department_id` below was a real column.
             'department' => $class->major?->name,
-            'faculty_id' => $class->major?->degree?->faculty_id,
+            'department_id' => $class->department_id,
+            'department_name' => $class->department?->name,
+            'faculty_id' => $class->faculty_id ?? $class->major?->degree?->faculty_id,
+            'faculty_name' => $class->faculty?->name ?? $class->major?->degree?->faculty?->name,
+            'promotion_id' => $class->promotion_id,
+            'promotion_name' => $class->promotion ? "{$class->promotion->year_start}-{$class->promotion->year_end}" : null,
+            'study_session_id' => $class->study_session_id,
+            'study_session_name' => $class->studySession?->name,
             'stage_id' => $class->stage_id,
             'stage' => $class->stage?->name,
             'shift_id' => $class->shift_id,

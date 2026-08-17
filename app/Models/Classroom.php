@@ -16,12 +16,17 @@ class Classroom extends Model
     protected $fillable = [
         'code',
         'name',
+        'name_kh',
         'major_id',
+        'faculty_id',
+        'department_id',
+        'promotion_id',
         'stage_id',
         'shift_id',
         'academic_year_id',
         'semester_id',
         'term_id',
+        'study_session_id',
         'room',
         'capacity',
         'status',
@@ -35,6 +40,21 @@ class Classroom extends Model
     public function major(): BelongsTo
     {
         return $this->belongsTo(Major::class);
+    }
+
+    public function faculty(): BelongsTo
+    {
+        return $this->belongsTo(Faculty::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function promotion(): BelongsTo
+    {
+        return $this->belongsTo(Promotion::class);
     }
 
     public function stage(): BelongsTo
@@ -60,6 +80,11 @@ class Classroom extends Model
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
+    }
+
+    public function studySession(): BelongsTo
+    {
+        return $this->belongsTo(StudySession::class);
     }
 
     public function studentEnrollments(): HasMany

@@ -6,6 +6,7 @@ import LoginPageView from '../views/LoginPageView.vue'
 import RoleProfileView from '../views/RoleProfileView.vue'
 import MyProfileView from '../views/MyProfileView.vue'
 import Subjects from '../views/pages/superAdmin/Subjects.vue'
+import Sessions from '../views/pages/superAdmin/Sessions.vue'
 import Classes from '../views/pages/superAdmin/Classes.vue'
 import Teachers from '../views/pages/superAdmin/Teachers.vue'
 import Students from '../views/pages/superAdmin/Students.vue'
@@ -51,6 +52,11 @@ const routes = [
         path: 'subjects',
         name: 'admin.subjects',
         component: Subjects,
+      },
+      {
+        path: 'sessions',
+        name: 'admin.sessions',
+        component: Sessions,
       },
       {
         path: 'classes',

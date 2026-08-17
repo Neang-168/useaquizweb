@@ -7,16 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Subject extends Model
+class StudySession extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'faculty_id',
-        'department_id',
         'degree_id',
         'major_id',
-        'academic_year_id',
         'code',
         'name',
         'name_kh',
@@ -35,11 +33,6 @@ class Subject extends Model
         return $this->belongsTo(Faculty::class);
     }
 
-    public function department(): BelongsTo
-    {
-        return $this->belongsTo(Department::class);
-    }
-
     public function degree(): BelongsTo
     {
         return $this->belongsTo(Degree::class);
@@ -50,13 +43,8 @@ class Subject extends Model
         return $this->belongsTo(Major::class);
     }
 
-    public function academicYear(): BelongsTo
+    public function classes(): HasMany
     {
-        return $this->belongsTo(AcademicYear::class);
-    }
-
-    public function teacherSubjects(): HasMany
-    {
-        return $this->hasMany(TeacherSubject::class);
+        return $this->hasMany(Classroom::class, 'study_session_id');
     }
 }

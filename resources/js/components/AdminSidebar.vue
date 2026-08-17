@@ -18,7 +18,7 @@
 
       <!-- Right: Search, Notifications, Profile -->
       <div class="flex items-center gap-5">
-        <button type="button"
+        <!-- <button type="button"
           class="border-0 bg-transparent text-slate-400 hover:text-blue-600 transition-colors p-0 cursor-pointer"
           aria-label="Search">
           <i class="pi pi-search text-lg"></i>
@@ -29,9 +29,9 @@
           aria-label="Notifications">
           <i class="pi pi-bell text-lg"></i>
           <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600"></span>
-        </button>
+        </button> -->
 
-        <div class="w-px h-6 bg-slate-200"></div>
+        <!-- <div class="w-px h-6 bg-slate-200"></div> -->
 
         <div class="relative" ref="profileMenuRef">
           <button type="button" @click="profileMenuOpen = !profileMenuOpen"
@@ -127,6 +127,12 @@
                 <i class="pi pi-users text-base"></i>
                 <span>Students & Enrollments</span>
               </router-link>
+            </div>
+            <!-- Report: the individuals who use the system -->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                Report
+              </span>
 
               <router-link to="/admin/report"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
@@ -150,12 +156,12 @@
                 <span>User Management</span>
               </router-link>
 
-              <router-link :to="{ name: 'admin.my-profile' }"
+              <!-- <router-link :to="{ name: 'admin.my-profile' }"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-user text-base"></i>
                 <span>My Profile</span>
-              </router-link>
+              </router-link> -->
 
               <!-- <router-link to="/admin/roles-permissions"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\ShiftController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
+use App\Http\Controllers\Api\StudySessionController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherAssignmentController;
 use App\Http\Controllers\Api\TeacherController;
@@ -86,6 +87,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::apiResource('degrees', DegreeController::class)->parameters(['degrees' => 'degree']);
         Route::apiResource('majors', MajorController::class)->parameters(['majors' => 'major']);
         Route::apiResource('subjects', SubjectController::class)->parameters(['subjects' => 'subject']);
+        Route::apiResource('study-sessions', StudySessionController::class)->parameters(['study-sessions' => 'studySession']);
 
         Route::post('/academic-years/{academicYear}/set-current', [AcademicYearController::class, 'setCurrent']);
         Route::apiResource('academic-years', AcademicYearController::class)->parameters(['academic-years' => 'academicYear']);

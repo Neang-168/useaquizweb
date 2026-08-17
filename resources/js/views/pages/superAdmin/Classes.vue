@@ -149,10 +149,50 @@
         </template>
       </Column>
 
-      <!-- Department -->
-      <Column field="department" header="DEPARTMENT" sortable class="!py-3.5">
+      <!-- Class Name (Khmer) -->
+      <Column field="name_kh" header="CLASS NAME (KH)" class="!py-3.5">
         <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.department || '—' }}</span>
+          <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
+          <span v-else class="text-slate-400 text-sm">—</span>
+        </template>
+      </Column>
+
+      <!-- Faculty -->
+      <Column field="faculty_name" header="FACULTY" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs text-slate-600 font-medium">{{ data.faculty_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Department -->
+      <Column field="department_name" header="DEPARTMENT" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Major -->
+      <Column field="major_name" header="MAJOR" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs text-slate-600 font-medium">{{ data.major_name || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Promotion -->
+      <Column field="promotion_name" header="PROMOTION" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span v-if="data.promotion_name"
+            class="text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-lg">
+            {{ data.promotion_name }}
+          </span>
+          <span v-else class="text-slate-400 text-sm">—</span>
+        </template>
+      </Column>
+
+      <!-- Academic Year -->
+      <Column field="academic_year" header="ACADEMIC YEAR" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs text-slate-600 font-medium">{{ data.academic_year || '—' }}</span>
         </template>
       </Column>
 
@@ -163,12 +203,23 @@
         </template>
       </Column>
 
-      <!-- Shift -->
-      <Column field="shift" header="SHIFT" class="!py-3.5">
+      <!-- Semester -->
+      <Column field="semester" header="SEMESTER" sortable class="!py-3.5">
         <template #body="{ data }">
-          <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
+          <span class="text-xs text-slate-600 font-medium">{{ data.semester || '—' }}</span>
         </template>
       </Column>
+
+      <!-- Session -->
+      <!-- <Column field="study_session_name" header="SESSION" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span v-if="data.study_session_name"
+            class="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-lg">
+            {{ data.study_session_name }}
+          </span>
+          <span v-else class="text-slate-400 text-sm">—</span>
+        </template>
+      </Column> -->
 
       <!-- Term -->
       <Column field="term" header="TERM" sortable class="!py-3.5">
@@ -181,13 +232,10 @@
         </template>
       </Column>
 
-      <!-- Room -->
-      <Column field="room" header="ROOM" sortable class="!py-3.5">
+      <!-- Shift -->
+      <Column field="shift" header="SHIFT" class="!py-3.5">
         <template #body="{ data }">
-          <span
-            class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
-            {{ data.room }}
-          </span>
+          <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
         </template>
       </Column>
 
@@ -266,6 +314,9 @@
             <!-- Title & Subtitle -->
             <div class="mb-3">
               <h3 class="font-bold text-slate-800 text-sm line-clamp-1 m-0" :title="cls.name">{{ cls.name }}</h3>
+              <p v-if="cls.name_kh" class="text-[11px] text-slate-500 font-khmer m-0 mt-0.5 line-clamp-1">{{ cls.name_kh
+                }}
+              </p>
               <p class="text-[11px] text-slate-400 m-0 mt-0.5 line-clamp-1">{{ cls.department || 'No Department' }}</p>
             </div>
 
@@ -285,17 +336,6 @@
                   <i class="pi pi-clock text-slate-400 text-xs"></i> Shift
                 </span>
                 <span class="font-medium text-slate-700 text-xs">{{ cls.shift }}</span>
-              </div>
-
-              <!-- Room -->
-              <div class="flex items-center justify-between">
-                <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
-                  <i class="pi pi-building text-slate-400 text-xs"></i> Room
-                </span>
-                <span
-                  class="font-semibold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded text-[11px] border border-indigo-100/60">
-                  {{ cls.room }}
-                </span>
               </div>
 
               <!-- Term -->
@@ -342,76 +382,106 @@
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="classDialog" :header="isEdit ? 'Edit Class' : 'Create New Class'" :modal="true"
-      class="w-full max-w-lg">
+      class="w-full max-w-3xl">
       <div class="space-y-4 pt-2">
-        <!-- Class Code & Name -->
+        <!-- Code / Class Name / Class Name (Khmer) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Code *</label>
             <InputText v-model="classForm.code" placeholder="e.g. M1-CS"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-          <div class="sm:col-span-2">
+          <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class Name *</label>
             <InputText v-model="classForm.name" placeholder="e.g. Class M1-CS (Year 1 Morning)"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-        </div>
-
-        <!-- Department / Major -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Major *</label>
-          <Dropdown v-model="classForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
-            placeholder="Select Department" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-        </div>
-
-        <!-- Stage & Shift -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage / Level *</label>
-            <Dropdown v-model="classForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
-              placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
-            <Dropdown v-model="classForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
-              placeholder="Select Shift" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class Name (Khmer)</label>
+            <InputText v-model="classForm.name_kh" placeholder="ឧ. ថ្នាក់ M1-CS (ឆ្នាំទី១ ព្រឹក)"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
-        <!-- Semester & Term -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Faculty / Department / Major -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty</label>
+            <Dropdown v-model="classForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
+              placeholder="Select Faculty" showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
+            <Dropdown v-model="classForm.department_id" :options="departments" optionLabel="name_en" optionValue="id"
+              placeholder="Select Department" showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major *</label>
+            <Dropdown v-model="classForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
+              placeholder="Select Major" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Promotion / Academic Year / Semester -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion</label>
+            <Dropdown v-model="classForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
+              placeholder="Select Promotion" showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Academic Year</label>
+            <Dropdown v-model="classForm.academic_year_id" :options="academicYears" optionLabel="name_en"
+              optionValue="id" placeholder="Select Academic Year"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester</label>
             <Dropdown v-model="classForm.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
               placeholder="Select Semester" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Session / Term / Stage -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Session</label>
+            <Dropdown v-model="classForm.study_session_id" :options="studySessions" optionLabel="name_en"
+              optionValue="id" placeholder="Select Session" showClear
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
             <Dropdown v-model="classForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
               placeholder="Select Term" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage / Level *</label>
+            <Dropdown v-model="classForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
+              placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
         </div>
 
-        <!-- Room & Capacity -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Shift / Capacity / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Room *</label>
-            <InputText v-model="classForm.room" placeholder="e.g. Room 301"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
+            <Dropdown v-model="classForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
+              placeholder="Select Shift" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Capacity *</label>
             <InputText v-model="classForm.capacity" type="number" placeholder="35"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-        </div>
-
-        <!-- Status -->
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-          <Dropdown v-model="classForm.status" :options="['Active', 'Inactive']"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
+            <Dropdown v-model="classForm.status" :options="['Active', 'Inactive']"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
         </div>
       </div>
 
@@ -501,10 +571,15 @@ const viewMode = ref('grid')
 
 const classes = ref([])
 const majors = ref([])
+const faculties = ref([])
+const departments = ref([])
+const promotions = ref([])
 const stages = ref([])
 const shifts = ref([])
+const academicYears = ref([])
 const semesters = ref([])
 const terms = ref([])
+const studySessions = ref([])
 const subjects = ref([])
 const teachers = ref([])
 
@@ -514,20 +589,30 @@ const fetchClasses = async () => {
 }
 
 const fetchLookups = async () => {
-  const [majorsRes, stagesRes, shiftsRes, semestersRes, termsRes, subjectsRes, teachersRes] = await Promise.all([
+  const [majorsRes, facultiesRes, departmentsRes, promotionsRes, stagesRes, shiftsRes, academicYearsRes, semestersRes, termsRes, studySessionsRes, subjectsRes, teachersRes] = await Promise.all([
     api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/faculties', { params: { per_page: 100 } }),
+    api.get('/departments', { params: { per_page: 100 } }),
+    api.get('/promotions', { params: { per_page: 100 } }),
     api.get('/stages', { params: { per_page: 100 } }),
     api.get('/shifts', { params: { per_page: 100 } }),
+    api.get('/academic-years', { params: { per_page: 100 } }),
     api.get('/semesters', { params: { per_page: 100 } }),
     api.get('/terms', { params: { per_page: 100 } }),
+    api.get('/study-sessions', { params: { per_page: 100 } }),
     api.get('/subjects', { params: { per_page: 200 } }),
     api.get('/teachers', { params: { per_page: 200 } }),
   ])
   majors.value = majorsRes.data.data
+  faculties.value = facultiesRes.data.data
+  departments.value = departmentsRes.data.data
+  promotions.value = promotionsRes.data.data
   stages.value = stagesRes.data.data
   shifts.value = shiftsRes.data.data
+  academicYears.value = academicYearsRes.data.data
   semesters.value = semestersRes.data.data
   terms.value = termsRes.data.data
+  studySessions.value = studySessionsRes.data.data
   subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, faculty_id: s.faculty_id, name_en: `${s.name_en} (${s.code})` }))
   teachers.value = teachersRes.data.data.map(t => ({ id: t.id, faculty_id: t.faculty_id, name_en: t.name_en }))
 }
@@ -567,8 +652,8 @@ const filteredClasses = computed(() => {
     if (query) {
       const matchesQuery = c.code.toLowerCase().includes(query) ||
         c.name.toLowerCase().includes(query) ||
-        (c.department || '').toLowerCase().includes(query) ||
-        (c.room || '').toLowerCase().includes(query)
+        (c.name_kh || '').toLowerCase().includes(query) ||
+        (c.department || '').toLowerCase().includes(query)
       if (!matchesQuery) return false
     }
     if (majorFilter.value && c.major_id !== majorFilter.value) return false
@@ -587,12 +672,17 @@ const classForm = ref({
   id: null,
   code: '',
   name: '',
+  name_kh: '',
   major_id: null,
+  faculty_id: null,
+  department_id: null,
+  promotion_id: null,
   stage_id: null,
   shift_id: null,
+  academic_year_id: null,
   semester_id: null,
   term_id: null,
-  room: '',
+  study_session_id: null,
   capacity: 35,
   status: 'Active'
 })
@@ -607,12 +697,17 @@ const openNewDialog = () => {
     id: null,
     code: '',
     name: '',
+    name_kh: '',
     major_id: null,
+    faculty_id: null,
+    department_id: null,
+    promotion_id: null,
     stage_id: null,
     shift_id: null,
+    academic_year_id: null,
     semester_id: null,
     term_id: null,
-    room: '',
+    study_session_id: null,
     capacity: 35,
     status: 'Active'
   }
@@ -635,12 +730,17 @@ const saveClass = async () => {
   const payload = {
     code: classForm.value.code,
     name: classForm.value.name,
+    name_kh: classForm.value.name_kh,
     major_id: classForm.value.major_id,
+    faculty_id: classForm.value.faculty_id,
+    department_id: classForm.value.department_id,
+    promotion_id: classForm.value.promotion_id,
     stage_id: classForm.value.stage_id,
     shift_id: classForm.value.shift_id,
+    academic_year_id: classForm.value.academic_year_id,
     semester_id: classForm.value.semester_id,
     term_id: classForm.value.term_id,
-    room: classForm.value.room,
+    study_session_id: classForm.value.study_session_id,
     capacity: classForm.value.capacity,
     status: classForm.value.status,
   }
@@ -853,10 +953,14 @@ const removeSubjectFromClass = async (assignment) => {
 
 
 :deep(.custom-filter-dropdown) {
-  background-color: #f8fafc !important; /* slate-50 */
-  border: 1px solid #e2e8f0 !important;   /* slate-200 */
-  border-radius: 0.75rem !important;      /* rounded-xl */
-  font-size: 0.75rem !important;          /* text-xs */
+  background-color: #f8fafc !important;
+  /* slate-50 */
+  border: 1px solid #e2e8f0 !important;
+  /* slate-200 */
+  border-radius: 0.75rem !important;
+  /* rounded-xl */
+  font-size: 0.75rem !important;
+  /* text-xs */
   transition: all 0.2s ease;
   height: 38px;
   display: flex;
@@ -865,12 +969,14 @@ const removeSubjectFromClass = async (assignment) => {
 
 /* Hover & Focus State */
 :deep(.custom-filter-dropdown:hover) {
-  border-color: #cbd5e1 !important;      /* slate-300 */
+  border-color: #cbd5e1 !important;
+  /* slate-300 */
   background-color: #ffffff !important;
 }
 
 :deep(.custom-filter-dropdown.p-focus) {
-  border-color: #3b82f6 !important;      /* blue-500 */
+  border-color: #3b82f6 !important;
+  /* blue-500 */
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
   background-color: #ffffff !important;
 }
@@ -879,13 +985,15 @@ const removeSubjectFromClass = async (assignment) => {
 :deep(.custom-filter-dropdown .p-dropdown-label) {
   font-size: 0.75rem !important;
   padding: 0.4rem 0.75rem !important;
-  color: #334155 !important;             /* slate-700 */
+  color: #334155 !important;
+  /* slate-700 */
 }
 
 /* Clear Icon and Arrow Dropdown */
 :deep(.custom-filter-dropdown .p-dropdown-trigger),
 :deep(.custom-filter-dropdown .p-dropdown-clear-icon) {
-  color: #94a3b8 !important;             /* slate-400 */
+  color: #94a3b8 !important;
+  /* slate-400 */
   width: 2rem !important;
 }
 </style>

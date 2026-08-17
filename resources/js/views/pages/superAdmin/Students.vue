@@ -62,13 +62,12 @@
       </div>
 
       <div class="flex items-center justify-between w-full sm:w-auto gap-4">
-        <div class="text-xs text-slate-400 shrink-0">
+        <!-- <div class="text-xs text-slate-400 shrink-0">
           Showing <b>{{ filteredStudents.length }}</b> entries
-        </div>
+        </div> -->
 
         <!-- Show More / Show Less Button -->
-        <Button :label="showAllColumns ? 'Show Less ' : 'Show More '"
-          :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+        <Button :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
           class="!bg-blue-600 hover:!bg-blue-700 !text-white !border !border-slate-200 !rounded-xl !py-2 !px-3.5 !text-xs !font-semibold transition-all shadow-xs cursor-pointer"
           @click="showAllColumns = !showAllColumns" />
 
@@ -76,21 +75,44 @@
     </div>
 
     <!-- ======= FILTER BAR ======= -->
-    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
-      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
-      <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
-        placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id"
-        placeholder="All Classes" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
-        placeholder="All Generations" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']"
-        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
-        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
-        @click="clearFilters" />
+    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+      <!-- Header/Title Section សម្រាប់ Filter Bar -->
+      <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
+          <i class="pi pi-filter text-blue-600 text-sm"></i>
+          <span>Filter Options</span>
+        </div>
+
+        <!-- ប៊ូតុង Clear Filters -->
+        <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash"
+          class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
+          @click="clearFilters" />
+      </div>
+
+      <!-- Dropdowns Grid Container -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+
+        <!-- Faculty Filter -->
+        <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+          placeholder="All Faculties" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Major Filter -->
+        <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
+          placeholder="All Majors" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Class Filter -->
+        <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id" placeholder="All Classes"
+          showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Generation Filter -->
+        <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
+          placeholder="All Generations" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Status Filter -->
+        <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']" placeholder="All Statuses"
+          showClear class="w-full custom-filter-dropdown" />
+
+      </div>
     </div>
 
     <!-- ======= DATA TABLE ======= -->
@@ -325,7 +347,8 @@
     <Dialog v-model:visible="assignDialog" header="Assign Class" :modal="true" class="w-full max-w-md">
       <div class="space-y-4 pt-2">
         <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
+          <div
+            class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
             {{ assignForm.name_en?.charAt(0) || '?' }}
           </div>
           <div class="min-w-0">
@@ -653,10 +676,12 @@ const saveAssign = async () => {
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 0.75rem 0.85rem;
-  height: 40px !important;            /* កំណត់កម្ពស់ Header ឲ្យច្បាស់ (52px) */
-  padding: 0.85rem 0.85rem !important; /* បន្ថែម padding លើ-ក្រោម */
+  height: 40px !important;
+  /* កំណត់កម្ពស់ Header ឲ្យច្បាស់ (52px) */
+  padding: 0.85rem 0.85rem !important;
+  /* បន្ថែម padding លើ-ក្រោម */
   white-space: nowrap;
-  background-color: #002060 ;
+  background-color: #002060;
 }
 
 .students-table :deep(.p-datatable-thead > tr > th:first-child) {
@@ -705,5 +730,44 @@ const saveAssign = async () => {
   background: transparent;
   border: none;
   padding-top: 0.5rem;
+}
+
+/*Filter */
+
+:deep(.custom-filter-dropdown) {
+  background-color: #f8fafc !important; /* slate-50 */
+  border: 1px solid #e2e8f0 !important;   /* slate-200 */
+  border-radius: 0.75rem !important;      /* rounded-xl */
+  font-size: 0.75rem !important;          /* text-xs */
+  transition: all 0.2s ease;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hover & Focus Effect */
+:deep(.custom-filter-dropdown:hover) {
+  border-color: #cbd5e1 !important;      /* slate-300 */
+  background-color: #ffffff !important;
+}
+
+:deep(.custom-filter-dropdown.p-focus) {
+  border-color: #3b82f6 !important;      /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  background-color: #ffffff !important;
+}
+
+/* Label & Inner Padding adjustment */
+:deep(.custom-filter-dropdown .p-dropdown-label) {
+  font-size: 0.75rem !important;
+  padding: 0.4rem 0.75rem !important;
+  color: #334155 !important;             /* slate-700 */
+}
+
+/* Clear & Trigger Icons */
+:deep(.custom-filter-dropdown .p-dropdown-trigger),
+:deep(.custom-filter-dropdown .p-dropdown-clear-icon) {
+  color: #94a3b8 !important;             /* slate-400 */
+  width: 2rem !important;
 }
 </style>

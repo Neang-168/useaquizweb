@@ -95,7 +95,7 @@
 
         <!-- Show More / Show Less Toggle Button -->
         <Button
-          :label="showAllColumns ? 'Show Less ' : 'Show More '"
+          
           :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
           class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
           @click="showAllColumns = !showAllColumns"
@@ -596,7 +596,7 @@ const defaultRoleForTab = computed(() => {
 const addLabel = computed(() => {
   if (activeTab.value === 'teacher') return 'Add New Teacher'
   if (activeTab.value === 'student') return 'Add New Student'
-  if (activeTab.value === 'admin') return 'Add New Admin User'
+  if (activeTab.value === 'admin') return 'Add New Admin'
   return 'Add New User'
 })
 

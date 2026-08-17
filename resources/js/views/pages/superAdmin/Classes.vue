@@ -1,8 +1,9 @@
 <template>
   <div class="space-y-6">
-    
+
     <!-- ======= PAGE HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
         <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
           <i class="pi pi-users text-blue-600 text-2xl"></i>
@@ -13,12 +14,9 @@
         </p>
       </div>
 
-      <Button 
-        label="Add New Class" 
-        icon="pi pi-plus" 
+      <Button label="Add New Class" icon="pi pi-plus"
         class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
-        @click="openNewDialog"
-      />
+        @click="openNewDialog" />
     </div>
 
     <!-- ======= STATS CARDS ======= -->
@@ -35,7 +33,8 @@
 
       <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
         <div>
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Students Enrolled</span>
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Students
+            Enrolled</span>
           <span class="text-2xl font-bold text-indigo-600">{{ totalStudents }}</span>
         </div>
         <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
@@ -58,32 +57,25 @@
     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="relative w-full sm:w-80">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <InputText
-          v-model="filters['global'].value"
-          placeholder="Search class code or name..."
-          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-        />
+        <InputText v-model="filters['global'].value" placeholder="Search class code or name..."
+          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white" />
       </div>
 
       <div class="flex items-center justify-between w-full sm:w-auto gap-4">
-        <span class="text-xs text-slate-400">
+        <!-- <span class="text-xs text-slate-400">
           Showing <b>{{ filteredClasses.length }}</b> entries
-        </span>
+        </span> -->
 
         <!-- View Mode Switcher Buttons -->
         <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-          <button
-            @click="viewMode = 'grid'"
+          <button @click="viewMode = 'grid'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
-          >
+            :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
             <i class="pi pi-th-large"></i> Cards
           </button>
-          <button
-            @click="viewMode = 'list'"
+          <button @click="viewMode = 'list'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
-          >
+            :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
             <i class="pi pi-list"></i> List
           </button>
         </div>
@@ -91,178 +83,182 @@
     </div>
 
     <!-- ======= FILTER BAR ======= -->
-    <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
-      <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
-      <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
-        placeholder="All Departments/Majors" showClear class="w-52 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
-        placeholder="All Stages" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="shiftFilter" :options="shifts" optionLabel="name_en" optionValue="id"
-        placeholder="All Shifts" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="termFilter" :options="terms" optionLabel="name_en" optionValue="id"
-        placeholder="All Terms" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
-        placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
-        class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
-        @click="clearFilters" />
+    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+      <!-- Header/Title Section សម្រាប់ Filter Bar -->
+      <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
+          <i class="pi pi-filter text-blue-600 text-sm"></i>
+          <span>Filter Options</span>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash"
+          class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
+          @click="clearFilters" />
+      </div>
+
+      <!-- Dropdowns Grid Container (5 Columns on Large Screens) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+
+        <!-- Major Filter -->
+        <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
+          placeholder="All Departments/Majors" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Stage Filter -->
+        <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
+          placeholder="All Stages" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Shift Filter -->
+        <Dropdown v-model="shiftFilter" :options="shifts" optionLabel="name_en" optionValue="id"
+          placeholder="All Shifts" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Term Filter -->
+        <Dropdown v-model="termFilter" :options="terms" optionLabel="name_en" optionValue="id" placeholder="All Terms"
+          showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Status Filter -->
+        <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']" placeholder="All Statuses" showClear
+          class="w-full custom-filter-dropdown" />
+
+      </div>
     </div>
 
     <!-- ======= 1. LIST VIEW (DataTable) ======= -->
-    <DataTable
-        v-if="viewMode === 'list'"
-        :value="filteredClasses" 
-        dataKey="id" 
-        paginator 
-        :rows="5" 
-        :rowsPerPageOptions="[5, 10, 20]"
-        responsiveLayout="scroll"
-        class="p-datatable-sm classes-table"
-      >
-        <template #empty>
-          <div class="text-center py-8 text-slate-400 text-sm">
-            No classes found.
+    <DataTable v-if="viewMode === 'list'" :value="filteredClasses" dataKey="id" paginator :rows="5"
+      :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll" class="p-datatable-sm classes-table">
+      <template #empty>
+        <div class="text-center py-8 text-slate-400 text-sm">
+          No classes found.
+        </div>
+      </template>
+
+      <!-- Class Code -->
+      <Column field="code" header="CODE" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span
+            class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+            {{ data.code }}
+          </span>
+        </template>
+      </Column>
+
+      <!-- Class Name -->
+      <Column field="name" header="CLASS NAME" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
+        </template>
+      </Column>
+
+      <!-- Department -->
+      <Column field="department" header="DEPARTMENT" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs text-slate-600 font-medium">{{ data.department || '—' }}</span>
+        </template>
+      </Column>
+
+      <!-- Stage -->
+      <Column field="stage" header="STAGE" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-xs font-medium text-slate-700">{{ data.stage }}</span>
+        </template>
+      </Column>
+
+      <!-- Shift -->
+      <Column field="shift" header="SHIFT" class="!py-3.5">
+        <template #body="{ data }">
+          <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
+        </template>
+      </Column>
+
+      <!-- Term -->
+      <Column field="term" header="TERM" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span v-if="data.term"
+            class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
+            {{ data.term }}
+          </span>
+          <span v-else class="text-slate-400 text-sm">—</span>
+        </template>
+      </Column>
+
+      <!-- Room -->
+      <Column field="room" header="ROOM" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span
+            class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
+            {{ data.room }}
+          </span>
+        </template>
+      </Column>
+
+      <!-- Enrolled / Capacity -->
+      <Column field="students_count" header="STUDENTS" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-700">
+              {{ data.students_count }} / {{ data.capacity }}
+            </span>
+            <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div class="h-full rounded-full"
+                :class="data.students_count >= data.capacity ? 'bg-rose-500' : 'bg-blue-500'"
+                :style="{ width: Math.min((data.students_count / data.capacity) * 100, 100) + '%' }"></div>
+            </div>
           </div>
         </template>
+      </Column>
 
-        <!-- Class Code -->
-        <Column field="code" header="CODE" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-              {{ data.code }}
-            </span>
-          </template>
-        </Column>
+      <!-- Status -->
+      <Column field="status" header="STATUS" sortable class="!py-3.5">
+        <template #body="{ data }">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+            :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+            <span class="w-1.5 h-1.5 rounded-full"
+              :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+            {{ data.status }}
+          </span>
+        </template>
+      </Column>
 
-        <!-- Class Name -->
-        <Column field="name" header="CLASS NAME" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
-          </template>
-        </Column>
-
-        <!-- Department -->
-        <Column field="department" header="DEPARTMENT" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-xs text-slate-600 font-medium">{{ data.department || '—' }}</span>
-          </template>
-        </Column>
-
-        <!-- Stage -->
-        <Column field="stage" header="STAGE" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-xs font-medium text-slate-700">{{ data.stage }}</span>
-          </template>
-        </Column>
-
-        <!-- Shift -->
-        <Column field="shift" header="SHIFT" class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
-          </template>
-        </Column>
-
-        <!-- Term -->
-        <Column field="term" header="TERM" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span v-if="data.term" class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
-              {{ data.term }}
-            </span>
-            <span v-else class="text-slate-400 text-sm">—</span>
-          </template>
-        </Column>
-
-        <!-- Room -->
-        <Column field="room" header="ROOM" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
-              {{ data.room }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Enrolled / Capacity -->
-        <Column field="students_count" header="STUDENTS" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-700">
-                {{ data.students_count }} / {{ data.capacity }}
-              </span>
-              <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                <div 
-                  class="h-full rounded-full" 
-                  :class="data.students_count >= data.capacity ? 'bg-rose-500' : 'bg-blue-500'"
-                  :style="{ width: Math.min((data.students_count / data.capacity) * 100, 100) + '%' }"
-                ></div>
-              </div>
-            </div>
-          </template>
-        </Column>
-
-        <!-- Status -->
-        <Column field="status" header="STATUS" sortable class="!py-3.5">
-          <template #body="{ data }">
-            <span 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-            >
-              <span class="w-1.5 h-1.5 rounded-full" :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
-              {{ data.status }}
-            </span>
-          </template>
-        </Column>
-
-        <!-- Actions -->
-        <Column header="ACTIONS" class="!text-right !py-3.5">
-          <template #body="{ data }">
-            <div class="flex items-center justify-end gap-1.5">
-              <Button
-                icon="pi pi-book"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
-                title="Subjects Taught"
-                @click="openSubjectsDialog(data)"
-              />
-              <Button
-                icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
-                title="Edit Class"
-                @click="editClass(data)"
-              />
-              <Button
-                icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
-                title="Delete Class"
-                @click="confirmDeleteClass(data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
+      <!-- Actions -->
+      <Column header="ACTIONS" class="!text-right !py-3.5">
+        <template #body="{ data }">
+          <div class="flex items-center justify-end gap-1.5">
+            <Button icon="pi pi-book"
+              class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
+              title="Subjects Taught" @click="openSubjectsDialog(data)" />
+            <Button icon="pi pi-pencil"
+              class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+              title="Edit Class" @click="editClass(data)" />
+            <Button icon="pi pi-trash"
+              class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+              title="Delete Class" @click="confirmDeleteClass(data)" />
+          </div>
+        </template>
+      </Column>
+    </DataTable>
 
     <!-- ======= 2. REDESIGNED COMPACT CARD VIEW ======= -->
     <div v-else>
-      <div v-if="filteredClasses.length === 0" class="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
+      <div v-if="filteredClasses.length === 0"
+        class="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
         No classes found.
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <div 
-          v-for="cls in filteredClasses" 
-          :key="cls.id"
-          class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group"
-        >
+        <div v-for="cls in filteredClasses" :key="cls.id"
+          class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group">
           <div>
             <!-- Header Row: Code & Status -->
             <div class="flex items-center justify-between mb-2.5">
-              <span class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100/80">
+              <span
+                class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100/80">
                 {{ cls.code }}
               </span>
 
-              <span 
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                :class="cls.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60' : 'bg-rose-50 text-rose-600 border border-rose-200/60'"
-              >
-                <span class="w-1.5 h-1.5 rounded-full" :class="cls.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                :class="cls.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60' : 'bg-rose-50 text-rose-600 border border-rose-200/60'">
+                <span class="w-1.5 h-1.5 rounded-full"
+                  :class="cls.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
                 {{ cls.status }}
               </span>
             </div>
@@ -296,7 +292,8 @@
                 <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
                   <i class="pi pi-building text-slate-400 text-xs"></i> Room
                 </span>
-                <span class="font-semibold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded text-[11px] border border-indigo-100/60">
+                <span
+                  class="font-semibold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded text-[11px] border border-indigo-100/60">
                   {{ cls.room }}
                 </span>
               </div>
@@ -306,7 +303,8 @@
                 <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
                   <i class="pi pi-calendar text-slate-400 text-xs"></i> Term
                 </span>
-                <span class="font-semibold text-amber-700 bg-amber-50/80 px-2 py-0.5 rounded text-[11px] border border-amber-100/60">
+                <span
+                  class="font-semibold text-amber-700 bg-amber-50/80 px-2 py-0.5 rounded text-[11px] border border-amber-100/60">
                   {{ cls.term }}
                 </span>
               </div>
@@ -319,104 +317,65 @@
                 <span class="text-slate-700 font-bold">{{ cls.students_count || 0 }} / {{ cls.capacity }}</span>
               </div>
               <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                <div 
-                  class="h-full rounded-full transition-all duration-300" 
+                <div class="h-full rounded-full transition-all duration-300"
                   :class="cls.students_count >= cls.capacity ? 'bg-rose-500' : 'bg-blue-600'"
-                  :style="{ width: Math.min(((cls.students_count || 0) / cls.capacity) * 100, 100) + '%' }"
-                ></div>
+                  :style="{ width: Math.min(((cls.students_count || 0) / cls.capacity) * 100, 100) + '%' }"></div>
               </div>
             </div>
           </div>
 
           <!-- Bottom Action Buttons -->
           <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
-            <Button
-              label="Subjects"
-              icon="pi pi-book"
+            <Button label="Subjects" icon="pi pi-book"
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 !rounded-lg"
-              @click="openSubjectsDialog(cls)"
-            />
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
+              @click="openSubjectsDialog(cls)" />
+            <Button label="Edit" icon="pi pi-pencil"
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-blue-50 hover:!text-blue-600 !text-slate-600 !border-slate-200 !rounded-lg"
-              @click="editClass(cls)"
-            />
-            <Button
-              label="Delete"
-              icon="pi pi-trash"
+              @click="editClass(cls)" />
+            <Button label="Delete" icon="pi pi-trash"
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-rose-50/60 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-lg"
-              @click="confirmDeleteClass(cls)"
-            />
+              @click="confirmDeleteClass(cls)" />
           </div>
         </div>
       </div>
     </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
-    <Dialog 
-      v-model:visible="classDialog" 
-      :header="isEdit ? 'Edit Class' : 'Create New Class'" 
-      :modal="true" 
-      class="w-full max-w-lg"
-    >
+    <Dialog v-model:visible="classDialog" :header="isEdit ? 'Edit Class' : 'Create New Class'" :modal="true"
+      class="w-full max-w-lg">
       <div class="space-y-4 pt-2">
         <!-- Class Code & Name -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Code *</label>
-            <InputText 
-              v-model="classForm.code" 
-              placeholder="e.g. M1-CS" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="classForm.code" placeholder="e.g. M1-CS"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div class="sm:col-span-2">
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class Name *</label>
-            <InputText 
-              v-model="classForm.name" 
-              placeholder="e.g. Class M1-CS (Year 1 Morning)" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="classForm.name" placeholder="e.g. Class M1-CS (Year 1 Morning)"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
         <!-- Department / Major -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department / Major *</label>
-          <Dropdown
-            v-model="classForm.major_id"
-            :options="majors"
-            optionLabel="name_en"
-            optionValue="id"
-            placeholder="Select Department"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-          />
+          <Dropdown v-model="classForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
+            placeholder="Select Department" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
 
         <!-- Stage & Shift -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage / Level *</label>
-            <Dropdown
-              v-model="classForm.stage_id"
-              :options="stages"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Stage"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="classForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
+              placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
-            <Dropdown
-              v-model="classForm.shift_id"
-              :options="shifts"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Shift"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="classForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
+              placeholder="Select Shift" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
 
@@ -424,25 +383,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester</label>
-            <Dropdown
-              v-model="classForm.semester_id"
-              :options="semesters"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Semester"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="classForm.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
+              placeholder="Select Semester" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
-            <Dropdown
-              v-model="classForm.term_id"
-              :options="terms"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Term"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="classForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
+              placeholder="Select Term" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
 
@@ -450,100 +397,74 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Room *</label>
-            <InputText 
-              v-model="classForm.room" 
-              placeholder="e.g. Room 301" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="classForm.room" placeholder="e.g. Room 301"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Capacity *</label>
-            <InputText 
-              v-model="classForm.capacity" 
-              type="number" 
-              placeholder="35" 
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
-            />
+            <InputText v-model="classForm.capacity" type="number" placeholder="35"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
         </div>
 
         <!-- Status -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-          <Dropdown 
-            v-model="classForm.status" 
-            :options="['Active', 'Inactive']" 
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-          />
+          <Dropdown v-model="classForm.status" :options="['Active', 'Inactive']"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
       </div>
 
       <template #footer>
         <div class="flex justify-end gap-2 pt-3">
-          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="classDialog = false" />
-          <Button label="Save Class" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold" @click="saveClass" />
+          <Button label="Cancel" icon="pi pi-times"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="classDialog = false" />
+          <Button label="Save Class" icon="pi pi-check"
+            class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="saveClass" />
         </div>
       </template>
     </Dialog>
 
     <!-- ======= SUBJECTS TAUGHT DIALOG (Subject + Teacher per Class) ======= -->
-    <Dialog
-      v-model:visible="subjectsDialog"
-      :header="assignmentClass ? `Subjects Taught - ${assignmentClass.name}` : 'Subjects Taught'"
-      :modal="true"
-      class="w-full max-w-2xl"
-    >
+    <Dialog v-model:visible="subjectsDialog"
+      :header="assignmentClass ? `Subjects Taught - ${assignmentClass.name}` : 'Subjects Taught'" :modal="true"
+      class="w-full max-w-2xl">
       <div class="space-y-4 pt-2">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject</label>
-            <Dropdown
-              v-model="subjectAssignForm.subject_id"
-              :options="subjectOptionsForClass"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Subject"
-              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="subjectAssignForm.subject_id" :options="subjectOptionsForClass" optionLabel="name_en"
+              optionValue="id" placeholder="Select Subject"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teacher</label>
-            <Dropdown
-              v-model="subjectAssignForm.teacher_profile_id"
-              :options="teacherOptionsForClass"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Teacher"
-              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
-            />
+            <Dropdown v-model="subjectAssignForm.teacher_profile_id" :options="teacherOptionsForClass"
+              optionLabel="name_en" optionValue="id" placeholder="Select Teacher"
+              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm" />
           </div>
-          <Button
-            label="Add Subject"
-            icon="pi pi-plus"
+          <Button label="Add Subject" icon="pi pi-plus"
             class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !text-xs !font-semibold"
-            @click="addSubjectToClass"
-          />
+            @click="addSubjectToClass" />
         </div>
         <p class="text-[11px] text-slate-400 -mt-2">
           Only subjects and teachers within this class's faculty are shown.
         </p>
 
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
-          <div
-            v-for="assignment in classSubjectAssignments"
-            :key="assignment.id"
-            class="flex items-center justify-between px-4 py-2.5"
-          >
+          <div v-for="assignment in classSubjectAssignments" :key="assignment.id"
+            class="flex items-center justify-between px-4 py-2.5">
             <div>
-              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{{ assignment.subject_code }}</span>
+              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{{
+                assignment.subject_code }}</span>
               <span class="text-sm font-semibold text-slate-800">{{ assignment.subject_name }}</span>
               <span class="text-xs text-slate-400 ml-2">taught by {{ assignment.teacher_name }}</span>
             </div>
-            <Button
-              icon="pi pi-trash"
+            <Button icon="pi pi-trash"
               class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
-              @click="removeSubjectFromClass(assignment)"
-            />
+              @click="removeSubjectFromClass(assignment)" />
           </div>
           <div v-if="classSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
             No subjects assigned to this class yet.
@@ -553,7 +474,9 @@
 
       <template #footer>
         <div class="flex justify-end pt-3">
-          <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="subjectsDialog = false" />
+          <Button label="Close" icon="pi pi-times"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold"
+            @click="subjectsDialog = false" />
         </div>
       </template>
     </Dialog>
@@ -842,14 +765,17 @@ const removeSubjectFromClass = async (assignment) => {
   background: #ffffff !important;
   border: none !important;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
-  color: #1d4ed8 !important;            /* ពណ៌អក្សរខៀវ Primary */
-  font-size: 0.75rem !important;        /* Font Header */
+  color: #1d4ed8 !important;
+  /* ពណ៌អក្សរខៀវ Primary */
+  font-size: 0.75rem !important;
+  /* Font Header */
   font-weight: 700 !important;
   letter-spacing: 0.05em !important;
-  
-  height: 52px !important;              /* បង្ខំកម្ពស់ 52px */
+
+  height: 52px !important;
+  /* បង្ខំកម្ពស់ 52px */
   padding: 0.75rem 1rem !important;
-  
+
   vertical-align: middle !important;
   white-space: nowrap !important;
 }
@@ -873,10 +799,11 @@ const removeSubjectFromClass = async (assignment) => {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
   color: #334155 !important;
   font-size: 0.82rem !important;
-  
-  height: 44px !important;              /* កម្ពស់ Data Row */
+
+  height: 44px !important;
+  /* កម្ពស់ Data Row */
   padding: 0.5rem 1rem !important;
-  
+
   vertical-align: middle !important;
   white-space: nowrap !important;
   transition: all 0.15s ease !important;
@@ -921,5 +848,44 @@ const removeSubjectFromClass = async (assignment) => {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+
+
+:deep(.custom-filter-dropdown) {
+  background-color: #f8fafc !important; /* slate-50 */
+  border: 1px solid #e2e8f0 !important;   /* slate-200 */
+  border-radius: 0.75rem !important;      /* rounded-xl */
+  font-size: 0.75rem !important;          /* text-xs */
+  transition: all 0.2s ease;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hover & Focus State */
+:deep(.custom-filter-dropdown:hover) {
+  border-color: #cbd5e1 !important;      /* slate-300 */
+  background-color: #ffffff !important;
+}
+
+:deep(.custom-filter-dropdown.p-focus) {
+  border-color: #3b82f6 !important;      /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  background-color: #ffffff !important;
+}
+
+/* Inner Label Padding & Text Style */
+:deep(.custom-filter-dropdown .p-dropdown-label) {
+  font-size: 0.75rem !important;
+  padding: 0.4rem 0.75rem !important;
+  color: #334155 !important;             /* slate-700 */
+}
+
+/* Clear Icon and Arrow Dropdown */
+:deep(.custom-filter-dropdown .p-dropdown-trigger),
+:deep(.custom-filter-dropdown .p-dropdown-clear-icon) {
+  color: #94a3b8 !important;             /* slate-400 */
+  width: 2rem !important;
 }
 </style>

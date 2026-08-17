@@ -11,6 +11,7 @@ import Teachers from '../views/pages/superAdmin/Teachers.vue'
 import Students from '../views/pages/superAdmin/Students.vue'
 import Users from '../views/pages/superAdmin/Users.vue'
 import RolesPermissions from '../views/pages/superAdmin/RolesPermissions.vue'
+import Report from '../views/pages/superAdmin/Report.vue'
 
 import TeacherLayout from '../views/TeacherLayout.vue'
 import TeachClasses from '../views/pages/teacher/Classes.vue'
@@ -65,6 +66,11 @@ const routes = [
         path: 'students',
         name: 'admin.students',
         component: Students,
+      },
+      {
+        path: 'report',
+        name: 'admin.report',
+        component: Report,
       },
       {
         path: 'users',

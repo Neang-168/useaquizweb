@@ -127,6 +127,13 @@
                 <i class="pi pi-users text-base"></i>
                 <span>Students & Enrollments</span>
               </router-link>
+
+              <router-link to="/admin/report"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-users text-base"></i>
+                <span>Report</span>
+              </router-link>
             </div>
 
             <!-- Administration: system-wide account management first,

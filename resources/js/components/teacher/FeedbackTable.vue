@@ -66,10 +66,11 @@
         <Column header="RESULT" class="!text-center">
           <template #body="{ data }">
             <span
-              :class="data.score >= 50 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              :class="data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
               class="font-bold px-2.5 py-0.5 rounded-full text-[10px] border"
+              :title="`Pass mark: ${data.passMark}`"
             >
-              {{ data.score >= 50 ? 'PASSED' : 'FAILED' }}
+              {{ data.passed ? 'PASSED' : 'FAILED' }}
             </span>
           </template>
         </Column>
@@ -79,7 +80,7 @@
             <span v-if="data.hasFeedbackSent" class="text-emerald-600 font-semibold flex items-center justify-center gap-1 text-xs">
               <i class="pi pi-check-circle text-xs"></i> Sent
             </span>
-            <span v-else-if="data.score < 50" class="text-rose-500 font-semibold flex items-center justify-center gap-1 text-xs">
+            <span v-else-if="!data.passed" class="text-rose-500 font-semibold flex items-center justify-center gap-1 text-xs">
               <i class="pi pi-exclamation-circle text-xs"></i> Needs Feedback
             </span>
             <span v-else class="text-slate-400 text-xs">-</span>
@@ -89,7 +90,7 @@
         <Column header="ACTION" class="!text-center">
           <template #body="{ data }">
             <Button
-              v-if="data.score < 50"
+              v-if="!data.passed"
               label="Send Study Guidance"
               icon="pi pi-send"
               size="small"
@@ -205,8 +206,8 @@ const fetchFeedbackList = async () => {
 onMounted(fetchFeedbackList)
 watch(() => props.quizId, fetchFeedbackList)
 
-const passedStudents = computed(() => students.value.filter(s => s.score >= 50))
-const failedStudents = computed(() => students.value.filter(s => s.score < 50))
+const passedStudents = computed(() => students.value.filter(s => s.passed))
+const failedStudents = computed(() => students.value.filter(s => !s.passed))
 
 const displayedStudents = computed(() => {
   if (filterStatus.value === 'failed') return failedStudents.value
@@ -217,7 +218,7 @@ function openFeedbackModal(student) {
   selectedStudent.value = student
   feedbackMessage.value = ''
 
-  if (student.score < 50) {
+  if (!student.passed) {
     applyTemplate('restudy')
   }
 }

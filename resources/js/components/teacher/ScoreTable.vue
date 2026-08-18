@@ -8,7 +8,7 @@
       </div>
       <div class="bg-white p-4 rounded-2xl border border-slate-200">
         <span class="text-[11px] font-bold text-slate-400">Average Score</span>
-        <h3 class="text-lg font-bold text-indigo-600 m-0 mt-1">{{ averageScore }} / 100</h3>
+        <h3 class="text-lg font-bold text-indigo-600 m-0 mt-1">{{ averageScore }} / {{ totalPoints }}</h3>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-slate-200">
         <span class="text-[11px] font-bold text-slate-400">Passed</span>
@@ -82,7 +82,7 @@
 
         <Column header="MCQ SCORE" class="!text-center">
           <template #body="{ data }">
-            <span class="font-medium text-slate-700 text-xs">{{ data.mcqScore }}/50</span>
+            <span class="font-medium text-slate-700 text-xs">{{ data.mcqScore }}</span>
           </template>
         </Column>
 
@@ -91,23 +91,24 @@
             <span v-if="data.essayNeedsGrade" class="bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded text-[10px] border border-amber-200">
               Needs Grading
             </span>
-            <span v-else class="font-medium text-slate-700 text-xs">{{ data.essayScore }}/50</span>
+            <span v-else class="font-medium text-slate-700 text-xs">{{ data.essayScore ?? '—' }}</span>
           </template>
         </Column>
 
         <Column header="TOTAL" class="!text-center">
           <template #body="{ data }">
-            <span class="font-bold text-indigo-600 text-sm">{{ data.mcqScore + (data.essayScore || 0) }}</span>
+            <span class="font-bold text-indigo-600 text-sm">{{ data.mcqScore + (data.essayScore || 0) }} / {{ totalPoints }}</span>
           </template>
         </Column>
 
         <Column header="RESULT" class="!text-center">
           <template #body="{ data }">
             <span
-              :class="(data.mcqScore + (data.essayScore || 0)) >= 50 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              :class="data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
               class="font-bold px-2.5 py-0.5 rounded-full text-[10px] border"
+              :title="`Pass mark: ${data.passMark}`"
             >
-              {{ (data.mcqScore + (data.essayScore || 0)) >= 50 ? 'PASSED' : 'FAILED' }}
+              {{ data.passed ? 'PASSED' : 'FAILED' }}
             </span>
           </template>
         </Column>
@@ -115,12 +116,14 @@
         <Column header="ACTION" class="!text-center">
           <template #body="{ data }">
             <Button
+              v-if="data.essayNeedsGrade"
               label="Grade Essay"
               size="small"
               text
               class="!bg-indigo-50 hover:!bg-indigo-600 !text-indigo-600 hover:!text-white !rounded-lg !text-[11px] !px-2.5 !py-1"
               @click="openGradingModal(data)"
             />
+            <span v-else class="text-slate-300 text-xs">—</span>
           </template>
         </Column>
       </DataTable>
@@ -141,11 +144,11 @@
       </template>
 
       <div class="text-xs">
-        <label class="block font-bold text-slate-700 mb-1">Enter Essay Score (out of 50) *</label>
+        <label class="block font-bold text-slate-700 mb-1">Enter Essay Score (0-100) *</label>
         <InputNumber
           v-model="inputEssayScore"
           :min="0"
-          :max="50"
+          :max="100"
           size="small"
           class="w-full"
           input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg !font-bold !text-indigo-600"
@@ -177,6 +180,7 @@ const props = defineProps({
 })
 
 const students = ref([])
+const totalPoints = ref(0)
 const loading = ref(false)
 const searchQuery = ref('')
 
@@ -186,12 +190,14 @@ const inputEssayScore = ref(0)
 const fetchScores = async () => {
   if (!props.quizId) {
     students.value = []
+    totalPoints.value = 0
     return
   }
   loading.value = true
   try {
     const { data } = await api.get(`/teacher/quizzes/${props.quizId}/scores`)
     students.value = data.data
+    totalPoints.value = data.totalPoints ?? 0
   } catch (error) {
     alert(extractError(error))
   } finally {
@@ -214,8 +220,8 @@ const averageScore = computed(() => {
   return Math.round(total / students.value.length)
 })
 
-const passedCount = computed(() => students.value.filter(s => (s.mcqScore + (s.essayScore || 0)) >= 50).length)
-const failedCount = computed(() => students.value.filter(s => (s.mcqScore + (s.essayScore || 0)) < 50).length)
+const passedCount = computed(() => students.value.filter(s => s.passed).length)
+const failedCount = computed(() => students.value.filter(s => !s.passed).length)
 
 function openGradingModal(student) {
   selectedStudentForGrading.value = student
@@ -246,7 +252,7 @@ function exportReport() {
     s.mcqScore,
     s.essayScore ?? '',
     s.mcqScore + (s.essayScore || 0),
-    (s.mcqScore + (s.essayScore || 0)) >= 50 ? 'PASSED' : 'FAILED',
+    s.passed ? 'PASSED' : 'FAILED',
   ])
 
   const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')

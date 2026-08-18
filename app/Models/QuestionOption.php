@@ -13,6 +13,7 @@ class QuestionOption extends Model
     protected $fillable = [
         'question_id',
         'text',
+        'image_path',
         'is_correct',
         'position',
     ];

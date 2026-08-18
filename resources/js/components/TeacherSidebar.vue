@@ -36,7 +36,8 @@
             <div class="flex items-center gap-2">
               <div
                 class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
-                <img v-if="authUser.avatar_url" :src="authUser.avatar_url" alt="Avatar" class="w-full h-full object-cover" />
+                <img v-if="authUser.avatar_url" :src="authUser.avatar_url" alt="Avatar"
+                  class="w-full h-full object-cover" />
                 <span v-else>{{ userInitial }}</span>
               </div>
               <span class="text-sm font-semibold text-slate-700">{{ userFullName }}</span>
@@ -51,8 +52,7 @@
               label="User Profile" icon="pi pi-user"
               class="w-full !justify-start !border-0 !bg-transparent !text-slate-700 hover:!bg-slate-100 !py-2 !px-3.5 !text-sm !font-medium no-underline" />
             <div class="h-px bg-slate-200 my-1"></div>
-            <Button @click="handleLogout"
-              label="Logout" icon="pi pi-sign-out"
+            <Button @click="handleLogout" label="Logout" icon="pi pi-sign-out"
               class="w-full !justify-start !border-0 !bg-transparent !text-red-500 hover:!bg-red-50 !py-2 !px-3.5 !text-sm !font-medium" />
           </div>
         </div>
@@ -78,38 +78,58 @@
                 <i class="pi pi-th-large text-base"></i>
                 <span>Dashboard</span>
               </router-link>
-
-              <router-link to="/teacher/calendar"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-calendar text-base"></i>
-                <span>Calendar</span>
-              </router-link>
-            </div>
-
-            <!-- 2. ACADEMIC STRUCTURE -->
-            <div class="space-y-1">
-              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                Academic Setup
-              </span>
-
               <router-link to="/teacher/classes"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-building text-base"></i>
-                <span>My Classes</span>
+                <span>Classes</span>
+              </router-link>
+              <router-link to="/teacher/questionbank"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-book text-base"></i>
+                <span>Question Bank</span>
+              </router-link>
+              <router-link to="/teacher/scoreReport"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-chart-bar text-base"></i>
+                <span>Score & Reports</span>
               </router-link>
 
-              <router-link to="/teacher/subjects"
+              <router-link to="/teacher/feedback"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-comments text-base"></i>
+                <span>Feedback</span>
+              </router-link>
+
+              <!-- <router-link to="/teacher/calendar"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-calendar text-base"></i>
+                <span>Calendar</span>
+              </router-link> -->
+            </div>
+
+            <!-- 2. ACADEMIC STRUCTURE -->
+            <!-- <div class="space-y-1"> -->
+            <!-- <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                Academic Setup
+              </span> -->
+
+
+
+            <!-- <router-link to="/teacher/subjects"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-graduation-cap text-base"></i>
                 <span>Subjects</span>
-              </router-link>
-            </div>
+              </router-link> -->
+            <!-- </div> -->
 
             <!--3. QUIZ & EXAM MANAGEMENT-->
-            <div class="space-y-1">
+            <!-- <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
                 QUIZ & EXAM MANAGEMENT
               </span>
@@ -134,26 +154,24 @@
                 <i class="pi pi-graduation-cap text-base"></i>
                 <span>Feedback</span>
               </router-link>
-            </div>
+            </div> -->
           </div>
 
           <!--Account-->
-          <div class="space-y-1">
+          <!-- <div class="space-y-1">
               <router-link :to="{ name: 'teacher.my-profile' }"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-user text-base"></i>
                 <span>User Profile</span>
               </router-link>
-          </div>
+          </div> -->
 
           <!-- Bottom Section: Logout Button -->
           <div class="pt-2 border-t border-slate-200/80 mt-auto">
-            <Button
-              label="Logout" icon="pi pi-sign-out"
+            <Button label="Logout" icon="pi pi-sign-out"
               class="w-full !justify-start !border-0 !bg-transparent !text-red-500 hover:!bg-red-50 !py-2 !px-3 !rounded-sm !text-sm !font-semibold"
-              @click="handleLogout"
-            />
+              @click="handleLogout" />
           </div>
 
         </div>

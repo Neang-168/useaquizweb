@@ -33,6 +33,7 @@ class CalendarController extends Controller
                 $query->whereNotNull('start_at')->orWhereNotNull('end_at');
             })
             ->with(['subject', 'classroom'])
+            ->withSum('questions as total_points', 'points')
             ->get()
             ->filter(function (Quiz $quiz) use ($monthStart, $monthEnd) {
                 $displayStart = $quiz->start_at ?? $quiz->end_at;
@@ -75,6 +76,7 @@ class CalendarController extends Controller
             'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
             'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             'totalQuestions' => $quiz->total_questions,
+            'totalPoints' => (int) ($quiz->total_points ?? 0),
             'duration' => $quiz->duration_minutes,
             'maxAttempts' => $quiz->max_attempts,
             'passMark' => $quiz->pass_mark,

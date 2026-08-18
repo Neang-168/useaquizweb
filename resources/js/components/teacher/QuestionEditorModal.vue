@@ -35,8 +35,8 @@
           </span>
         </div>
 
-        <!-- Subject & Difficulty -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Subject, Difficulty & Points -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Subject *</label>
             <Dropdown
@@ -65,6 +65,17 @@
               class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
             />
           </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Points *</label>
+            <InputNumber
+              v-model="form.points"
+              :min="1"
+              :max="1000"
+              size="small"
+              class="w-full"
+              input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            />
+          </div>
         </div>
 
         <!-- Type Select -->
@@ -81,23 +92,47 @@
           />
         </div>
 
-        <!-- Question Title -->
+        <!-- Question Title + Image -->
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Question Text *</label>
-          <Textarea
-            v-model="form.title"
-            rows="3"
+          <label class="block font-bold text-slate-700 mb-1">Question Text</label>
+          <p class="text-[11px] text-slate-400 -mt-0.5 mb-1">Add a question text, an image, or both.</p>
+          <div class="flex items-start gap-2">
+            <Textarea
+              v-model="form.title"
+              rows="3"
+              size="small"
+              placeholder="Type the question here..."
+              class="flex-1 !bg-slate-50 !border-slate-200 !rounded-lg"
+            />
+            <QuestionImageField
+              v-model:token="form.imageToken"
+              v-model:removed="form.removeImage"
+              :existing-url="form.existingImageUrl"
+              :alt-text="form.imageAlt"
+              label="Question image"
+            />
+          </div>
+          <InputText
+            v-if="form.imageToken || (form.existingImageUrl && !form.removeImage)"
+            v-model="form.imageAlt"
             size="small"
-            placeholder="Type the question here..."
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            placeholder="Image description (optional, for accessibility)"
+            class="w-full mt-1.5 !bg-slate-50 !border-slate-200 !rounded-lg"
           />
         </div>
 
         <!-- Options Section (Multiple Choice - checkboxes, one or more correct) -->
         <div v-if="form.type === 'multiple_choice'" class="space-y-2 pt-1">
           <label class="block font-bold text-slate-700">Answer Options (check every correct answer) *</label>
+          <p class="text-[11px] text-slate-400 -mt-1">Each option needs text, an image, or both.</p>
           <div v-for="(opt, idx) in form.options" :key="idx" class="flex items-center gap-2">
             <Checkbox v-model="opt.isCorrect" binary />
+            <QuestionImageField
+              v-model:token="opt.imageToken"
+              v-model:removed="opt.removeImage"
+              :existing-url="opt.existingImageUrl"
+              :label="'Option ' + String.fromCharCode(65 + idx) + ' image'"
+            />
             <InputText
               v-model="opt.text"
               size="small"
@@ -121,7 +156,7 @@
             text
             size="small"
             class="!text-indigo-600 hover:!text-indigo-700 !font-bold !text-[11px] !p-0"
-            @click="form.options.push({ text: '', isCorrect: false })"
+            @click="form.options.push(blankOption())"
           />
         </div>
 
@@ -143,9 +178,15 @@
         <!-- Matching pairs editor -->
         <div v-if="form.type === 'matching'" class="space-y-2 pt-1">
           <label class="block font-bold text-slate-700">Matching Pairs (left item ↔ right item) *</label>
-          <p class="text-[11px] text-slate-400 -mt-1">Students will match each left item to the correct right item.</p>
+          <p class="text-[11px] text-slate-400 -mt-1">Students will match each left item to the correct right item. Each side needs text, an image, or both.</p>
           <div v-for="(pair, idx) in form.matchingPairs" :key="idx" class="flex items-center gap-2">
             <span class="text-slate-400 font-mono w-5 shrink-0">{{ idx + 1 }}.</span>
+            <QuestionImageField
+              v-model:token="pair.leftImageToken"
+              v-model:removed="pair.removeLeftImage"
+              :existing-url="pair.leftExistingImageUrl"
+              :label="'Pair ' + (idx + 1) + ' left image'"
+            />
             <InputText
               v-model="pair.leftText"
               size="small"
@@ -153,6 +194,12 @@
               class="flex-1 !bg-slate-50 !border-slate-200 !rounded-lg"
             />
             <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px] shrink-0"></i>
+            <QuestionImageField
+              v-model:token="pair.rightImageToken"
+              v-model:removed="pair.removeRightImage"
+              :existing-url="pair.rightExistingImageUrl"
+              :label="'Pair ' + (idx + 1) + ' right image'"
+            />
             <InputText
               v-model="pair.rightText"
               size="small"
@@ -176,20 +223,7 @@
             text
             size="small"
             class="!text-indigo-600 hover:!text-indigo-700 !font-bold !text-[11px] !p-0"
-            @click="form.matchingPairs.push({ leftText: '', rightText: '' })"
-          />
-        </div>
-
-        <!-- Essay Sample Answer -->
-        <div v-if="form.type === 'essay'" class="pt-1">
-          <label class="block font-bold text-slate-700 mb-1">Grading Notes / Model Answer</label>
-          <p class="text-[11px] text-slate-400 -mt-0.5 mb-1">Optional guidance to help you (or another grader) score student answers consistently.</p>
-          <Textarea
-            v-model="form.sampleAnswer"
-            rows="3"
-            size="small"
-            placeholder="Enter key points or a model answer for grading..."
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            @click="form.matchingPairs.push(blankPair())"
           />
         </div>
       </div>
@@ -220,9 +254,11 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import RadioButton from 'primevue/radiobutton'
+import QuestionImageField from './QuestionImageField.vue'
 import api, { extractError } from '../../api'
 
 const props = defineProps({
@@ -239,24 +275,36 @@ const editingId = ref(null)
 const sessionCount = ref(0)
 const sessionTitles = ref([])
 
+function blankOption() {
+  return { text: '', isCorrect: false, imageToken: null, removeImage: false, existingImageUrl: null }
+}
+
+function blankPair() {
+  return {
+    leftText: '', leftImageToken: null, removeLeftImage: false, leftExistingImageUrl: null,
+    rightText: '', rightImageToken: null, removeRightImage: false, rightExistingImageUrl: null,
+  }
+}
+
 function defaultForm(keep = null) {
   return {
     subject_id: keep?.subject_id ?? props.lockedSubjectId ?? props.subjects[0]?.id ?? null,
     difficulty: keep?.difficulty ?? 'Medium',
+    points: keep?.points ?? 1,
     type: keep?.type ?? 'multiple_choice',
     title: '',
+    imageToken: null,
+    removeImage: false,
+    imageAlt: '',
+    existingImageUrl: null,
     options: [
-      { text: '', isCorrect: true },
-      { text: '', isCorrect: false },
-      { text: '', isCorrect: false },
-      { text: '', isCorrect: false },
+      { ...blankOption(), isCorrect: true },
+      blankOption(),
+      blankOption(),
+      blankOption(),
     ],
     tfCorrect: 'True',
-    matchingPairs: [
-      { leftText: '', rightText: '' },
-      { leftText: '', rightText: '' },
-    ],
-    sampleAnswer: '',
+    matchingPairs: [blankPair(), blankPair()],
   }
 }
 
@@ -266,7 +314,6 @@ const questionTypeOptions = [
   { label: 'Multiple Choice', value: 'multiple_choice' },
   { label: 'True / False', value: 'true_false' },
   { label: 'Matching', value: 'matching' },
-  { label: 'Essay', value: 'essay' },
 ]
 
 function subjectLabel(id) {
@@ -281,19 +328,52 @@ watch(() => props.visible, (isVisible) => {
   sessionCount.value = 0
   sessionTitles.value = []
 
-  if (props.editingQuestion) {
-    isEditing.value = true
-    editingId.value = props.editingQuestion.id
-    const cloned = JSON.parse(JSON.stringify(props.editingQuestion))
+  const src = props.editingQuestion
 
-    if (cloned.type === 'true_false') {
-      cloned.tfCorrect = cloned.options.find(o => o.isCorrect)?.text === 'False' ? 'False' : 'True'
+  if (src) {
+    isEditing.value = true
+    editingId.value = src.id
+
+    const cloned = {
+      subject_id: src.subject_id,
+      difficulty: src.difficulty,
+      points: src.points ?? 1,
+      type: src.type,
+      title: src.title || '',
+      imageToken: null,
+      removeImage: false,
+      imageAlt: src.imageAlt || '',
+      existingImageUrl: src.imageUrl || null,
+      options: defaultForm().options,
+      tfCorrect: 'True',
+      matchingPairs: defaultForm().matchingPairs,
     }
-    if (cloned.type !== 'multiple_choice' || !cloned.options?.length) {
-      cloned.options = defaultForm().options
+
+    if (src.type === 'multiple_choice' && src.options?.length) {
+      cloned.options = src.options.map(o => ({
+        text: o.text || '',
+        isCorrect: !!o.isCorrect,
+        imageToken: null,
+        removeImage: false,
+        existingImageUrl: o.imageUrl || null,
+      }))
     }
-    if (cloned.type !== 'matching' || !cloned.matchingPairs?.length) {
-      cloned.matchingPairs = defaultForm().matchingPairs
+
+    if (src.type === 'true_false') {
+      cloned.tfCorrect = src.options?.find(o => o.isCorrect)?.text === 'False' ? 'False' : 'True'
+    }
+
+    if (src.type === 'matching' && src.matchingPairs?.length) {
+      cloned.matchingPairs = src.matchingPairs.map(p => ({
+        leftText: p.leftText || '',
+        leftImageToken: null,
+        removeLeftImage: false,
+        leftExistingImageUrl: p.leftImageUrl || null,
+        rightText: p.rightText || '',
+        rightImageToken: null,
+        removeRightImage: false,
+        rightExistingImageUrl: p.rightImageUrl || null,
+      }))
     }
 
     form.value = cloned
@@ -308,9 +388,15 @@ function close() {
   emit('update:visible', false)
 }
 
+function hasStemContent() {
+  if (form.value.title.trim()) return true
+  if (form.value.imageToken) return true
+  return !!form.value.existingImageUrl && !form.value.removeImage
+}
+
 async function save() {
-  if (!form.value.title.trim()) {
-    alert('Please enter the question text.')
+  if (!hasStemContent()) {
+    alert('Please enter the question text, add an image, or both.')
     return
   }
 
@@ -318,11 +404,26 @@ async function save() {
     subject_id: form.value.subject_id,
     type: form.value.type,
     difficulty: form.value.difficulty,
+    points: form.value.points,
     title: form.value.title,
-    sample_answer: form.value.sampleAnswer,
-    options: form.value.options,
+    image_token: form.value.imageToken,
+    remove_image: form.value.removeImage,
+    image_alt: form.value.imageAlt || null,
+    options: form.value.options.map(o => ({
+      text: o.text,
+      isCorrect: o.isCorrect,
+      image_token: o.imageToken,
+      remove_image: o.removeImage,
+    })),
     tfCorrect: form.value.tfCorrect,
-    matchingPairs: form.value.matchingPairs,
+    matchingPairs: form.value.matchingPairs.map(p => ({
+      leftText: p.leftText,
+      leftImageToken: p.leftImageToken,
+      removeLeftImage: p.removeLeftImage,
+      rightText: p.rightText,
+      rightImageToken: p.rightImageToken,
+      removeRightImage: p.removeRightImage,
+    })),
   }
 
   try {
@@ -340,7 +441,7 @@ async function save() {
     // Creating: keep the modal open, remember the subject/type/difficulty,
     // and clear the rest so the teacher can add the next question immediately.
     sessionCount.value += 1
-    sessionTitles.value.push(form.value.title)
+    sessionTitles.value.push(form.value.title || '(image question)')
     form.value = defaultForm(form.value)
   } catch (error) {
     alert(extractError(error))

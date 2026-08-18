@@ -10,6 +10,10 @@ class Feedback extends Model
 {
     use HasFactory;
 
+    // Eloquent's default table name would be "feedback" (it treats the
+    // word as uncountable), but the migration created "feedbacks".
+    protected $table = 'feedbacks';
+
     protected $fillable = [
         'teacher_profile_id',
         'student_profile_id',

@@ -17,25 +17,32 @@ class ScoreController extends Controller
         $this->authorizeOwner($request, $quiz);
 
         $hasEssay = $quiz->questions()->where('type', 'essay')->exists();
+        $passMark = $quiz->pass_mark ?? 50;
+        $totalPoints = (int) $quiz->questions()->sum('points');
 
         $submissions = $quiz->submissions()
             ->with('studentProfile.user')
             ->orderBy('submitted_at')
             ->get();
 
-        $data = $submissions->map(function (QuizSubmission $submission) use ($hasEssay) {
+        $data = $submissions->map(function (QuizSubmission $submission) use ($hasEssay, $passMark, $totalPoints) {
+            $totalScore = $submission->mcq_score + ($submission->essay_score ?? 0);
+            $percentage = $totalPoints > 0 ? ($totalScore / $totalPoints) * 100 : 0;
+
             return [
                 'id' => $submission->id,
                 'studentId' => $submission->studentProfile?->student_code,
                 'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
-                'submittedAt' => $submission->submitted_at?->format('Y-m-d H:i A'),
+                'submittedAt' => $submission->submitted_at?->format('Y-m-d h:i A'),
                 'mcqScore' => $submission->mcq_score,
                 'essayScore' => $submission->essay_score,
                 'essayNeedsGrade' => $hasEssay && is_null($submission->essay_score),
+                'passMark' => $passMark,
+                'passed' => $percentage >= $passMark,
             ];
         });
 
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $data, 'totalPoints' => $totalPoints]);
     }
 
     /**

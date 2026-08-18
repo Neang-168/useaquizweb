@@ -14,13 +14,15 @@
       <!-- Header -->
       <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-xl font-bold text-slate-800 m-0">{{ classInfo.className }}</h1>
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200 flex items-center gap-1">
+              <i class="pi pi-book text-[10px]"></i> {{ classInfo.subject }}
+            </span>
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">{{ classInfo.shift }}</span>
           </div>
           <p class="text-xs text-slate-500 mt-1">
-            Subject: <span class="font-semibold text-slate-700">{{ classInfo.subject }}</span>
-            • {{ classInfo.totalStudents }} students
+            {{ classInfo.totalStudents }} students
             • Room {{ classInfo.room }}
           </p>
         </div>
@@ -28,11 +30,6 @@
           <Button as="router-link" size="small"
             :to="{ name: 'teacher.questionbank', query: { subject_id: classInfo.subject_id } }"
             label="Question Bank" icon="pi pi-book"
-            class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-700 !rounded-lg !text-xs no-underline"
-          />
-          <Button as="router-link" size="small"
-            :to="{ name: 'teacher.subjects', query: { subject_id: classInfo.subject_id } }"
-            label="Materials" icon="pi pi-folder-open"
             class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-700 !rounded-lg !text-xs no-underline"
           />
         </div>
@@ -121,7 +118,7 @@
                 >
                   {{ statusLabel(quiz.status) }}
                 </span>
-                <span v-if="quiz.passMark" class="text-[10px] text-slate-400">Pass mark: {{ quiz.passMark }}%</span>
+                <span v-if="quiz.passMark !== null && quiz.passMark !== undefined" class="text-[10px] text-slate-400">Pass mark: {{ quiz.passMark }}%</span>
               </div>
 
               <h3 class="text-base font-bold text-slate-800 m-0">{{ quiz.title }}</h3>
@@ -134,7 +131,7 @@
                 </div>
                 <div class="flex items-center justify-between text-slate-500">
                   <span class="flex items-center gap-1.5"><i class="pi pi-list text-[11px]"></i> Questions:</span>
-                  <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{{ quiz.totalQuestions }}</span>
+                  <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{{ quiz.totalQuestions }} ({{ quiz.totalPoints }} pt{{ quiz.totalPoints === 1 ? '' : 's' }})</span>
                 </div>
                 <div class="flex items-center justify-between text-slate-500">
                   <span class="flex items-center gap-1.5"><i class="pi pi-refresh text-[11px]"></i> Attempts allowed:</span>
@@ -154,8 +151,18 @@
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
               <div class="flex items-center gap-1">
                 <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600" @click="openPreview(quiz)" />
-                <Button icon="pi pi-pencil" text rounded size="small" severity="secondary" title="Edit" class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600" @click="openQuizModal(quiz)" />
-                <Button icon="pi pi-trash" text rounded size="small" severity="secondary" title="Delete" class="!w-7 !h-7 !text-slate-400 hover:!text-rose-500" @click="deleteQuiz(quiz.id)" />
+                <Button
+                  v-if="quiz.status === 'Draft'"
+                  icon="pi pi-pencil" text rounded size="small" severity="secondary" title="Edit"
+                  class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600"
+                  @click="openQuizModal(quiz)"
+                />
+                <Button
+                  v-if="quiz.status === 'Draft'"
+                  icon="pi pi-trash" text rounded size="small" severity="secondary" title="Delete"
+                  class="!w-7 !h-7 !text-slate-400 hover:!text-rose-500"
+                  @click="deleteQuiz(quiz.id)"
+                />
               </div>
 
               <Button
@@ -307,7 +314,7 @@
           <div class="flex items-center justify-between">
             <label class="block font-bold text-slate-700">
               Select Questions from the Question Bank
-              <span class="text-indigo-600">({{ builderForm.selectedQuestionIds.length }} selected)</span>
+              <span class="text-indigo-600">({{ builderForm.selectedQuestionIds.length }} selected, {{ selectedPoints }} pt{{ selectedPoints === 1 ? '' : 's' }} total)</span>
             </label>
             <Button
               label="Add New Question"
@@ -344,7 +351,8 @@
             >
               <Checkbox :value="q.id" v-model="builderForm.selectedQuestionIds" class="shrink-0" />
               <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0">{{ formatType(q.type) }}</span>
-              <span class="text-slate-700 flex-1 truncate">{{ q.title }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
+              <span class="text-slate-700 flex-1 truncate">{{ q.title || '(image question)' }}</span>
               <span
                 :class="{
                   'bg-emerald-50 text-emerald-600 border-emerald-200': q.difficulty === 'Easy',
@@ -394,7 +402,8 @@
           >
             <div class="flex items-start gap-2">
               <span class="text-xs font-bold text-slate-400 font-mono">Q{{ idx + 1 }}.</span>
-              <h4 class="text-sm font-semibold text-slate-800 m-0">{{ q.title }}</h4>
+              <h4 class="text-sm font-semibold text-slate-800 m-0 flex-1">{{ q.title || '(image question)' }}</h4>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
             </div>
 
             <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
@@ -414,12 +423,6 @@
                 <span class="font-semibold text-slate-700">{{ pair.leftText }}</span>
                 <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px]"></i>
                 <span>{{ pair.rightText }}</span>
-              </div>
-            </div>
-
-            <div v-else class="pl-6">
-              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500">
-                <span class="font-bold text-slate-700">Grading notes / model answer:</span> {{ q.sampleAnswer || 'None provided' }}
               </div>
             </div>
           </div>
@@ -446,7 +449,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import SelectButton from 'primevue/selectbutton'
@@ -501,16 +504,33 @@ const fetchPickerQuestions = async () => {
   pickerQuestions.value = data.data
 }
 
-onMounted(async () => {
-  await fetchClassInfo()
-  await Promise.all([fetchQuizzes(), fetchPickerQuestions()])
-})
+async function loadWorkspace() {
+  // Vue Router reuses this component when navigating between two
+  // /teacher/classes/:assignmentId routes (only the param changes), so
+  // onMounted alone won't re-fire — without resetting here, switching
+  // classes would keep showing the previous class's quizzes, question
+  // picker, and selected score/feedback quiz.
+  classInfo.value = null
+  quizzes.value = []
+  pickerQuestions.value = []
+  selectedScoreQuiz.value = null
+  selectedFeedbackQuiz.value = null
+
+  try {
+    await fetchClassInfo()
+    await Promise.all([fetchQuizzes(), fetchPickerQuestions()])
+  } catch (error) {
+    alert(extractError(error))
+  }
+}
+
+onMounted(loadWorkspace)
+watch(assignmentId, loadWorkspace)
 
 function formatType(type) {
   if (type === 'multiple_choice') return 'MC'
   if (type === 'true_false') return 'T/F'
   if (type === 'matching') return 'Matching'
-  if (type === 'essay') return 'Essay'
   return type
 }
 
@@ -544,7 +564,6 @@ const pickerTypeOptions = [
   { label: 'Multiple Choice', value: 'multiple_choice' },
   { label: 'True/False', value: 'true_false' },
   { label: 'Matching', value: 'matching' },
-  { label: 'Essay', value: 'essay' },
 ]
 
 function defaultBuilderForm() {
@@ -593,9 +612,16 @@ const endAtDate = computed({
 const filteredPickerQuestions = computed(() => {
   return pickerQuestions.value.filter(q => {
     const matchType = !pickerTypeFilter.value || q.type === pickerTypeFilter.value
-    const matchSearch = !pickerSearch.value || q.title.toLowerCase().includes(pickerSearch.value.toLowerCase())
+    const matchSearch = !pickerSearch.value || (q.title || '').toLowerCase().includes(pickerSearch.value.toLowerCase())
     return matchType && matchSearch
   })
+})
+
+const selectedPoints = computed(() => {
+  const selectedIds = new Set(builderForm.value.selectedQuestionIds)
+  return pickerQuestions.value
+    .filter(q => selectedIds.has(q.id))
+    .reduce((sum, q) => sum + (q.points || 0), 0)
 })
 
 async function openQuizModal(quiz = null) {
@@ -650,7 +676,7 @@ async function saveQuiz() {
     max_attempts: builderForm.value.maxAttempts,
     shuffle_questions: builderForm.value.shuffleQuestions,
     shuffle_options: builderForm.value.shuffleOptions,
-    pass_mark: builderForm.value.passMark || null,
+    pass_mark: builderForm.value.passMark === null || builderForm.value.passMark === undefined ? null : builderForm.value.passMark,
     start_at: builderForm.value.startAt || null,
     end_at: builderForm.value.endAt || null,
     question_ids: builderForm.value.selectedQuestionIds,

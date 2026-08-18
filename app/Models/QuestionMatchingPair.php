@@ -13,7 +13,9 @@ class QuestionMatchingPair extends Model
     protected $fillable = [
         'question_id',
         'left_text',
+        'left_image_path',
         'right_text',
+        'right_image_path',
         'position',
     ];
 

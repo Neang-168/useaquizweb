@@ -4,24 +4,19 @@
     <!-- ======= PAGE TITLE ======= -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-xl font-bold text-slate-800 m-0">ប្រវត្តិប្រឡង និងរបាយការណ៍ពិន្ទុ (Grades & History)</h2>
-        <p class="text-xs text-slate-400 m-0 mt-1">ពិនិត្យមើលលទ្ធផល និងប្រវត្តិធ្វើ Quiz ទាំងអស់របស់អ្នក</p>
+        <h2 class="text-xl font-bold text-slate-800 m-0">Grades & History</h2>
+        <p class="text-xs text-slate-400 m-0 mt-1">Review your results and quiz history</p>
       </div>
 
-      <!-- Filter Semester -->
-      <select v-model="selectedSemester" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer">
-        <option value="y3s1">ឆ្នាំទី ៣ - ឆមាសទី ១ (២០២៥-២០២៦)</option>
-        <option value="y2s2">ឆ្នាំទី ២ - ឆមាសទី ២ (២០២៤-២០២៥)</option>
-      </select>
     </div>
 
     <!-- ======= OVERVIEW PERFORMANCE CARDS ======= -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- GPA / Average -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">ពិន្ទុមធ្យមភាគសរុប</p>
-          <h3 class="text-2xl font-extrabold text-blue-600 m-0 mt-1">86.5%</h3>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Overall Average</p>
+          <h3 class="text-2xl font-extrabold text-blue-600 m-0 mt-1">{{ averagePercentage }}%</h3>
         </div>
         <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
           <i class="pi pi-chart-line"></i>
@@ -31,22 +26,11 @@
       <!-- Total Passed -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Quiz ជាប់ (Passed)</p>
-          <h3 class="text-2xl font-extrabold text-emerald-600 m-0 mt-1">10 / 12</h3>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Quizzes Passed</p>
+          <h3 class="text-2xl font-extrabold text-emerald-600 m-0 mt-1">{{ passedCount }} / {{ historyList.length }}</h3>
         </div>
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
           <i class="pi pi-check-circle"></i>
-        </div>
-      </div>
-
-      <!-- Average Time Spent -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-        <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">រយៈពេលមធ្យម/Quiz</p>
-          <h3 class="text-2xl font-extrabold text-slate-800 m-0 mt-1">22 នាទី</h3>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
-          <i class="pi pi-clock"></i>
         </div>
       </div>
     </div>
@@ -54,20 +38,22 @@
     <!-- ======= HISTORY TABLE ======= -->
     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
       <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-800 m-0">ប្រវត្តិប្រឡងលម្អិត</h3>
-        <span class="text-xs text-slate-400">ប្រឡងបាន៖ {{ historyList.length }} លើក</span>
+        <h3 class="text-base font-bold text-slate-800 m-0">Detailed Exam History</h3>
+        <span class="text-xs text-slate-400">Attempts: {{ historyList.length }}</span>
       </div>
 
-      <div class="overflow-x-auto">
+      <div v-if="loading" class="p-8 text-center text-sm text-slate-400">Loading data...</div>
+      <p v-else-if="!historyList.length" class="p-4 text-sm text-slate-400">You haven't taken any exams yet</p>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-left border-collapse min-w-[600px]">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-              <th class="p-4">ឈ្មោះ Quiz & មុខវិជ្ជា</th>
-              <th class="p-4">ថ្ងៃប្រឡង</th>
-              <th class="p-4">ពេលប្រើប្រាស់</th>
-              <th class="p-4">ពិន្ទុ</th>
-              <th class="p-4">លទ្ធផល</th>
-              <th class="p-4 text-right">សកម្មភាព</th>
+              <th class="p-4">Quiz & Subject</th>
+              <th class="p-4">Submitted On</th>
+              <th class="p-4">Attempt</th>
+              <th class="p-4">Score</th>
+              <th class="p-4">Result</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
@@ -76,22 +62,16 @@
                 <p class="font-bold text-slate-800 m-0">{{ item.quizTitle }}</p>
                 <p class="text-[11px] text-slate-400 m-0 mt-0.5">{{ item.subject }}</p>
               </td>
-              <td class="p-4 text-slate-500">{{ item.submittedDate }}</td>
-              <td class="p-4 text-slate-500">{{ item.timeSpent }} នាទី</td>
+              <td class="p-4 text-slate-500">{{ item.submittedAt }}</td>
+              <td class="p-4 text-slate-500">{{ item.attemptNumber }}</td>
               <td class="p-4 font-bold text-sm text-slate-800">
-                {{ item.score }} / {{ item.maxScore }} ({{ Math.round((item.score/item.maxScore)*100) }}%)
+                {{ item.score }} / {{ item.totalPoints }} ({{ item.percentage }}%)
               </td>
               <td class="p-4">
-                <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold inline-block', 
+                <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold inline-block',
                   item.passed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
-                  {{ item.passed ? 'ជាប់ (Passed)' : 'ធ្លាក់ (Failed)' }}
+                  {{ item.passed ? 'Passed' : 'Failed' }}
                 </span>
-              </td>
-              <td class="p-4 text-right">
-                <button @click="viewDetail(item.id)" 
-                  class="px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-semibold text-xs rounded-lg transition-all border-0 cursor-pointer">
-                  <i class="pi pi-eye text-xs mr-1"></i> មើលចម្លើយ
-                </button>
               </td>
             </tr>
           </tbody>
@@ -103,45 +83,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api, { extractError } from '../../../api'
 
-const selectedSemester = ref('y3s1')
+const loading = ref(true)
+const historyList = ref([])
 
-// Mock Data សម្រាប់ប្រវត្តិប្រឡង
-const historyList = ref([
-  {
-    id: 1,
-    quizTitle: 'Vue 3 Options API & Reactivity',
-    subject: 'Web Frontend Development',
-    submittedDate: '05-Aug-2026 10:30 AM',
-    timeSpent: 18,
-    score: 90,
-    maxScore: 100,
-    passed: true
-  },
-  {
-    id: 2,
-    quizTitle: 'MySQL Relational Database & Joins',
-    subject: 'Database Management Systems',
-    submittedDate: '28-Jul-2026 02:15 PM',
-    timeSpent: 35,
-    score: 80,
-    maxScore: 100,
-    passed: true
-  },
-  {
-    id: 3,
-    quizTitle: 'Java OOP Concepts & Inheritance',
-    subject: 'Object-Oriented Programming',
-    submittedDate: '15-Jul-2026 09:00 AM',
-    timeSpent: 40,
-    score: 45,
-    maxScore: 100,
-    passed: false
+const passedCount = computed(() => historyList.value.filter((item) => item.passed).length)
+const averagePercentage = computed(() => {
+  if (!historyList.value.length) return 0
+  const total = historyList.value.reduce((sum, item) => sum + item.percentage, 0)
+  return Math.round((total / historyList.value.length) * 10) / 10
+})
+
+async function fetchHistory() {
+  loading.value = true
+  try {
+    const { data } = await api.get('/student/results')
+    historyList.value = data.data
+  } catch (error) {
+    console.error(extractError(error))
+  } finally {
+    loading.value = false
   }
-])
-
-function viewDetail(id) {
-  alert(`បើកមើលចម្លើយលម្អិតរបស់ Quiz ID: ${id}`)
 }
+
+onMounted(fetchHistory)
 </script>

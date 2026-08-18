@@ -7,13 +7,22 @@
         <p class="text-xs text-slate-500 mt-1">Create and organize questions by subject, ready to use in any quiz or exam.</p>
       </div>
 
-      <Button
-        label="Add Question"
-        icon="pi pi-plus"
-        size="small"
-        class="!bg-indigo-600 hover:!bg-indigo-700 !border-indigo-600 !text-white !rounded-lg !text-xs shadow-sm self-start sm:self-auto"
-        @click="openQuestionModal()"
-      />
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <Button
+          label="Import / Export"
+          icon="pi pi-file-import"
+          size="small"
+          class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-700 !rounded-lg !text-xs"
+          @click="showImportExportModal = true"
+        />
+        <Button
+          label="Add Question"
+          icon="pi pi-plus"
+          size="small"
+          class="!bg-indigo-600 hover:!bg-indigo-700 !border-indigo-600 !text-white !rounded-lg !text-xs shadow-sm"
+          @click="openQuestionModal()"
+        />
+      </div>
     </div>
 
     <!-- 2. Filters Bar -->
@@ -72,6 +81,9 @@
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
               {{ formatType(q.type) }}
             </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100">
+              {{ q.points }} pt{{ q.points === 1 ? '' : 's' }}
+            </span>
           </div>
 
           <div class="flex items-center gap-2">
@@ -95,8 +107,17 @@
         <!-- Question Title -->
         <div class="flex items-start gap-2">
           <span class="text-xs font-bold text-slate-400 font-mono">Q{{ index + 1 }}.</span>
-          <h4 class="text-sm font-semibold text-slate-800 m-0 leading-relaxed">{{ q.title }}</h4>
+          <h4 v-if="q.title" class="text-sm font-semibold text-slate-800 m-0 leading-relaxed">{{ q.title }}</h4>
+          <span v-else class="text-sm italic text-slate-400">(image question)</span>
         </div>
+
+        <!-- Question Image -->
+        <img
+          v-if="q.imageUrl"
+          :src="q.imageUrl"
+          :alt="q.imageAlt || ''"
+          class="ml-6 max-h-40 rounded-xl border border-slate-200 object-contain bg-slate-50"
+        />
 
         <!-- Multiple Choice / True False Options Display -->
         <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6 pt-1">
@@ -104,10 +125,11 @@
             v-for="(opt, oIdx) in q.options"
             :key="oIdx"
             :class="opt.isCorrect ? 'bg-emerald-50/80 border-emerald-300 text-emerald-800 font-semibold' : 'bg-slate-50 border-slate-200 text-slate-600'"
-            class="p-2.5 rounded-xl border text-xs flex items-center justify-between"
+            class="p-2.5 rounded-xl border text-xs flex items-center gap-2"
           >
-            <span>{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
-            <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs"></i>
+            <img v-if="opt.imageUrl" :src="opt.imageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
+            <span class="flex-1">{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
+            <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs shrink-0"></i>
           </div>
         </div>
 
@@ -118,16 +140,11 @@
             :key="pIdx"
             class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs flex items-center gap-2 text-slate-600"
           >
+            <img v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
             <span class="font-semibold text-slate-700">{{ pair.leftText }}</span>
-            <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px]"></i>
+            <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px] shrink-0"></i>
+            <img v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
             <span>{{ pair.rightText }}</span>
-          </div>
-        </div>
-
-        <!-- Essay Answer Note Display -->
-        <div v-else class="pl-6 pt-1">
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500">
-            <span class="font-bold text-slate-700">Grading notes / model answer:</span> {{ q.sampleAnswer || 'None provided' }}
           </div>
         </div>
       </div>
@@ -145,6 +162,12 @@
       :editing-question="editingQuestion"
       @saved="fetchQuestions"
     />
+
+    <QuestionImportExportModal
+      v-model:visible="showImportExportModal"
+      :filters="{ subject_id: selectedSubjectFilter, type: selectedTypeFilter }"
+      @imported="fetchQuestions"
+    />
   </div>
 </template>
 
@@ -156,6 +179,7 @@ import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import api, { extractError } from '../../../api'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
+import QuestionImportExportModal from '../../../components/teacher/QuestionImportExportModal.vue'
 
 const route = useRoute()
 
@@ -168,11 +192,11 @@ const typeFilterOptions = [
   { label: 'Multiple Choice', value: 'multiple_choice' },
   { label: 'True / False', value: 'true_false' },
   { label: 'Matching', value: 'matching' },
-  { label: 'Essay', value: 'essay' },
 ]
 
 const showModal = ref(false)
 const editingQuestion = ref(null)
+const showImportExportModal = ref(false)
 
 const mySubjects = ref([])
 const questions = ref([])
@@ -217,14 +241,13 @@ onMounted(async () => {
 const filteredQuestions = computed(() => {
   if (!searchQuery.value) return questions.value
   const q = searchQuery.value.toLowerCase()
-  return questions.value.filter(item => item.title.toLowerCase().includes(q))
+  return questions.value.filter(item => (item.title || '').toLowerCase().includes(q))
 })
 
 function formatType(type) {
   if (type === 'multiple_choice') return 'Multiple Choice'
   if (type === 'true_false') return 'True / False'
   if (type === 'matching') return 'Matching'
-  if (type === 'essay') return 'Essay'
   return type
 }
 

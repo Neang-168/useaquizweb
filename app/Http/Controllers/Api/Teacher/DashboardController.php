@@ -40,7 +40,9 @@ class DashboardController extends Controller
             ->where('status', 'Active')
             ->count();
 
-        $quizzes = Quiz::where('teacher_profile_id', $teacher->id)->get();
+        $quizzes = Quiz::where('teacher_profile_id', $teacher->id)
+            ->withSum('questions as total_points', 'points')
+            ->get();
         $activeQuizzesCount = $quizzes->where('status', 'Published')->count();
 
         $quizIds = $quizzes->pluck('id');
@@ -52,8 +54,20 @@ class DashboardController extends Controller
             return $quiz && is_null($submission->essay_score);
         })->count();
 
+        // pass_mark is a percentage, and quizzes can total any number of
+        // points, so "score" only means something as score / totalPoints —
+        // comparing raw scores across quizzes with different point totals
+        // isn't meaningful.
+        $percentageOf = function (QuizSubmission $s) use ($quizzes): float {
+            $quiz = $quizzes->firstWhere('id', $s->quiz_id);
+            $totalPoints = (int) ($quiz?->total_points ?? 0);
+            $score = $s->mcq_score + ($s->essay_score ?? 0);
+
+            return $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0.0;
+        };
+
         $averageScore = $submissions->isNotEmpty()
-            ? round($submissions->avg(fn (QuizSubmission $s) => $s->mcq_score + ($s->essay_score ?? 0)), 1)
+            ? round($submissions->avg($percentageOf), 1)
             : 0;
 
         $recentQuizzes = $quizzes->sortByDesc('created_at')->take(5)->values()->map(function (Quiz $quiz) use ($submissions, $classIds) {
@@ -74,8 +88,12 @@ class DashboardController extends Controller
         });
 
         $needsAttention = $submissions
-            ->filter(fn (QuizSubmission $s) => ($s->mcq_score + ($s->essay_score ?? 0)) < 50)
-            ->sortBy(fn (QuizSubmission $s) => $s->mcq_score + ($s->essay_score ?? 0))
+            ->filter(function (QuizSubmission $s) use ($quizzes, $percentageOf) {
+                $passMark = $quizzes->firstWhere('id', $s->quiz_id)?->pass_mark ?? 50;
+
+                return $percentageOf($s) < $passMark;
+            })
+            ->sortBy($percentageOf)
             ->take(4)
             ->values()
             ->map(function (QuizSubmission $submission) use ($quizzes) {

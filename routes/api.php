@@ -25,9 +25,15 @@ use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Api\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Api\Teacher\FeedbackController as TeacherFeedbackController;
 use App\Http\Controllers\Api\Teacher\QuestionController as TeacherQuestionController;
+use App\Http\Controllers\Api\Teacher\QuestionImageUploadController as TeacherQuestionImageUploadController;
+use App\Http\Controllers\Api\Teacher\QuestionImportExportController as TeacherQuestionImportExportController;
 use App\Http\Controllers\Api\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Api\Teacher\ScoreController as TeacherScoreController;
 use App\Http\Controllers\Api\Teacher\SubjectController as TeacherSubjectController;
+use App\Http\Controllers\Api\Student\CourseController as StudentCourseController;
+use App\Http\Controllers\Api\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Api\Student\QuizController as StudentQuizController;
+use App\Http\Controllers\Api\Student\ResultController as StudentResultController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -127,8 +133,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/classes', [TeacherClassController::class, 'index']);
 
         Route::get('/subjects', [TeacherSubjectController::class, 'index']);
-        Route::post('/subjects/{subject}/materials', [TeacherSubjectController::class, 'storeMaterial']);
-        Route::delete('/materials/{material}', [TeacherSubjectController::class, 'destroyMaterial']);
+
+        Route::post('/uploads/question-image', [TeacherQuestionImageUploadController::class, 'store']);
+
+        Route::get('/questions/template', [TeacherQuestionImportExportController::class, 'template']);
+        Route::get('/questions/export', [TeacherQuestionImportExportController::class, 'export']);
+        Route::post('/questions/import', [TeacherQuestionImportExportController::class, 'import']);
 
         Route::apiResource('questions', TeacherQuestionController::class)
             ->parameters(['questions' => 'question'])
@@ -144,5 +154,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/quizzes/{quiz}/feedback', [TeacherFeedbackController::class, 'index']);
         Route::post('/feedback', [TeacherFeedbackController::class, 'store']);
+    });
+
+    // Student's own workspace: dashboard, courses, quizzes, results
+    Route::prefix('student')->middleware('permission:take_exam')->group(function () {
+        Route::get('/dashboard', [StudentDashboardController::class, 'index']);
+        Route::get('/courses', [StudentCourseController::class, 'index']);
+
+        Route::get('/quizzes', [StudentQuizController::class, 'index']);
+        Route::get('/quizzes/{quiz}', [StudentQuizController::class, 'show']);
+        Route::post('/quizzes/{quiz}/submit', [StudentQuizController::class, 'submit']);
+
+        Route::get('/results', [StudentResultController::class, 'index']);
     });
 });

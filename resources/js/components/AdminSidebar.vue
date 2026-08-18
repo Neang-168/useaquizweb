@@ -156,19 +156,19 @@
                 <span>User Management</span>
               </router-link>
 
-              <!-- <router-link :to="{ name: 'admin.my-profile' }"
+              <router-link :to="{ name: 'admin.my-profile' }"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-user text-base"></i>
                 <span>My Profile</span>
-              </router-link> -->
+              </router-link>
 
-              <!-- <router-link to="/admin/roles-permissions"
+              <router-link to="/admin/roles-permissions"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-shield text-base"></i>
                 <span>Roles & Permissions</span>
-              </router-link> -->
+              </router-link>
             </div>
 
           </div>

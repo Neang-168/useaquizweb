@@ -26,12 +26,21 @@ class FeedbackController extends Controller
             ->orderBy('submitted_at')
             ->get();
 
-        $data = $submissions->map(function (QuizSubmission $submission) {
+        $passMark = $quiz->pass_mark ?? 50;
+        $totalPoints = (int) $quiz->questions()->sum('points');
+
+        $data = $submissions->map(function (QuizSubmission $submission) use ($passMark, $totalPoints) {
+            $score = $submission->mcq_score + ($submission->essay_score ?? 0);
+            $percentage = $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0;
+
             return [
                 'submissionId' => $submission->id,
                 'studentId' => $submission->studentProfile?->student_code,
                 'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
-                'score' => $submission->mcq_score + ($submission->essay_score ?? 0),
+                'score' => $score,
+                'totalPoints' => $totalPoints,
+                'passMark' => $passMark,
+                'passed' => $percentage >= $passMark,
                 'hasFeedbackSent' => $submission->feedback->isNotEmpty(),
             ];
         });

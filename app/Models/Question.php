@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Question extends Model
 {
@@ -17,9 +18,33 @@ class Question extends Model
         'subject_id',
         'type',
         'title',
+        'image_path',
+        'image_alt',
         'difficulty',
-        'sample_answer',
+        'points',
     ];
+
+    protected $casts = [
+        'points' => 'integer',
+    ];
+
+    protected static function booted(): void
+    {
+        // FK cascades drop the option/pair rows in the DB, but the image
+        // files behind them are only reachable from here first.
+        static::deleting(function (Question $question) {
+            $paths = collect([$question->image_path])
+                ->merge($question->options()->pluck('image_path'))
+                ->merge($question->matchingPairs()->pluck('left_image_path'))
+                ->merge($question->matchingPairs()->pluck('right_image_path'))
+                ->filter()
+                ->all();
+
+            if ($paths) {
+                Storage::disk('public')->delete($paths);
+            }
+        });
+    }
 
     public function teacherProfile(): BelongsTo
     {

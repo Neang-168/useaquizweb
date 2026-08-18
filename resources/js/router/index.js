@@ -193,6 +193,11 @@ const routes = [
         name: 'student.notification',
         component: Notification,
       },
+      {
+        path: 'take-quiz',
+        name: 'student.takeQuiz',
+        component: () => import('../views/pages/student/TakeQuiz.vue'),
+      },
     ]
   },
 

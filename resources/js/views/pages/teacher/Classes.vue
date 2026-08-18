@@ -39,13 +39,12 @@
 
           <!-- Class Title & Subject -->
           <h3 class="text-base font-bold text-slate-800 m-0">{{ item.className }}</h3>
+          <p class="text-sm font-bold text-indigo-600 mt-1 flex items-center gap-1.5">
+            <i class="pi pi-book text-xs"></i> {{ item.subject }}
+          </p>
           <p class="text-xs text-slate-500 mt-1">Major: <span class="font-semibold text-slate-700">{{ item.major }}</span></p>
 
           <div class="mt-4 pt-3 border-t border-slate-100 space-y-2">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-slate-400">Subject taught:</span>
-              <span class="font-bold text-slate-700">{{ item.subject }}</span>
-            </div>
             <div class="flex items-center justify-between text-xs">
               <span class="text-slate-400">Total students:</span>
               <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{{ item.totalStudents }}</span>
@@ -61,7 +60,7 @@
         <div class="mt-5 pt-3 border-t border-slate-100 flex gap-2">
           <Button as="router-link" size="small"
             :to="{ name: 'teacher.classWorkspace', params: { assignmentId: item.id } }"
-            label="Manage Class (Quizzes, Scores, Feedback)" icon="pi pi-cog"
+            :label="`Manage ${item.subject} (Quizzes, Scores, Feedback)`" icon="pi pi-cog"
             class="w-full !bg-slate-900 hover:!bg-indigo-600 !border-slate-900 !text-white !rounded-lg !text-xs no-underline"
           />
         </div>

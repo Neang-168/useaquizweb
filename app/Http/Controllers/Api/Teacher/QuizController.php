@@ -31,6 +31,7 @@ class QuizController extends Controller
             ->where('teacher_profile_id', $teacher->id)
             ->with(['subject', 'classroom'])
             ->withCount('submissions')
+            ->withSum('questions as total_points', 'points')
             ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
             ->when($request->input('subject_id'), fn ($query, $id) => $query->where('subject_id', $id))
             ->when($request->input('class_id'), fn ($query, $id) => $query->where('class_id', $id))
@@ -51,7 +52,7 @@ class QuizController extends Controller
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
 
         return response()->json([
             'quiz' => array_merge($this->transform($quiz), [
@@ -91,7 +92,7 @@ class QuizController extends Controller
             return $quiz;
         });
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
 
         return response()->json([
             'message' => 'Quiz created successfully.',
@@ -102,11 +103,17 @@ class QuizController extends Controller
     /**
      * Update a quiz's metadata and question selection. Status is not editable here
      * (see publish()/close()) so an in-review Published quiz can't silently revert.
+     *
+     * Only a Draft quiz can be edited. Once Published, its content and
+     * settings are locked — otherwise a teacher could change the question
+     * set, duration, or pass mark out from under a quiz students are (or
+     * were) already being assessed against.
      */
     public function update(Request $request, Quiz $quiz)
     {
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
+        $this->assertDraft($quiz, 'edited');
 
         $validated = $this->validated($request, $teacher->id);
 
@@ -128,7 +135,7 @@ class QuizController extends Controller
             $this->syncQuestions($quiz, $validated['question_ids'] ?? []);
         });
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
 
         return response()->json([
             'message' => 'Quiz updated successfully.',
@@ -143,6 +150,7 @@ class QuizController extends Controller
     {
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
+        $this->assertDraft($quiz, 'published');
 
         if ($quiz->total_questions < 1) {
             throw ValidationException::withMessages([
@@ -151,7 +159,7 @@ class QuizController extends Controller
         }
 
         $quiz->update(['status' => 'Published']);
-        $quiz->load('subject', 'classroom')->loadCount('submissions');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
 
         return response()->json([
             'message' => 'Quiz published.',
@@ -161,14 +169,24 @@ class QuizController extends Controller
 
     /**
      * Close a quiz (manually end it, or after its window has passed).
+     * Only a Published quiz can be closed — a Draft has never been open to
+     * students, and a Closed quiz can't be reopened this way (that would
+     * silently resurrect a quiz's availability after grading may already
+     * be underway).
      */
     public function close(Request $request, Quiz $quiz)
     {
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
 
+        if ($quiz->status !== 'Published') {
+            throw ValidationException::withMessages([
+                'status' => ['Only a published quiz can be closed.'],
+            ]);
+        }
+
         $quiz->update(['status' => 'Closed']);
-        $quiz->load('subject', 'classroom')->loadCount('submissions');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
 
         return response()->json([
             'message' => 'Quiz closed.',
@@ -177,16 +195,27 @@ class QuizController extends Controller
     }
 
     /**
-     * Delete a quiz.
+     * Delete a quiz. Only a Draft quiz can be deleted — once Published (or
+     * Closed), it's kept around as a record rather than silently removable.
      */
     public function destroy(Request $request, Quiz $quiz)
     {
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
+        $this->assertDraft($quiz, 'deleted');
 
         $quiz->delete();
 
         return response()->json(['message' => 'Quiz deleted successfully.']);
+    }
+
+    private function assertDraft(Quiz $quiz, string $action): void
+    {
+        if ($quiz->status !== 'Draft') {
+            throw ValidationException::withMessages([
+                'status' => ["Only a draft quiz can be {$action}. This quiz is {$quiz->status}."],
+            ]);
+        }
     }
 
     private function authorizeOwner(?object $teacher, Quiz $quiz): void
@@ -261,8 +290,8 @@ class QuizController extends Controller
                 'id' => $question->id,
                 'type' => $question->type,
                 'difficulty' => $question->difficulty,
+                'points' => $question->points,
                 'title' => $question->title,
-                'sampleAnswer' => $question->sample_answer,
                 'options' => $question->options->sortBy('position')->values()->map(fn (QuestionOption $option) => [
                     'id' => $option->id,
                     'text' => $option->text,
@@ -300,6 +329,7 @@ class QuizController extends Controller
             'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
             'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             'totalQuestions' => $quiz->total_questions,
+            'totalPoints' => (int) ($quiz->total_points ?? 0),
             'submittedCount' => $quiz->submissions_count ?? 0,
             'totalStudents' => $totalStudents,
             'status' => $quiz->status,

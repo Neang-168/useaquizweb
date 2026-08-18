@@ -4,14 +4,14 @@
     <!-- ======= PAGE HEADER ======= -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-bold text-slate-800 m-0">ការជូនដំណឹង (Notifications)</h2>
-        <p class="text-xs text-slate-400 m-0 mt-1">រាល់ការរំលឹក និងព័ត៌មានសំខាន់ៗសម្រាប់អ្នក</p>
+        <h2 class="text-xl font-bold text-slate-800 m-0">Notifications</h2>
+        <p class="text-xs text-slate-400 m-0 mt-1">All reminders and important updates for you</p>
       </div>
 
       <!-- Mark all as read button -->
       <button @click="markAllAsRead" class="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl transition-all border-0 cursor-pointer flex items-center gap-1.5">
         <i class="pi pi-check-circle"></i>
-        <span>ដៅថាបានអានទាំងអស់</span>
+        <span>Mark all as read</span>
       </button>
     </div>
 
@@ -57,7 +57,7 @@
 
       <!-- Empty State -->
       <div v-if="notifications.length === 0" class="p-10 text-center text-slate-400 text-xs">
-        មិនទាន់មានការជូនដំណឹងនៅឡើយទេ
+        No notifications yet
       </div>
 
     </div>
@@ -72,29 +72,29 @@ const notifications = ref([
   {
     id: 1,
     type: 'exam_reminder',
-    title: 'ការរំលឹក៖ ជិតផុតកំណត់ធ្វើ Quiz',
-    message: 'Quiz "Vue 3 Options API" ក្នុងមុខវិជ្ជា Web Frontend Development នឹងផុតកំណត់នៅថ្ងៃនេះ ម៉ោង 11:59 PM។',
-    createdAt: '១០ នាទីមុន',
+    title: 'Reminder: Quiz deadline approaching',
+    message: 'The "Vue 3 Options API" quiz in Web Frontend Development is due today at 11:59 PM.',
+    createdAt: '10 minutes ago',
     isRead: false,
-    actionText: 'ចូលធ្វើ Quiz ឥឡូវនេះ',
-    actionUrl: '/student/quizzes?id=101'
+    actionText: 'Take the quiz now',
+    actionUrl: '/student/myexam'
   },
   {
     id: 2,
     type: 'grade_released',
-    title: 'លទ្ធផលពិន្ទុត្រូវ បានចេញហើយ',
-    message: 'គ្រូបង្រៀនបានបញ្ចូលពិន្ទុ "MySQL Normalization Quiz" រួចរាល់ហើយ។ ពិន្ទុរបស់អ្នកគឺ 85/100។',
-    createdAt: '២ ម៉ោងមុន',
+    title: 'Your grade has been released',
+    message: 'Your teacher has finished grading "MySQL Normalization Quiz". Your score is 85/100.',
+    createdAt: '2 hours ago',
     isRead: false,
-    actionText: 'ពិនិត្យមើលចម្លើយ',
-    actionUrl: '/student/history/98'
+    actionText: 'View your result',
+    actionUrl: '/student/gradeHistory'
   },
   {
     id: 3,
     type: 'announcement',
-    title: 'ការផ្លាស់ប្តូរម៉ោងសិក្សា',
-    message: 'ថ្នាក់ Database Management Systems (M1) នៅថ្ងៃស្អែក ត្រូវប្តូរម៉ោងសិក្សាទៅម៉ោង 2:00 PM វិញ។',
-    createdAt: 'ម្សិលមិញ',
+    title: 'Class schedule change',
+    message: 'The Database Management Systems (M1) class tomorrow has been moved to 2:00 PM.',
+    createdAt: 'Yesterday',
     isRead: true,
     actionText: null,
     actionUrl: null
@@ -102,12 +102,12 @@ const notifications = ref([
   {
     id: 4,
     type: 'new_exam',
-    title: 'មាន Quiz ថ្មីត្រូវបានបន្ថែម',
-    message: 'លោកគ្រូ មាស សុភ័ក្ត្រ បានបន្ថែម Quiz ថ្មី "Java OOP Concepts" ក្នុងមុខវិជ្ជា Java Programming។',
-    createdAt: '២ ថ្ងៃមុន',
+    title: 'A new quiz has been added',
+    message: 'Your teacher added a new quiz "Java OOP Concepts" in Java Programming.',
+    createdAt: '2 days ago',
     isRead: true,
-    actionText: 'មើលកាលវិភាគប្រឡង',
-    actionUrl: '/student/quizzes'
+    actionText: 'View exam schedule',
+    actionUrl: '/student/myexam'
   }
 ])
 

@@ -21,7 +21,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
             <span class="text-[10px] font-bold text-slate-400 uppercase">Questions</span>
-            <p class="text-sm font-bold text-slate-800 m-0 mt-0.5">{{ quiz.totalQuestions }}</p>
+            <p class="text-sm font-bold text-slate-800 m-0 mt-0.5">{{ quiz.totalQuestions }} ({{ quiz.totalPoints }} pt{{ quiz.totalPoints === 1 ? '' : 's' }})</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
             <span class="text-[10px] font-bold text-slate-400 uppercase">Duration</span>
@@ -29,7 +29,7 @@
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
             <span class="text-[10px] font-bold text-slate-400 uppercase">Pass Mark</span>
-            <p class="text-sm font-bold text-slate-800 m-0 mt-0.5">{{ quiz.passMark ? quiz.passMark + '%' : '—' }}</p>
+            <p class="text-sm font-bold text-slate-800 m-0 mt-0.5">{{ quiz.passMark !== null && quiz.passMark !== undefined ? quiz.passMark + '%' : '—' }}</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
             <span class="text-[10px] font-bold text-slate-400 uppercase">Attempts Allowed</span>

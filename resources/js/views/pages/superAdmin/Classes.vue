@@ -125,7 +125,7 @@
 
     <!-- ======= 1. LIST VIEW (DataTable) ======= -->
     <DataTable v-if="viewMode === 'list'" :value="filteredClasses" dataKey="id" paginator :rows="5"
-      :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll" class="p-datatable-sm classes-table">
+      :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll" class="p-datatable-sm custom-app-table">
       <template #empty>
         <div class="text-center py-8 text-slate-400 text-sm">
           No classes found.
@@ -836,7 +836,7 @@ const removeSubjectFromClass = async (assignment) => {
 }
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* =========================================================
    1. TABLE LIST VIEW - FLOATING CARD ROWS STYLE
    ========================================================= */
@@ -996,4 +996,4 @@ const removeSubjectFromClass = async (assignment) => {
   /* slate-400 */
   width: 2rem !important;
 }
-</style>
+</style> -->

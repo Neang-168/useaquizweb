@@ -119,7 +119,7 @@
     <DataTable :value="filteredStudents" v-model:filters="filters"
       :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
       paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll"
-      class="p-datatable-sm students-table">
+      class="p-datatable-sm custom-app-table">
       <template #empty>
         <div class="text-center py-6 text-slate-400 text-sm">
           No students found.
@@ -820,7 +820,7 @@ const saveAssign = async () => {
 }
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* Spacing រវាង Card Rows */
 .students-table :deep(.p-datatable-table) {
   border-collapse: separate;
@@ -942,4 +942,4 @@ const saveAssign = async () => {
   color: #94a3b8 !important;             /* slate-400 */
   width: 2rem !important;
 }
-</style>
+</style> -->

@@ -96,7 +96,7 @@
         :rows="5" 
         :rowsPerPageOptions="[5, 10, 20]"
         responsiveLayout="scroll"
-        class="p-datatable-sm subjects-table"
+        class="p-datatable-sm custom-app-table"
       >
         <template #empty>
           <div class="text-center py-8 text-slate-400 text-sm">
@@ -667,7 +667,7 @@ const removeClassFromSubject = async (assignment) => {
 }
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* "Floating card row" table, matching the Teachers page: header text
    sitting directly on the page background, and each row as its own
    white rounded card with a soft shadow — spacing does the separating,
@@ -747,4 +747,4 @@ const removeClassFromSubject = async (assignment) => {
   border: none;
   padding-top: 0.75rem;
 }
-</style>
+</style> -->

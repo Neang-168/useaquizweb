@@ -79,7 +79,7 @@
     <!-- ======= DATA TABLE (floating card rows, scrolls when there are many rows/columns) ======= -->
     <DataTable :value="filteredTeachers" v-model:filters="filters" dataKey="id" paginator :rows="10"
       :rowsPerPageOptions="[10, 20, 50]" scrollable scrollHeight="560px" responsiveLayout="scroll"
-      class="p-datatable-sm teachers-table">
+      class="p-datatable-sm custom-app-table">
       <template #empty>
         <div class="text-center py-8 text-slate-400 text-sm">
           No teachers found.
@@ -706,7 +706,7 @@ const removeAssignment = async (assignment) => {
 }
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* "Floating card row" table, styled to match the reference: green column
    headers sitting directly on the page background, and each row as its
    own white rounded card with a soft shadow — spacing does the
@@ -827,4 +827,4 @@ const removeAssignment = async (assignment) => {
   color: #94a3b8 !important;             /* slate-400 */
   width: 2rem !important;
 }
-</style>
+</style> -->

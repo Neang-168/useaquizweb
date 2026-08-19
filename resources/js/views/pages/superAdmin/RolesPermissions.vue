@@ -1,89 +1,97 @@
 <template>
-  <div class="space-y-6">
-
-    <!-- ======= PAGE HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
-      <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
-          <i class="pi pi-shield text-blue-600 text-2xl"></i>
-          Roles & Permissions
-        </h1>
-        <p class="text-xs text-slate-500 m-0 mt-1">
-          View each role and control which permissions it grants. Roles themselves are fixed and cannot be added or removed here.
-        </p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-      <!-- ======= ROLE LIST ======= -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden lg:col-span-1">
-        <div class="p-4 border-b border-slate-200">
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0">Roles</h3>
-        </div>
-        <div class="divide-y divide-slate-100">
-          <button
-            v-for="role in roles"
-            :key="role.id"
-            @click="selectRole(role)"
-            class="w-full text-left p-4 flex items-center justify-between gap-2 transition-colors cursor-pointer border-0"
-            :class="selectedRole?.id === role.id ? 'bg-blue-50' : 'bg-white hover:bg-slate-50'"
-          >
-            <div>
-              <div class="font-semibold text-sm" :class="selectedRole?.id === role.id ? 'text-blue-700' : 'text-slate-800'">
-                {{ role.name }}
-              </div>
-              <div class="text-xs text-slate-400 mt-0.5">{{ role.description || 'No description' }}</div>
-            </div>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
-              {{ role.users_count ?? 0 }} users
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ======= PERMISSIONS PANEL ======= -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden lg:col-span-2">
-        <div v-if="!selectedRole" class="p-10 text-center text-slate-400 text-sm">
-          Select a role on the left to view and edit its permissions.
-        </div>
-
-        <div v-else>
-          <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-bold text-slate-800 m-0">{{ selectedRole.name }} Permissions</h3>
-              <p class="text-xs text-slate-400 m-0 mt-0.5">{{ checkedPermissionIds.length }} of {{ permissions.length }} enabled</p>
-            </div>
-            <Button
-              label="Save Changes"
-              icon="pi pi-check"
-              :loading="saving"
-              class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
-              @click="savePermissions"
-            />
+  <div class="min-h-screen bg-[#F8F8F8] -m-6 p-6 font-sans">
+    
+    <!-- CONTAINER CARD -->
+    <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-xl shadow-[#002060]/5 overflow-hidden border border-[#D8E7EC]">
+      
+      <!-- TOP BAR / HEADER -->
+      <div class="bg-white border-b border-[#D8E7EC] px-8 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-[#63c7df]/40 flex items-center justify-center text-[#002060]">
+            <i class="pi pi-shield text-lg"></i>
           </div>
+          <div>
+            <h1 class="text-lg font-bold text-[#002060] m-0 leading-none">Roles & Permissions Matrix</h1>
+            <p class="text-xs text-slate-500 m-0 mt-1">
+              Toggle access permissions directly for Admin, Teacher, and Student roles.
+            </p>
+          </div>
+        </div>
 
-          <div class="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
-            <div v-for="(modulePermissions, module) in permissionsByModule" :key="module">
-              <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">{{ module }}</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <label
-                  v-for="perm in modulePermissions"
-                  :key="perm.id"
-                  class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:border-blue-300 cursor-pointer text-xs"
-                >
-                  <input
-                    type="checkbox"
-                    :value="perm.id"
-                    v-model="checkedPermissionIds"
-                    class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+        <!-- Global Save Button -->
+        <Button
+          label="Save Matrix Changes"
+          icon="pi pi-check"
+          :loading="saving"
+          class="!bg-[#002060] hover:!bg-[#001848] !text-white !border-0 !rounded-full !py-2.5 !px-6 !text-xs !font-semibold !shadow-md !shadow-[#002060]/20 transition-all cursor-pointer"
+          @click="savePermissions"
+        />
+      </div>
+
+      <!-- TABLE CONTAINER -->
+      <div class="p-6 overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-[#D8E7EC] bg-[#F8F8F8]">
+              <th class="p-4 text-xs font-bold text-[#002060] uppercase tracking-wider rounded-l-xl">
+                Role / Module Permission
+              </th>
+              <th v-for="roleName in ['Admin', 'Teacher', 'Student']" :key="roleName" class="p-4 text-xs font-bold uppercase tracking-wider text-center">
+                <span class="px-3.5 py-1 rounded-full bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] font-bold">
+                  {{ roleName }}
+                </span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            <!-- MODULE HEADERS & PERMISSIONS -->
+            <template v-for="(modulePermissions, module) in permissionsByModule" :key="module">
+              
+              <!-- Module Category Header -->
+              <tr class="bg-[#F8F8F8]/60">
+                <td colspan="4" class="px-4 py-2.5 text-[11px] font-bold text-[#E4AC40] uppercase tracking-wider">
+                  <i class="pi pi-folder text-[10px] mr-1 text-[#63C7DF]"></i> {{ module }}
+                </td>
+              </tr>
+
+              <!-- Permission Rows -->
+              <tr 
+                v-for="perm in modulePermissions" 
+                :key="perm.id"
+                class="hover:bg-[#D8E7EC]/20 transition-colors"
+              >
+                <!-- Role / Permission Name Column -->
+                <td class="p-4 text-xs font-medium text-slate-700">
+                  {{ perm.name }}
+                  <div v-if="perm.name === 'manage_academic_structure'" class="text-[10px] text-slate-400 font-normal">
+                    Academic Structure Management
+                  </div>
+                </td>
+
+                <!-- Toggle Buttons for Admin, Teacher, Student -->
+                <td v-for="roleName in ['Admin', 'Teacher', 'Student']" :key="roleName" class="p-4 text-center">
+                  <InputSwitch
+                    :modelValue="hasRolePermission(roleName, perm.id)"
+                    @update:modelValue="val => togglePermission(roleName, perm.id, val)"
+                    class="custom-switch"
                   />
-                  <span class="font-medium text-slate-700">{{ perm.name }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER ACTION BAR -->
+      <div class="p-6 border-t border-[#D8E7EC] bg-[#F8F8F8]/50 flex items-center justify-end">
+        <Button
+          label="Save Matrix Changes"
+          icon="pi pi-check"
+          :loading="saving"
+          class="!bg-[#002060] hover:!bg-[#001848] !text-white !border-0 !rounded-full !py-2.5 !px-8 !text-xs !font-semibold !shadow-md !shadow-[#002060]/20 transition-all cursor-pointer"
+          @click="savePermissions"
+        />
       </div>
 
     </div>
@@ -94,16 +102,24 @@
 import { ref, computed, onMounted } from 'vue'
 import api, { extractError } from '../../../api'
 import Button from 'primevue/button'
+import InputSwitch from 'primevue/inputswitch'
 
 const roles = ref([])
 const permissions = ref([])
-const selectedRole = ref(null)
-const checkedPermissionIds = ref([])
+const matrixState = ref({})
 const saving = ref(false)
 
 const fetchRoles = async () => {
   const { data } = await api.get('/roles')
   roles.value = data
+  
+  for (const role of data) {
+    const res = await api.get(`/roles/${role.id}`)
+    matrixState.value[role.name] = {
+      id: role.id,
+      permission_ids: res.data.role.permissions.map(p => p.id)
+    }
+  }
 }
 
 const fetchPermissions = async () => {
@@ -119,28 +135,42 @@ onMounted(() => {
 const permissionsByModule = computed(() => {
   const groups = {}
   for (const perm of permissions.value) {
-    const key = perm.module || 'other'
+    const key = perm.module || 'Other Permissions'
     if (!groups[key]) groups[key] = []
     groups[key].push(perm)
   }
   return groups
 })
 
-const selectRole = async (role) => {
-  try {
-    const { data } = await api.get(`/roles/${role.id}`)
-    selectedRole.value = data.role
-    checkedPermissionIds.value = data.role.permissions.map(p => p.id)
-  } catch (error) {
-    alert(extractError(error))
+const hasRolePermission = (roleName, permId) => {
+  return matrixState.value[roleName]?.permission_ids.includes(permId) || false
+}
+
+const togglePermission = (roleName, permId, value) => {
+  if (!matrixState.value[roleName]) return
+  
+  const permList = matrixState.value[roleName].permission_ids
+  if (value) {
+    if (!permList.includes(permId)) permList.push(permId)
+  } else {
+    const index = permList.indexOf(permId)
+    if (index > -1) permList.splice(index, 1)
   }
 }
 
 const savePermissions = async () => {
   saving.value = true
   try {
-    await api.put(`/roles/${selectedRole.value.id}`, { permission_ids: checkedPermissionIds.value })
+    const targetRoles = ['Admin', 'Teacher', 'Student']
+    
+    for (const roleName of targetRoles) {
+      const roleData = matrixState.value[roleName]
+      if (roleData) {
+        await api.put(`/roles/${roleData.id}`, { permission_ids: roleData.permission_ids })
+      }
+    }
     await fetchRoles()
+    alert('Permissions matrix updated successfully!')
   } catch (error) {
     alert(extractError(error))
   } finally {
@@ -148,3 +178,14 @@ const savePermissions = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* Custom Switch Style - Navy Primary Color (#002060) */
+:deep(.custom-switch.p-inputswitch.p-inputswitch-checked .p-inputswitch-slider) {
+  background: #002060 !important;
+}
+:deep(.custom-switch.p-inputswitch .p-inputswitch-slider) {
+  border-radius: 30px !important;
+  background: #cbd5e1;
+}
+</style>

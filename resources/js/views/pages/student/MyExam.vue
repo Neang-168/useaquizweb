@@ -1,143 +1,206 @@
 <template>
-  <div class="space-y-6 font-sans">
+  <div class="min-h-screen  -m-6 p-6 font-sans space-y-6">
 
     <!-- ======= PAGE HEADER ======= -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-xl font-bold text-slate-800 m-0">My Exams & Quizzes</h2>
-        <p class="text-xs text-slate-400 m-0 mt-1">Manage and take exams for your subjects</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#D8E7EC] shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#D8E7EC]/40 flex items-center justify-center text-[#E4AC40]">
+          <i class="pi pi-file-edit text-xl text-[#002060]"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-[#002060] m-0">My Exams & Quizzes</h2>
+          <p class="text-xs text-slate-500 m-0 mt-0.5">Manage and take exams for your subjects</p>
+        </div>
       </div>
 
       <!-- Filter Subject -->
-      <select v-model="selectedSubject" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer">
-        <option value="all">All Subjects</option>
-        <option v-for="subject in subjectOptions" :key="subject" :value="subject">{{ subject }}</option>
-      </select>
+      <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
+        <i class="pi pi-filter text-[#E4AC40] text-xs"></i>
+        <select v-model="selectedSubject" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
+          <option value="all">All Subjects</option>
+          <option v-for="subject in subjectOptions" :key="subject" :value="subject">{{ subject }}</option>
+        </select>
+      </div>
     </div>
 
     <!-- ======= NAVIGATION TABS ======= -->
-    <div class="flex border-b border-slate-200 space-x-6">
+    <div class="flex border-b border-[#D8E7EC] space-x-6 bg-white px-5 rounded-t-2xl pt-2">
       <button
         @click="activeTab = 'active'"
-        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0',
-          activeTab === 'active' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600']">
-        <i class="pi pi-clock text-xs mr-1"></i> Open ({{ activeExams.length }})
+        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0 flex items-center gap-2',
+          activeTab === 'active' ? 'border-[#002060] text-[#002060]' : 'border-transparent text-slate-400 hover:text-slate-600']">
+        <i class="pi pi-clock text-xs"></i>
+        <span>Open</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px]" :class="activeTab === 'active' ? 'bg-[#002060] text-white' : 'bg-[#D8E7EC]/50 text-slate-600'">
+          {{ activeExams.length }}
+        </span>
       </button>
 
       <button
         @click="activeTab = 'upcoming'"
-        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0',
-          activeTab === 'upcoming' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600']">
-        <i class="pi pi-calendar text-xs mr-1"></i> Upcoming ({{ upcomingExams.length }})
+        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0 flex items-center gap-2',
+          activeTab === 'upcoming' ? 'border-[#002060] text-[#002060]' : 'border-transparent text-slate-400 hover:text-slate-600']">
+        <i class="pi pi-calendar text-xs"></i>
+        <span>Upcoming</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px]" :class="activeTab === 'upcoming' ? 'bg-[#002060] text-white' : 'bg-[#D8E7EC]/50 text-slate-600'">
+          {{ upcomingExams.length }}
+        </span>
       </button>
 
       <button
         @click="activeTab = 'completed'"
-        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0',
-          activeTab === 'completed' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600']">
-        <i class="pi pi-check-circle text-xs mr-1"></i> Completed ({{ completedExams.length }})
+        :class="['pb-3 text-sm font-bold border-b-2 transition-all bg-transparent cursor-pointer border-0 flex items-center gap-2',
+          activeTab === 'completed' ? 'border-[#002060] text-[#002060]' : 'border-transparent text-slate-400 hover:text-slate-600']">
+        <i class="pi pi-check-circle text-xs"></i>
+        <span>Completed</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px]" :class="activeTab === 'completed' ? 'bg-[#002060] text-white' : 'bg-[#D8E7EC]/50 text-slate-600'">
+          {{ completedExams.length }}
+        </span>
       </button>
     </div>
 
-    <div v-if="loading" class="text-center text-sm text-slate-400 py-10">Loading data...</div>
+    <!-- ======= LOADING STATE ======= -->
+    <div v-if="loading" class="flex flex-col items-center justify-center py-16 bg-white rounded-b-2xl border border-[#D8E7EC] -mt-6">
+      <i class="pi pi-spin pi-spinner text-3xl text-[#002060] mb-3"></i>
+      <span class="text-xs font-semibold text-slate-500">Loading exam schedule...</span>
+    </div>
 
     <template v-else>
-    <!-- ======= TAB 1: ACTIVE EXAMS ======= -->
-    <div v-if="activeTab === 'active'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <p v-if="!activeExams.length" class="text-sm text-slate-400 col-span-2">No open exams right now</p>
-      <div v-for="exam in activeExams" :key="exam.id" class="bg-white rounded-2xl border border-blue-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-700">
-              {{ exam.subject }}
-            </span>
-            <span v-if="exam.endAt" class="text-xs font-semibold text-amber-600 flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md">
-              <i class="pi pi-exclamation-circle text-xs"></i> Due: {{ exam.endAt }}
-            </span>
+      <!-- ======= TAB 1: ACTIVE EXAMS ======= -->
+      <div v-if="activeTab === 'active'">
+        
+        <!-- EMPTY STATE ACTIVE -->
+        <div v-if="!activeExams.length" class="bg-white rounded-2xl border border-[#D8E7EC] p-12 text-center shadow-sm max-w-xl mx-auto my-4">
+          <div class="w-16 h-16 mx-auto rounded-full bg-[#D8E7EC]/40 flex items-center justify-center mb-3">
+            <i class="pi pi-inbox text-3xl text-[#002060]"></i>
           </div>
-          <h3 class="text-base font-bold text-slate-800 m-0">{{ exam.title }}</h3>
-
-          <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
-            <span class="flex items-center gap-1"><i class="pi pi-clock text-slate-400"></i> {{ exam.duration }} min</span>
-            <span class="flex items-center gap-1"><i class="pi pi-list text-slate-400"></i> {{ exam.totalQuestions }} questions</span>
-            <span class="flex items-center gap-1"><i class="pi pi-percentage text-slate-400"></i> Total points: {{ exam.totalPoints }}</span>
-          </div>
+          <h3 class="text-sm font-bold text-[#002060] m-0">No Active Exams Available</h3>
+          <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">There are no open quizzes or exams available for you to take right now.</p>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs text-slate-400">Attempts used: {{ exam.attemptsUsed }} / {{ exam.maxAttempts }}</span>
-          <router-link :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all no-underline shadow-xs">
-            Start Exam
-          </router-link>
-        </div>
-      </div>
-    </div>
+        <!-- LIST ACTIVE -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-for="exam in activeExams" :key="exam.id" class="bg-white rounded-2xl border border-[#D8E7EC] hover:border-[#63C7DF] p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#002060] text-white">
+                  {{ exam.subject }}
+                </span>
+                <span v-if="exam.endAt" class="text-xs font-bold text-[#D71818] flex items-center gap-1 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
+                  <i class="pi pi-clock text-xs"></i> Due: {{ exam.endAt }}
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-[#002060] m-0 mt-2">{{ exam.title }}</h3>
 
-    <!-- ======= TAB 2: UPCOMING EXAMS ======= -->
-    <div v-if="activeTab === 'upcoming'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <p v-if="!upcomingExams.length" class="text-sm text-slate-400 col-span-2">No upcoming exams</p>
-      <div v-for="exam in upcomingExams" :key="exam.id" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4 opacity-80">
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">
-              {{ exam.subject }}
-            </span>
-            <span class="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <i class="pi pi-calendar text-xs"></i> Opens: {{ exam.startAt }}
-            </span>
-          </div>
-          <h3 class="text-base font-bold text-slate-700 m-0">{{ exam.title }}</h3>
+              <div class="flex items-center gap-4 text-xs text-slate-500 mt-3 bg-[#F8F8F8] p-2.5 rounded-xl border border-slate-100">
+                <span class="flex items-center gap-1 font-medium"><i class="pi pi-clock text-[#E4AC40]"></i> {{ exam.duration }} min</span>
+                <span class="flex items-center gap-1 font-medium"><i class="pi pi-list text-[#63C7DF]"></i> {{ exam.totalQuestions }} q's</span>
+                <span class="flex items-center gap-1 font-medium"><i class="pi pi-percentage text-[#002060]"></i> {{ exam.totalPoints }} pts</span>
+              </div>
+            </div>
 
-          <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
-            <span><i class="pi pi-clock"></i> {{ exam.duration }} min</span>
-            <span><i class="pi pi-list"></i> {{ exam.totalQuestions }} questions</span>
-          </div>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs text-amber-600 font-medium">Not open yet</span>
-          <button disabled class="px-4 py-2 bg-slate-200 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border-0">
-            <i class="pi pi-lock text-xs mr-1"></i> Locked
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======= TAB 3: COMPLETED EXAMS ======= -->
-    <div v-if="activeTab === 'completed'" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-      <p v-if="!completedExams.length" class="text-sm text-slate-400 p-4">You haven't taken any exams yet</p>
-      <table v-else class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-            <th class="p-4">Exam & Subject</th>
-            <th class="p-4">Submitted On</th>
-            <th class="p-4">Score</th>
-            <th class="p-4">Result</th>
-            <th class="p-4 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
-          <tr v-for="exam in completedExams" :key="exam.id" class="hover:bg-slate-50/50">
-            <td class="p-4">
-              <p class="font-bold text-slate-800 m-0">{{ exam.title }}</p>
-              <p class="text-[11px] text-slate-400 m-0">{{ exam.subject }}</p>
-            </td>
-            <td class="p-4 text-slate-500">{{ exam.submittedAt }}</td>
-            <td class="p-4 font-bold text-base text-slate-800">{{ exam.score }} / {{ exam.totalPoints }}</td>
-            <td class="p-4">
-              <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold', exam.passed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
-                {{ exam.passed ? 'Passed' : 'Failed' }}
-              </span>
-            </td>
-            <td class="p-4 text-right">
-              <router-link to="/student/gradeHistory" class="text-blue-600 hover:underline font-bold no-underline">
-                View Result
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500">Attempts: <b class="text-[#002060]">{{ exam.attemptsUsed }}</b> / {{ exam.maxAttempts }}</span>
+              <router-link :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
+                <span>Start Exam</span>
+                <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>
               </router-link>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======= TAB 2: UPCOMING EXAMS ======= -->
+      <div v-if="activeTab === 'upcoming'">
+
+        <!-- EMPTY STATE UPCOMING -->
+        <div v-if="!upcomingExams.length" class="bg-white rounded-2xl border border-[#D8E7EC] p-12 text-center shadow-sm max-w-xl mx-auto my-4">
+          <div class="w-16 h-16 mx-auto rounded-full bg-[#D8E7EC]/40 flex items-center justify-center mb-3">
+            <i class="pi pi-calendar-plus text-3xl text-[#002060]"></i>
+          </div>
+          <h3 class="text-sm font-bold text-[#002060] m-0">No Upcoming Exams</h3>
+          <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">You don't have any scheduled exams coming up in the near future.</p>
+        </div>
+
+        <!-- LIST UPCOMING -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-for="exam in upcomingExams" :key="exam.id" class="bg-white/80 rounded-2xl border border-[#D8E7EC] p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#D8E7EC]/60 text-[#002060]">
+                  {{ exam.subject }}
+                </span>
+                <span class="text-xs font-semibold text-slate-600 flex items-center gap-1 bg-[#F8F8F8] px-2 py-0.5 rounded-md border border-slate-200">
+                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ exam.startAt }}
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-slate-700 m-0 mt-1">{{ exam.title }}</h3>
+
+              <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
+                <span class="flex items-center gap-1"><i class="pi pi-clock text-slate-400"></i> {{ exam.duration }} min</span>
+                <span class="flex items-center gap-1"><i class="pi pi-list text-slate-400"></i> {{ exam.totalQuestions }} questions</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-[#E4AC40] font-bold flex items-center gap-1">
+                <i class="pi pi-clock text-xs"></i> Not open yet
+              </span>
+              <button disabled class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1">
+                <i class="pi pi-lock text-xs"></i> Locked
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======= TAB 3: COMPLETED EXAMS ======= -->
+      <div v-if="activeTab === 'completed'" class="bg-white rounded-2xl border border-[#D8E7EC] overflow-hidden shadow-xs">
+        
+        <!-- EMPTY STATE COMPLETED -->
+        <div v-if="!completedExams.length" class="p-12 text-center">
+          <div class="w-16 h-16 mx-auto rounded-full bg-[#D8E7EC]/40 flex items-center justify-center mb-3">
+            <i class="pi pi-check-square text-3xl text-[#002060]"></i>
+          </div>
+          <h3 class="text-sm font-bold text-[#002060] m-0">No Completed Exams</h3>
+          <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">You haven't submitted any exams or quizzes yet.</p>
+        </div>
+
+        <!-- TABLE COMPLETED -->
+        <table v-else class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#F8F8F8] border-b border-[#D8E7EC] text-xs font-bold text-[#002060] uppercase">
+              <th class="p-4">Exam & Subject</th>
+              <th class="p-4">Submitted On</th>
+              <th class="p-4">Score</th>
+              <th class="p-4">Result</th>
+              <th class="p-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
+            <tr v-for="exam in completedExams" :key="exam.id" class="hover:bg-[#D8E7EC]/20 transition-colors">
+              <td class="p-4">
+                <p class="font-bold text-[#002060] m-0">{{ exam.title }}</p>
+                <p class="text-[11px] text-slate-400 m-0 mt-0.5">{{ exam.subject }}</p>
+              </td>
+              <td class="p-4 text-slate-500">{{ exam.submittedAt }}</td>
+              <td class="p-4 font-bold text-sm text-[#002060]">{{ exam.score }} / {{ exam.totalPoints }}</td>
+              <td class="p-4">
+                <span :class="['px-3 py-1 rounded-full text-[10px] font-bold border', 
+                  exam.passed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-[#D71818] border-red-200']">
+                  {{ exam.passed ? 'Passed' : 'Failed' }}
+                </span>
+              </td>
+              <td class="p-4 text-right">
+                <router-link to="/student/gradeHistory" class="text-[#002060] hover:text-[#001848] hover:underline font-bold no-underline inline-flex items-center gap-1">
+                  <span>View Result</span>
+                  <i class="pi pi-arrow-right text-[10px] text-[#E4AC40]"></i>
+                </router-link>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
 
   </div>

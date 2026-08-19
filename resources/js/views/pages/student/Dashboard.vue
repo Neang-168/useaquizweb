@@ -2,7 +2,7 @@
   <div class="space-y-6">
     
     <!-- ======= WELCOME BANNER ======= -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="bg-[#002060] rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
         <h2 class="text-2xl font-bold m-0">Hi, {{ studentName }}! 👋</h2>
         <p class="text-blue-100 text-sm mt-1 m-0">Welcome to the online exam system. Check your schedule and quizzes below:</p>

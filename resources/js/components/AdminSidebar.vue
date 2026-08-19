@@ -18,7 +18,7 @@
 
       <!-- Right: Search, Notifications, Profile -->
       <div class="flex items-center gap-5">
-        <!-- <button type="button"
+        <button type="button"
           class="border-0 bg-transparent text-slate-400 hover:text-blue-600 transition-colors p-0 cursor-pointer"
           aria-label="Search">
           <i class="pi pi-search text-lg"></i>
@@ -29,9 +29,9 @@
           aria-label="Notifications">
           <i class="pi pi-bell text-lg"></i>
           <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600"></span>
-        </button> -->
+        </button>
 
-        <!-- <div class="w-px h-6 bg-slate-200"></div> -->
+        <div class="w-px h-6 bg-slate-200"></div>
 
         <div class="relative" ref="profileMenuRef">
           <button type="button" @click="profileMenuOpen = !profileMenuOpen"
@@ -69,7 +69,7 @@
 
       <!-- ======= SIDEBAR ======= -->
       <aside
-        class="w-60 h-full m-0 rounded-none bg-white border-r border-slate-200 flex flex-col justify-between p-2 font-sans select-none shrink-0">
+        class="w-60 h-full m-0 rounded-2xl bg-white border-r ml-1.5 mt-1 border-slate-200 flex flex-col justify-between p-2 font-sans select-none shrink-0 ">
         <div class="flex flex-col min-h-0 flex-1">
 
           <!-- Navigation Links Area -->

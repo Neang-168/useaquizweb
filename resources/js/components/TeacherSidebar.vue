@@ -64,7 +64,7 @@
 
       <!-- ======= SIDEBAR ======= -->
       <aside
-        class="w-60 h-full m-0 rounded-none bg-white border-r border-slate-200 flex flex-col justify-between p-2 font-sans select-none shrink-0">
+        class="w-60 h-full m-0 rounded-2xl bg-white border-r ml-1.5 mt-1 border-slate-200 flex flex-col justify-between p-2 font-sans select-none shrink-0">
         <div class="flex flex-col min-h-0 flex-1">
 
           <!-- Navigation Links Area -->

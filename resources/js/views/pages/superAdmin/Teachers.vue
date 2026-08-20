@@ -257,6 +257,18 @@
           </div>
         </div>
 
+        <!-- Password -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+              Password {{ isEdit ? '' : '*' }}
+            </label>
+            <Password v-model="teacherForm.password" toggleMask :feedback="false"
+              :placeholder="isEdit ? 'Leave blank to keep current password' : 'Min 8 characters'"
+              inputClass="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" class="w-full" />
+          </div>
+        </div>
+
         <!-- Date of Birth / Employment Type / Status -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
@@ -419,6 +431,7 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
+import Password from 'primevue/password'
 
 // ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -570,6 +583,7 @@ const openNewDialog = () => {
     hire_date: null,
     phone: '',
     email: '',
+    password: '',
     type: 'Full-Time',
     status: 'Active',
     avatar: ''
@@ -583,6 +597,7 @@ const editTeacher = (data) => {
     ...data,
     dob: parseApiDate(data.dob),
     hire_date: parseApiDate(data.hire_date),
+    password: '',
   }
   isEdit.value = true
   teacherDialog.value = true
@@ -591,6 +606,14 @@ const editTeacher = (data) => {
 const saveTeacher = async () => {
   if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.faculty_id || !teacherForm.value.phone) {
     alert('Teacher code, name (English), faculty, and phone are required.')
+    return
+  }
+  if (!isEdit.value && (!teacherForm.value.password || teacherForm.value.password.length < 8)) {
+    alert('Password is required and must be at least 8 characters.')
+    return
+  }
+  if (isEdit.value && teacherForm.value.password && teacherForm.value.password.length < 8) {
+    alert('Password must be at least 8 characters.')
     return
   }
 
@@ -612,6 +635,9 @@ const saveTeacher = async () => {
     email: teacherForm.value.email,
     type: teacherForm.value.type,
     status: teacherForm.value.status,
+  }
+  if (teacherForm.value.password) {
+    payload.password = teacherForm.value.password
   }
 
   try {

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="h-full flex flex-col space-y-6">
     <!-- 1. Header & Quick Stats -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
@@ -13,7 +13,7 @@
           icon="pi pi-file-import"
           size="small"
           class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-700 !rounded-lg !text-xs"
-          @click="showImportExportModal = true"
+          @click="router.push({ name: 'teacher.questionbank.importExport' })"
         />
         <Button
           label="Add Question"
@@ -25,52 +25,81 @@
       </div>
     </div>
 
+    <!-- Success banner after a redirect back from Import -->
+    <div v-if="importedCount" class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-xl px-4 py-3">
+      <i class="pi pi-check-circle"></i>
+      {{ importedCount }} question{{ importedCount === 1 ? '' : 's' }} imported successfully.
+    </div>
+
     <!-- 2. Filters Bar -->
-    <div class="bg-white p-3 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
-      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-        <!-- Filter Subject -->
-        <Dropdown
-          v-model="selectedSubjectFilter"
-          :options="subjectFilterOptions"
-          option-label="label"
-          option-value="value"
-          placeholder="All Subjects"
-          size="small"
-          class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700"
-          @change="fetchQuestions"
-        />
+    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Class</label>
+          <Dropdown
+            v-model="selectedClassFilter"
+            :options="classOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="All Classes"
+            showClear
+            size="small"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            @change="onClassFilterChange"
+          />
+        </div>
 
-        <!-- Filter Question Type -->
-        <Dropdown
-          v-model="selectedTypeFilter"
-          :options="typeFilterOptions"
-          option-label="label"
-          option-value="value"
-          placeholder="All Types"
-          size="small"
-          class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700"
-          @change="fetchQuestions"
-        />
-      </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Subject</label>
+          <Dropdown
+            v-model="selectedSubjectFilter"
+            :options="subjectFilterOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="All Subjects"
+            showClear
+            size="small"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            @change="fetchQuestions"
+          />
+        </div>
 
-      <!-- Search Input -->
-      <div class="relative w-full md:w-56">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
-        <InputText
-          v-model="searchQuery"
-          size="small"
-          placeholder="Search questions..."
-          class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
-        />
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Type</label>
+          <Dropdown
+            v-model="selectedTypeFilter"
+            :options="typeFilterOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="All Types"
+            showClear
+            size="small"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            @change="fetchQuestions"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Search</label>
+          <div class="relative w-full">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText
+              v-model="searchQuery"
+              size="small"
+              placeholder="Search questions..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 3. Questions List -->
-    <div class="space-y-4">
+    <div class="flex-1 min-h-0 overflow-y-auto pr-1">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
         v-for="(q, index) in filteredQuestions"
         :key="q.id"
-        class="bg-white border border-slate-200 rounded-2xl p-5 hover:border-indigo-200 transition-all shadow-xs space-y-3"
+        class="bg-white border border-slate-200 rounded-2xl p-5 hover:border-indigo-200 transition-all shadow-xs space-y-3 flex flex-col"
       >
         <!-- Card Header: Subject Tag, Type Badge, Difficulty -->
         <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
@@ -112,48 +141,46 @@
         </div>
 
         <!-- Question Image -->
-        <img
-          v-if="q.imageUrl"
-          :src="q.imageUrl"
-          :alt="q.imageAlt || ''"
-          class="ml-6 max-h-40 rounded-xl border border-slate-200 object-contain bg-slate-50"
-        />
+        <div v-if="q.imageUrl" class="ml-6 inline-block rounded-xl border border-slate-200 bg-slate-50 overflow-hidden question-image-preview">
+          <Image :src="q.imageUrl" :alt="q.imageAlt || ''" preview image-class="max-h-40 object-contain block" />
+        </div>
 
         <!-- Multiple Choice / True False Options Display -->
-        <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6 pt-1">
+        <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 gap-2 pl-6 pt-1">
           <div
             v-for="(opt, oIdx) in q.options"
             :key="oIdx"
             :class="opt.isCorrect ? 'bg-emerald-50/80 border-emerald-300 text-emerald-800 font-semibold' : 'bg-slate-50 border-slate-200 text-slate-600'"
             class="p-2.5 rounded-xl border text-xs flex items-center gap-2"
           >
-            <img v-if="opt.imageUrl" :src="opt.imageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
+            <Image v-if="opt.imageUrl" :src="opt.imageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
             <span class="flex-1">{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
             <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs shrink-0"></i>
           </div>
         </div>
 
         <!-- Matching Pairs Display -->
-        <div v-else-if="q.type === 'matching'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6 pt-1">
+        <div v-else-if="q.type === 'matching'" class="grid grid-cols-1 gap-2 pl-6 pt-1">
           <div
             v-for="(pair, pIdx) in q.matchingPairs"
             :key="pIdx"
             class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs flex items-center gap-2 text-slate-600"
           >
-            <img v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
+            <Image v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
             <span class="font-semibold text-slate-700">{{ pair.leftText }}</span>
             <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px] shrink-0"></i>
-            <img v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0" />
+            <Image v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
             <span>{{ pair.rightText }}</span>
           </div>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div v-if="filteredQuestions.length === 0" class="text-center py-12 bg-white rounded-2xl border border-slate-200">
+      <div v-if="filteredQuestions.length === 0" class="md:col-span-2 lg:col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200">
         <i class="pi pi-inbox text-3xl text-slate-300 mb-2"></i>
         <p class="text-xs text-slate-500">No questions found. Try adjusting your filters, or add a new question.</p>
       </div>
+    </div>
     </div>
 
     <QuestionEditorModal
@@ -163,29 +190,27 @@
       @saved="fetchQuestions"
     />
 
-    <QuestionImportExportModal
-      v-model:visible="showImportExportModal"
-      :filters="{ subject_id: selectedSubjectFilter, type: selectedTypeFilter }"
-      @imported="fetchQuestions"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
+import Image from 'primevue/image'
 import api, { extractError } from '../../../api'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
-import QuestionImportExportModal from '../../../components/teacher/QuestionImportExportModal.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const searchQuery = ref('')
+const selectedClassFilter = ref('')
 const selectedSubjectFilter = ref('')
 const selectedTypeFilter = ref('')
+const importedCount = ref(route.query.imported ? Number(route.query.imported) : 0)
 
 const typeFilterOptions = [
   { label: 'All Types', value: '' },
@@ -196,9 +221,9 @@ const typeFilterOptions = [
 
 const showModal = ref(false)
 const editingQuestion = ref(null)
-const showImportExportModal = ref(false)
 
 const mySubjects = ref([])
+const myClasses = ref([])
 const questions = ref([])
 const loading = ref(false)
 
@@ -207,10 +232,40 @@ const fetchSubjects = async () => {
   mySubjects.value = data.data
 }
 
-const subjectFilterOptions = computed(() => [
-  { label: 'All Subjects', value: '' },
-  ...mySubjects.value.map(s => ({ label: `${s.name} (${s.code})`, value: s.id })),
-])
+const fetchClasses = async () => {
+  const { data } = await api.get('/teacher/classes')
+  myClasses.value = data.data
+}
+
+const classOptions = computed(() => {
+  const seen = new Map()
+  myClasses.value.forEach(c => {
+    if (c.class_id && !seen.has(c.class_id)) seen.set(c.class_id, c.className)
+  })
+  return Array.from(seen, ([value, label]) => ({ label, value }))
+})
+
+// Subject options narrow to whichever subjects are taught in the selected class
+const subjectFilterOptions = computed(() => {
+  let subjects = mySubjects.value
+  if (selectedClassFilter.value) {
+    const allowedIds = new Set(
+      myClasses.value.filter(c => c.class_id === selectedClassFilter.value).map(c => c.subject_id)
+    )
+    subjects = subjects.filter(s => allowedIds.has(s.id))
+  }
+  return [
+    { label: 'All Subjects', value: '' },
+    ...subjects.map(s => ({ label: `${s.name} (${s.code})`, value: s.id })),
+  ]
+})
+
+function onClassFilterChange() {
+  if (!subjectFilterOptions.value.some(o => o.value === selectedSubjectFilter.value)) {
+    selectedSubjectFilter.value = ''
+  }
+  fetchQuestions()
+}
 
 const fetchQuestions = async () => {
   loading.value = true
@@ -230,11 +285,15 @@ const fetchQuestions = async () => {
 }
 
 onMounted(async () => {
-  await fetchSubjects()
+  await Promise.all([fetchSubjects(), fetchClasses()])
   if (route.query.subject_id) {
     selectedSubjectFilter.value = Number(route.query.subject_id)
   }
   await fetchQuestions()
+
+  if (route.query.imported) {
+    router.replace({ query: { ...route.query, imported: undefined } })
+  }
 })
 
 // Filtered Questions (search is client-side; subject/type filters are re-fetched from the server)

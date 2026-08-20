@@ -59,41 +59,85 @@
       </div>
     </div>
 
+    <!-- ======= MY CLASSES ======= -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-slate-800 m-0 flex items-center gap-2">
+          <i class="pi pi-book text-purple-500"></i>
+          My Classes
+        </h3>
+        <router-link to="/student/mycourses" class="text-xs font-bold text-blue-600 hover:underline no-underline">
+          View All
+        </router-link>
+      </div>
+
+      <p v-if="!myClasses.length" class="text-sm text-slate-400 m-0">You're not enrolled in any classes yet.</p>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <router-link
+          v-for="course in myClasses.slice(0, 3)"
+          :key="`${course.id}-${course.classId}`"
+          :to="{ name: 'student.courseWorkspace', params: { classId: course.classId, subjectId: course.id } }"
+          class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-[#63C7DF] hover:bg-white transition-all no-underline block"
+        >
+          <span class="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#002060] text-white mb-2">{{ course.code }}</span>
+          <h4 class="text-sm font-bold text-slate-800 m-0">{{ course.title }}</h4>
+          <p class="text-xs text-slate-400 m-0 mt-1">{{ course.className }}</p>
+          <p class="text-[11px] text-slate-500 m-0 mt-2">
+            <span class="font-semibold text-emerald-600">{{ course.completedQuizzes }}</span> / {{ course.totalQuizzes }} quizzes done
+          </p>
+        </router-link>
+      </div>
+    </div>
+
     <!-- ======= MAIN CONTENT GRID ======= -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- LEFT (2 Cols): Active & Upcoming Quizzes -->
+      <!-- LEFT (2 Cols): Quiz Schedule -->
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-slate-800 m-0 flex items-center gap-2">
-              <i class="pi pi-clock text-amber-500"></i>
-              Open & Due Soon Quizzes
+              <i class="pi pi-calendar text-amber-500"></i>
+              Schedule
             </h3>
             <router-link to="/student/myexam" class="text-xs font-bold text-blue-600 hover:underline no-underline">
               View All
             </router-link>
           </div>
 
-          <!-- Quiz Cards List -->
-          <div class="space-y-3">
-            <p v-if="!stats.dueSoon.length" class="text-sm text-slate-400 m-0">No quizzes to take right now</p>
-            <div v-for="quiz in stats.dueSoon" :key="quiz.id" class="p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span v-if="quiz.subject" class="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-700 mb-1">
-                  {{ quiz.subject }}
-                </span>
-                <h4 class="text-sm font-bold text-slate-800 m-0">{{ quiz.title }}</h4>
-                <p class="text-xs text-slate-400 m-0 mt-1 flex items-center gap-3">
-                  <span><i class="pi pi-clock text-xs"></i> {{ quiz.duration }} min</span>
-                  <span><i class="pi pi-list text-xs"></i> {{ quiz.totalQuestions }} questions</span>
-                </p>
+          <p v-if="!stats.dueSoon.length" class="text-sm text-slate-400 m-0">No quizzes to take right now</p>
+
+          <!-- Vertical timeline: one entry per quiz, anchored to its date -->
+          <ol v-else class="relative border-l-2 border-slate-100 ml-2 space-y-6">
+            <li v-for="quiz in stats.dueSoon" :key="quiz.id" class="ml-5 relative">
+              <span class="absolute -left-[27px] top-0.5 w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow"></span>
+
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <div>
+                  <p class="text-[11px] font-bold text-blue-600 m-0 flex items-center gap-1.5">
+                    <i class="pi pi-clock text-[10px]"></i>
+                    {{ quiz.endAt ? `Due ${formatDate(quiz.endAt)}` : 'No fixed deadline' }}
+                  </p>
+                  <router-link
+                    v-if="quiz.classId && quiz.subjectId"
+                    :to="{ name: 'student.courseWorkspace', params: { classId: quiz.classId, subjectId: quiz.subjectId } }"
+                    class="text-sm font-bold text-slate-800 no-underline hover:text-blue-600"
+                  >
+                    {{ quiz.title }}
+                  </router-link>
+                  <h4 v-else class="text-sm font-bold text-slate-800 m-0">{{ quiz.title }}</h4>
+                  <p class="text-xs text-slate-400 m-0 mt-1 flex items-center gap-3 flex-wrap">
+                    <span v-if="quiz.subject" class="font-semibold text-slate-500">{{ quiz.subject }}</span>
+                    <span><i class="pi pi-clock text-xs"></i> {{ quiz.duration }} min</span>
+                    <span><i class="pi pi-list text-xs"></i> {{ quiz.totalQuestions }} questions</span>
+                  </p>
+                </div>
+                <router-link :to="`/student/take-quiz?id=${quiz.id}`" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all no-underline text-center shrink-0">
+                  Start Exam
+                </router-link>
               </div>
-              <router-link :to="`/student/take-quiz?id=${quiz.id}`" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all no-underline text-center shrink-0">
-                Start Exam
-              </router-link>
-            </div>
-          </div>
+            </li>
+          </ol>
         </div>
       </div>
 
@@ -146,10 +190,23 @@ const stats = ref({
   announcements: [],
 })
 
+const myClasses = ref([])
+
+function formatDate(value) {
+  if (!value) return ''
+  const [datePart, timePart] = value.split('T')
+  const [y, m, d] = datePart.split('-')
+  return `${m}/${d}/${y}${timePart ? ' ' + timePart : ''}`
+}
+
 async function fetchDashboard() {
   try {
-    const { data } = await api.get('/student/dashboard')
-    stats.value = data
+    const [dashboardRes, coursesRes] = await Promise.all([
+      api.get('/student/dashboard'),
+      api.get('/student/courses'),
+    ])
+    stats.value = dashboardRes.data
+    myClasses.value = coursesRes.data.data
   } catch (error) {
     console.error(extractError(error))
   }

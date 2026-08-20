@@ -339,6 +339,18 @@
           </div>
         </div>
 
+        <!-- Password -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+              Password {{ isEdit ? '' : '*' }}
+            </label>
+            <Password v-model="studentForm.password" toggleMask :feedback="false"
+              :placeholder="isEdit ? 'Leave blank to keep current password' : 'Min 8 characters'"
+              inputClass="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" class="w-full" />
+          </div>
+        </div>
+
         <!-- Date of Birth / Status -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
@@ -528,6 +540,7 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
+import Password from 'primevue/password'
 
 // ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -694,6 +707,7 @@ const openNewDialog = () => {
     shift_id: null,
     phone: '',
     email: '',
+    password: '',
     status: 'Active',
     avatar: ''
   }
@@ -705,6 +719,7 @@ const editStudent = (data) => {
   studentForm.value = {
     ...data,
     dob: parseApiDate(data.dob),
+    password: '',
   }
   isEdit.value = true
   studentDialog.value = true
@@ -717,6 +732,14 @@ const saveStudent = async () => {
   }
   if (!studentForm.value.student_id || !studentForm.value.name_en || !studentForm.value.class_id || !studentForm.value.phone) {
     alert('Student ID, name (English), class, and phone are required.')
+    return
+  }
+  if (!isEdit.value && (!studentForm.value.password || studentForm.value.password.length < 8)) {
+    alert('Password is required and must be at least 8 characters.')
+    return
+  }
+  if (isEdit.value && studentForm.value.password && studentForm.value.password.length < 8) {
+    alert('Password must be at least 8 characters.')
     return
   }
 
@@ -740,6 +763,9 @@ const saveStudent = async () => {
     phone: studentForm.value.phone,
     email: studentForm.value.email,
     status: studentForm.value.status,
+  }
+  if (studentForm.value.password) {
+    payload.password = studentForm.value.password
   }
 
   try {

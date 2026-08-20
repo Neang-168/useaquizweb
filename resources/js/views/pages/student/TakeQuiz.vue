@@ -33,58 +33,106 @@
       </div>
     </div>
 
-    <!-- ======= QUIZ TAKING VIEW ======= -->
+    <!-- ======= QUIZ TAKING VIEW: one question at a time ======= -->
     <template v-else-if="quiz">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center justify-between gap-4 sticky top-0 z-10">
         <div>
           <h2 class="text-lg font-bold text-slate-800 m-0">{{ quiz.title }}</h2>
           <p class="text-xs text-slate-400 m-0 mt-1">{{ quiz.subject }} &middot; Attempt {{ quiz.attemptNumber }}</p>
         </div>
-        <div :class="['px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2', timeLeft <= 60 ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600']">
+        <div :class="['px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2', timeLeft <= 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-blue-50 text-blue-600']">
           <i class="pi pi-clock"></i> {{ formattedTime }}
         </div>
       </div>
 
-      <div v-for="(question, index) in quiz.questions" :key="question.id" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+      <!-- Progress + question navigator -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-slate-700">Question {{ currentIndex + 1 }} of {{ quiz.questions.length }}</span>
+          <span class="text-slate-400">{{ answeredCount }} answered</span>
+        </div>
+        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-blue-600 rounded-full transition-all" :style="{ width: progressPct + '%' }"></div>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            v-for="(q, idx) in quiz.questions"
+            :key="q.id"
+            type="button"
+            @click="currentIndex = idx"
+            :class="[
+              'w-7 h-7 rounded-lg text-[11px] font-bold border transition-all',
+              idx === currentIndex
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : isAnswered(q) ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'
+            ]"
+          >
+            {{ idx + 1 }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Current question -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
         <div class="flex items-start justify-between gap-3">
-          <h3 class="text-sm font-bold text-slate-800 m-0">{{ index + 1 }}. {{ question.title }}</h3>
-          <span class="text-[11px] font-semibold text-slate-400 shrink-0">{{ question.points }} pts</span>
+          <h3 class="text-sm font-bold text-slate-800 m-0">{{ currentIndex + 1 }}. {{ currentQuestion.title }}</h3>
+          <span class="text-[11px] font-semibold text-slate-400 shrink-0">{{ currentQuestion.points }} pts</span>
         </div>
 
-        <img v-if="question.imageUrl" :src="question.imageUrl" :alt="question.imageAlt || ''" class="max-h-56 rounded-xl border border-slate-100" />
+        <div v-if="currentQuestion.imageUrl" class="inline-block rounded-xl border border-slate-100 bg-slate-50 overflow-hidden">
+          <Image :src="currentQuestion.imageUrl" :alt="currentQuestion.imageAlt || ''" preview image-class="max-h-56 object-contain block" />
+        </div>
 
-        <!-- multiple_choice: checkboxes -->
-        <div v-if="question.type === 'multiple_choice'" class="space-y-2">
-          <label v-for="option in question.options" :key="option.id"
+        <!-- multiple_choice: radio when only one option is correct, checkboxes when several are -->
+        <div v-if="currentQuestion.type === 'multiple_choice'" class="space-y-2">
+          <p v-if="currentQuestion.multiSelect" class="text-[11px] font-semibold text-indigo-500 -mt-1">Select all that apply</p>
+          <label v-for="option in currentQuestion.options" :key="option.id"
             class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm text-slate-700">
-            <input type="checkbox" :value="option.id" v-model="answers[question.id].selectedOptionIds" class="w-4 h-4" />
-            <img v-if="option.imageUrl" :src="option.imageUrl" class="h-10 rounded-lg" />
+            <input
+              v-if="currentQuestion.multiSelect"
+              type="checkbox"
+              :value="option.id"
+              v-model="answers[currentQuestion.id].selectedOptionIds"
+              class="w-4 h-4"
+            />
+            <input
+              v-else
+              type="radio"
+              :name="`q-${currentQuestion.id}`"
+              :value="option.id"
+              :checked="answers[currentQuestion.id].selectedOptionIds[0] === option.id"
+              @change="answers[currentQuestion.id].selectedOptionIds = [option.id]"
+              class="w-4 h-4"
+            />
+            <span v-if="option.imageUrl" @click.stop.prevent>
+              <Image :src="option.imageUrl" alt="" preview image-class="h-10 rounded-lg object-cover cursor-zoom-in" />
+            </span>
             <span>{{ option.text }}</span>
           </label>
         </div>
 
         <!-- true_false: radio -->
-        <div v-else-if="question.type === 'true_false'" class="space-y-2">
-          <label v-for="option in question.options" :key="option.id"
+        <div v-else-if="currentQuestion.type === 'true_false'" class="space-y-2">
+          <label v-for="option in currentQuestion.options" :key="option.id"
             class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm text-slate-700">
-            <input type="radio" :name="`q-${question.id}`" :value="option.id" v-model="answers[question.id].selectedOptionId" class="w-4 h-4" />
+            <input type="radio" :name="`q-${currentQuestion.id}`" :value="option.id" v-model="answers[currentQuestion.id].selectedOptionId" class="w-4 h-4" />
             <span>{{ option.text }}</span>
           </label>
         </div>
 
         <!-- matching: left list paired against a shuffled right list -->
-        <div v-else-if="question.type === 'matching'" class="space-y-2">
-          <div v-for="left in question.leftItems" :key="left.pairId"
+        <div v-else-if="currentQuestion.type === 'matching'" class="space-y-2">
+          <div v-for="left in currentQuestion.leftItems" :key="left.pairId"
             class="flex items-center gap-3 p-3 rounded-xl border border-slate-100">
             <div class="flex-1 flex items-center gap-2 text-sm font-medium text-slate-700">
-              <img v-if="left.imageUrl" :src="left.imageUrl" class="h-10 rounded-lg" />
+              <Image v-if="left.imageUrl" :src="left.imageUrl" alt="" preview image-class="h-10 rounded-lg object-cover cursor-zoom-in" />
               <span>{{ left.text }}</span>
             </div>
             <i class="pi pi-arrow-right text-slate-300 text-xs"></i>
-            <select v-model="answers[question.id].matches[left.pairId]"
+            <select v-model="answers[currentQuestion.id].matches[left.pairId]"
               class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs font-medium text-slate-700 outline-none focus:border-blue-500">
               <option :value="null">-- Select an answer --</option>
-              <option v-for="right in question.rightItems" :key="right.pairId" :value="right.pairId">
+              <option v-for="right in currentQuestion.rightItems" :key="right.pairId" :value="right.pairId">
                 {{ right.text }}
               </option>
             </select>
@@ -92,10 +140,32 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center justify-between">
-        <p class="text-xs text-slate-400 m-0">Please review your answers before submitting</p>
-        <button @click="submitQuiz" :disabled="submitting"
-          class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all border-0 cursor-pointer">
+      <!-- Prev / Next / Submit -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center justify-between gap-3">
+        <button
+          type="button"
+          :disabled="currentIndex === 0"
+          @click="currentIndex--"
+          class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 font-bold text-sm rounded-xl transition-all border-0 cursor-pointer flex items-center gap-2"
+        >
+          <i class="pi pi-arrow-left text-xs"></i> Previous
+        </button>
+
+        <button
+          v-if="currentIndex < quiz.questions.length - 1"
+          type="button"
+          @click="currentIndex++"
+          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all border-0 cursor-pointer flex items-center gap-2"
+        >
+          Next <i class="pi pi-arrow-right text-xs"></i>
+        </button>
+        <button
+          v-else
+          type="button"
+          @click="submitQuiz"
+          :disabled="submitting"
+          class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all border-0 cursor-pointer"
+        >
           {{ submitting ? 'Submitting...' : 'Submit Answers' }}
         </button>
       </div>
@@ -107,7 +177,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import Image from 'primevue/image'
 import api, { extractError } from '../../../api'
+import { quizInProgress } from '../../../utils/quizLock'
 
 const route = useRoute()
 const quizId = route.query.id
@@ -118,8 +190,30 @@ const loadError = ref('')
 const submitting = ref(false)
 const result = ref(null)
 const answers = reactive({})
+const currentIndex = ref(0)
 const timeLeft = ref(0)
 let timer = null
+
+// The server hands us an absolute deadline (started_at + duration), not a
+// countdown — clockOffsetMs corrects for the local clock being off from the
+// server's so the displayed countdown is accurate; it does not affect the
+// actual deadline, which the server enforces independently.
+let deadlineMs = 0
+let clockOffsetMs = 0
+
+const currentQuestion = computed(() => quiz.value.questions[currentIndex.value])
+
+const answeredCount = computed(() => quiz.value.questions.filter(isAnswered).length)
+const progressPct = computed(() => Math.round(((currentIndex.value + 1) / quiz.value.questions.length) * 100))
+
+function isAnswered(question) {
+  const a = answers[question.id]
+  if (!a) return false
+  if (question.type === 'multiple_choice') return (a.selectedOptionIds || []).length > 0
+  if (question.type === 'true_false') return a.selectedOptionId != null
+  if (question.type === 'matching') return Object.values(a.matches || {}).some(v => v != null)
+  return false
+}
 
 const formattedTime = computed(() => {
   const m = Math.floor(timeLeft.value / 60).toString().padStart(2, '0')
@@ -141,17 +235,26 @@ function initAnswers() {
   }
 }
 
-function startTimer() {
-  timeLeft.value = quiz.value.duration * 60
-  timer = setInterval(() => {
-    if (timeLeft.value <= 1) {
-      clearInterval(timer)
-      timeLeft.value = 0
-      submitQuiz()
-      return
-    }
-    timeLeft.value -= 1
-  }, 1000)
+function tick() {
+  const now = Date.now() + clockOffsetMs
+  timeLeft.value = Math.max(0, Math.round((deadlineMs - now) / 1000))
+
+  if (timeLeft.value <= 0) {
+    clearInterval(timer)
+    submitQuiz()
+  }
+}
+
+function startTimer(deadlineAt, serverNow) {
+  deadlineMs = new Date(deadlineAt).getTime()
+  clockOffsetMs = new Date(serverNow).getTime() - Date.now()
+  tick()
+  timer = setInterval(tick, 1000)
+}
+
+function beforeUnloadWarning(e) {
+  e.preventDefault()
+  e.returnValue = ''
 }
 
 async function fetchQuiz() {
@@ -160,8 +263,11 @@ async function fetchQuiz() {
   try {
     const { data } = await api.get(`/student/quizzes/${quizId}`)
     quiz.value = data.quiz
+    currentIndex.value = 0
     initAnswers()
-    startTimer()
+    startTimer(data.quiz.deadlineAt, data.quiz.serverNow)
+    quizInProgress.value = true
+    window.addEventListener('beforeunload', beforeUnloadWarning)
   } catch (error) {
     loadError.value = extractError(error)
   } finally {
@@ -201,9 +307,15 @@ async function submitQuiz() {
     quiz.value = null
   } finally {
     submitting.value = false
+    quizInProgress.value = false
+    window.removeEventListener('beforeunload', beforeUnloadWarning)
   }
 }
 
 onMounted(fetchQuiz)
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  clearInterval(timer)
+  quizInProgress.value = false
+  window.removeEventListener('beforeunload', beforeUnloadWarning)
+})
 </script>

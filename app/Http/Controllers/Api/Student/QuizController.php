@@ -42,8 +42,9 @@ class QuizController extends Controller
         $quizzes = Quiz::query()
             ->where('status', 'Published')
             ->whereIn('class_id', $classIds)
-            ->with(['subject', 'classroom'])
-            ->withSum('questions as total_points', 'points')
+            ->when($request->input('class_id'), fn ($q, $id) => $q->where('class_id', $id))
+            ->when($request->input('subject_id'), fn ($q, $id) => $q->where('subject_id', $id))
+            ->with(['subject', 'classroom', 'questions'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -62,49 +63,90 @@ class QuizController extends Controller
      * shuffled per the quiz's settings, with all correctness data stripped.
      * Blocked if the quiz isn't open to this student right now, or they've
      * already used up their attempts.
+     *
+     * Also starts (or resumes) the timed attempt server-side: an
+     * "in_progress" QuizSubmission row records started_at, so the deadline
+     * is anchored to the server clock and survives refresh/navigation —
+     * reloading this endpoint mid-attempt returns the same deadline instead
+     * of granting a fresh timer. An attempt whose time has already run out
+     * is auto-finalized (0 answers) so it doesn't block starting a new one
+     * when attempts remain.
      */
     public function show(Request $request, Quiz $quiz)
     {
         $student = $request->user()->studentProfile;
         $this->authorizeAccess($student, $quiz);
 
-        $attemptsUsed = QuizSubmission::where('quiz_id', $quiz->id)
-            ->where('student_profile_id', $student->id)
-            ->count();
+        $submission = $this->resumeOrExpireInProgress($quiz, $student);
 
-        if ($attemptsUsed >= $quiz->max_attempts) {
-            throw ValidationException::withMessages([
-                'quiz' => ['You have used all of your attempts for this quiz.'],
+        if (! $submission) {
+            $attemptsUsed = QuizSubmission::where('quiz_id', $quiz->id)
+                ->where('student_profile_id', $student->id)
+                ->count();
+
+            if ($attemptsUsed >= $quiz->max_attempts) {
+                throw ValidationException::withMessages([
+                    'quiz' => ['You have used all of your attempts for this quiz.'],
+                ]);
+            }
+
+            $submission = QuizSubmission::create([
+                'quiz_id' => $quiz->id,
+                'student_profile_id' => $student->id,
+                'attempt_number' => $attemptsUsed + 1,
+                'status' => 'in_progress',
+                'started_at' => now(),
             ]);
         }
 
-        $quiz->load('subject', 'classroom')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom', 'questions');
 
         return response()->json([
             'quiz' => array_merge($this->transform($quiz, collect()), [
-                'attemptNumber' => $attemptsUsed + 1,
+                'attemptNumber' => $submission->attempt_number,
+                'startedAt' => $submission->started_at->toIso8601String(),
+                'deadlineAt' => $submission->started_at->copy()->addMinutes($quiz->duration_minutes)->toIso8601String(),
+                'serverNow' => now()->toIso8601String(),
                 'questions' => $this->transformQuestionsForTaking($quiz),
             ]),
         ]);
     }
 
     /**
-     * Submit answers for a quiz attempt. Creates the submission and its
-     * answers inside a transaction; the model observers grade it as the
-     * rows land, so the score is already correct by the time this returns.
+     * Submit answers for a quiz attempt. Reuses the "in_progress" row
+     * started by show() (falling back to starting one on the spot if
+     * submit is somehow called without it — e.g. a stale client) and
+     * writes its answers inside a transaction; the model observers grade
+     * it as the rows land, so the score is already correct by the time
+     * this returns.
      */
     public function submit(Request $request, Quiz $quiz)
     {
         $student = $request->user()->studentProfile;
         $this->authorizeAccess($student, $quiz);
 
-        $attemptsUsed = QuizSubmission::where('quiz_id', $quiz->id)
+        $submission = QuizSubmission::where('quiz_id', $quiz->id)
             ->where('student_profile_id', $student->id)
-            ->count();
+            ->where('status', 'in_progress')
+            ->first();
 
-        if ($attemptsUsed >= $quiz->max_attempts) {
-            throw ValidationException::withMessages([
-                'quiz' => ['You have used all of your attempts for this quiz.'],
+        if (! $submission) {
+            $attemptsUsed = QuizSubmission::where('quiz_id', $quiz->id)
+                ->where('student_profile_id', $student->id)
+                ->count();
+
+            if ($attemptsUsed >= $quiz->max_attempts) {
+                throw ValidationException::withMessages([
+                    'quiz' => ['You have used all of your attempts for this quiz.'],
+                ]);
+            }
+
+            $submission = QuizSubmission::create([
+                'quiz_id' => $quiz->id,
+                'student_profile_id' => $student->id,
+                'attempt_number' => $attemptsUsed + 1,
+                'status' => 'in_progress',
+                'started_at' => now(),
             ]);
         }
 
@@ -121,14 +163,8 @@ class QuizController extends Controller
 
         $questions = $quiz->questions()->with('options', 'matchingPairs')->get()->keyBy('id');
 
-        $submission = DB::transaction(function () use ($validated, $quiz, $student, $attemptsUsed, $questions) {
-            $submission = QuizSubmission::create([
-                'quiz_id' => $quiz->id,
-                'student_profile_id' => $student->id,
-                'attempt_number' => $attemptsUsed + 1,
-                'status' => 'submitted',
-                'submitted_at' => now(),
-            ]);
+        $submission = DB::transaction(function () use ($validated, $submission, $questions) {
+            $submission->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
 
             foreach ($validated['answers'] ?? [] as $answerInput) {
                 $question = $questions->get($answerInput['questionId']);
@@ -181,8 +217,8 @@ class QuizController extends Controller
         });
 
         $submission->refresh();
-        $totalPoints = (int) $quiz->questions()->sum('points');
-        $passMark = $quiz->pass_mark ?? 50;
+        $totalPoints = $submission->total_points ?? (int) $questions->sum(fn (Question $q) => $quiz->pointsFor($q));
+        $passMark = $submission->pass_mark ?? ($quiz->pass_mark ?? 50);
         $score = $submission->mcq_score + ($submission->essay_score ?? 0);
         $percentage = $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0;
 
@@ -203,6 +239,35 @@ class QuizController extends Controller
     private function validOptionId(Question $question, ?int $optionId): ?int
     {
         return $optionId && $question->options->pluck('id')->contains($optionId) ? $optionId : null;
+    }
+
+    /**
+     * Look up this student's in-progress attempt at $quiz, if any. One
+     * that's already run past its deadline is finalized on the spot (0
+     * answers, since nothing gets written until submit) so it stops
+     * blocking a fresh attempt — returns null in that case, same as if
+     * there had never been one.
+     */
+    private function resumeOrExpireInProgress(Quiz $quiz, object $student): ?QuizSubmission
+    {
+        $submission = QuizSubmission::where('quiz_id', $quiz->id)
+            ->where('student_profile_id', $student->id)
+            ->where('status', 'in_progress')
+            ->first();
+
+        if (! $submission) {
+            return null;
+        }
+
+        $deadline = $submission->started_at->copy()->addMinutes($quiz->duration_minutes);
+
+        if ($deadline->isPast()) {
+            $submission->forceFill(['status' => 'submitted', 'submitted_at' => $deadline])->save();
+
+            return null;
+        }
+
+        return $submission;
     }
 
     private function authorizeAccess(?object $student, Quiz $quiz): void
@@ -253,7 +318,14 @@ class QuizController extends Controller
             return [
                 'id' => $question->id,
                 'type' => $question->type,
-                'points' => $question->points,
+                'points' => $quiz->pointsFor($question),
+                // For multiple_choice only: whether more than one option is
+                // correct, so the UI can render a single-select radio group
+                // (the common case) instead of checkboxes when it would
+                // only ever accept exactly one answer anyway.
+                'multiSelect' => $question->type === 'multiple_choice'
+                    ? $question->options->where('is_correct', true)->count() > 1
+                    : false,
                 'title' => $question->title,
                 'imageUrl' => $question->image_path ? Storage::disk('public')->url($question->image_path) : null,
                 'imageAlt' => $question->image_alt,
@@ -280,7 +352,7 @@ class QuizController extends Controller
     {
         $latest = $submissions->sortByDesc('attempt_number')->first();
         $best = $submissions->sortByDesc(fn (QuizSubmission $s) => $s->mcq_score + ($s->essay_score ?? 0))->first();
-        $totalPoints = (int) ($quiz->total_points ?? 0);
+        $totalPoints = $quiz->relationLoaded('questions') ? $quiz->computeTotalPoints() : (int) $quiz->questions()->sum('points');
         $attemptsUsed = $submissions->count();
         $now = now();
         $hasStarted = ! $quiz->start_at || $quiz->start_at->lte($now);
@@ -290,6 +362,8 @@ class QuizController extends Controller
             'id' => $quiz->id,
             'title' => $quiz->title,
             'description' => $quiz->description,
+            'subjectId' => $quiz->subject_id,
+            'classId' => $quiz->class_id,
             'subject' => $quiz->subject?->name,
             'subjectCode' => $quiz->subject?->code,
             'className' => $quiz->classroom?->name,
@@ -297,6 +371,7 @@ class QuizController extends Controller
             'maxAttempts' => $quiz->max_attempts,
             'attemptsUsed' => $attemptsUsed,
             'passMark' => $quiz->pass_mark ?? 50,
+            'totalScore' => $quiz->total_score,
             'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
             'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             'totalQuestions' => $quiz->total_questions,

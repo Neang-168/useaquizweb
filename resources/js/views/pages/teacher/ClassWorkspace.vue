@@ -15,14 +15,13 @@
       <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-xl font-bold text-slate-800 m-0">{{ classInfo.className }}</h1>
-            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200 flex items-center gap-1">
-              <i class="pi pi-book text-[10px]"></i> {{ classInfo.subject }}
-            </span>
+            <i class="pi pi-book text-indigo-500 text-sm"></i>
+            <h1 class="text-xl font-bold text-slate-800 m-0">{{ classInfo.subject }}</h1>
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">{{ classInfo.shift }}</span>
           </div>
           <p class="text-xs text-slate-500 mt-1">
-            {{ classInfo.totalStudents }} students
+            <span class="font-semibold text-slate-600">{{ classInfo.className }}</span>
+            • {{ classInfo.totalStudents }} students
             • Room {{ classInfo.room }}
           </p>
         </div>
@@ -49,12 +48,46 @@
 
       <!-- ============ TAB: OVERVIEW ============ -->
       <div v-if="activeTab === 'overview'" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <div class="p-4 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-800 m-0">Student Roster</h3>
+        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h3 class="text-sm font-bold text-slate-800 m-0">
+            Student Roster <span class="text-slate-400 font-medium">({{ filteredStudents.length }})</span>
+          </h3>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative w-full sm:w-56">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+              <InputText
+                v-model="rosterSearch"
+                size="small"
+                placeholder="Search by name or student ID..."
+                class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+              />
+            </div>
+            <Dropdown
+              v-model="rosterGenderFilter"
+              :options="rosterGenderOptions"
+              option-label="label"
+              option-value="value"
+              size="small"
+              class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs w-full sm:w-36"
+            />
+            <SplitButton
+              label="Export CSV"
+              icon="pi pi-file-excel"
+              size="small"
+              :model="rosterExportMenuItems"
+              class="!text-xs whitespace-nowrap export-split-button"
+              @click="exportRosterCsv"
+            />
+          </div>
         </div>
-        <DataTable :value="classInfo.students" dataKey="id" responsiveLayout="scroll" class="p-datatable-sm">
+
+        <DataTable :value="filteredStudents" dataKey="id"
+          paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]"
+          responsiveLayout="scroll" class="p-datatable-sm">
           <template #empty>
-            <div class="text-center py-10 text-xs text-slate-400">No students are enrolled in this class yet.</div>
+            <div class="text-center py-10 text-xs text-slate-400">
+              {{ classInfo.students.length === 0 ? 'No students are enrolled in this class yet.' : 'No students match your search or filter.' }}
+            </div>
           </template>
 
           <Column header="#">
@@ -268,8 +301,8 @@
           />
         </div>
 
-        <!-- Duration, Attempts, Pass mark -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Duration, Attempts, Total Score, Pass mark -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Duration (minutes) *</label>
             <InputNumber v-model="builderForm.duration" :min="1" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
@@ -279,8 +312,18 @@
             <InputNumber v-model="builderForm.maxAttempts" :min="1" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
           </div>
           <div>
+            <label class="block font-bold text-slate-700 mb-1">Total Score</label>
+            <InputNumber v-model="builderForm.totalScore" :min="1" :max="1000" size="small" placeholder="e.g. 100" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <p class="text-[10px] text-slate-400 mt-1">
+              Questions are auto-scaled to sum to this ({{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} in the bank).
+            </p>
+          </div>
+          <div>
             <label class="block font-bold text-slate-700 mb-1">Pass mark (%)</label>
             <InputNumber v-model="builderForm.passMark" :min="0" :max="100" size="small" placeholder="e.g. 50" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <p class="text-[10px] text-slate-400 mt-1">
+              = {{ passMarkPoints }} / {{ builderForm.totalScore || selectedPoints }} pts to pass
+            </p>
           </div>
         </div>
 
@@ -314,7 +357,7 @@
           <div class="flex items-center justify-between">
             <label class="block font-bold text-slate-700">
               Select Questions from the Question Bank
-              <span class="text-indigo-600">({{ builderForm.selectedQuestionIds.length }} selected, {{ selectedPoints }} pt{{ selectedPoints === 1 ? '' : 's' }} total)</span>
+              <span class="text-indigo-600">({{ builderForm.selectedQuestionIds.length }} selected, {{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} &rarr; scaled to Total Score above)</span>
             </label>
             <Button
               label="Add New Question"
@@ -325,6 +368,11 @@
               @click="openInlineQuestionEditor"
             />
           </div>
+
+          <p v-if="pointsOverLimit" class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+            <i class="pi pi-exclamation-triangle text-[10px]"></i>
+            Selected questions total {{ selectedPoints }} raw pts, above your Total Score of {{ builderForm.totalScore }} &mdash; they'll be scaled down to fit. You can still add more if you want.
+          </p>
 
           <div class="flex items-center gap-2">
             <InputText
@@ -406,22 +454,31 @@
               <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
             </div>
 
+            <div v-if="q.imageUrl" class="pl-6">
+              <div class="inline-block rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+                <Image :src="q.imageUrl" :alt="q.imageAlt || ''" preview image-class="max-h-40 object-contain block" />
+              </div>
+            </div>
+
             <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
               <div
                 v-for="(opt, oIdx) in q.options"
                 :key="oIdx"
                 :class="opt.isCorrect ? 'bg-emerald-50/80 border-emerald-300 text-emerald-800 font-semibold' : 'bg-slate-50 border-slate-200 text-slate-600'"
-                class="p-2 rounded-lg border text-xs flex items-center justify-between"
+                class="p-2 rounded-lg border text-xs flex items-center gap-2"
               >
-                <span>{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
-                <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs"></i>
+                <Image v-if="opt.imageUrl" :src="opt.imageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
+                <span class="flex-1">{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
+                <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs shrink-0"></i>
               </div>
             </div>
 
             <div v-else-if="q.type === 'matching'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
               <div v-for="(pair, pIdx) in q.matchingPairs" :key="pIdx" class="p-2 rounded-lg border border-slate-200 bg-slate-50 text-xs flex items-center gap-2 text-slate-600">
+                <Image v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
                 <span class="font-semibold text-slate-700">{{ pair.leftText }}</span>
-                <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px]"></i>
+                <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px] shrink-0"></i>
+                <Image v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
                 <span>{{ pair.rightText }}</span>
               </div>
             </div>
@@ -462,10 +519,13 @@ import Textarea from 'primevue/textarea'
 import Dropdown from 'primevue/dropdown'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
+import Image from 'primevue/image'
+import SplitButton from 'primevue/splitbutton'
 import api, { extractError } from '../../../api'
 import ScoreTable from '../../../components/teacher/ScoreTable.vue'
 import FeedbackTable from '../../../components/teacher/FeedbackTable.vue'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
+import { downloadCsv, downloadXlsx } from '../../../utils/exportTable'
 
 const route = useRoute()
 const assignmentId = computed(() => Number(route.params.assignmentId))
@@ -527,6 +587,45 @@ async function loadWorkspace() {
 onMounted(loadWorkspace)
 watch(assignmentId, loadWorkspace)
 
+/* ===== Overview tab: Student Roster ===== */
+const rosterSearch = ref('')
+const rosterGenderFilter = ref('')
+const rosterGenderOptions = [
+  { label: 'All Genders', value: '' },
+  { label: 'Male', value: 'Male' },
+  { label: 'Female', value: 'Female' },
+]
+
+const filteredStudents = computed(() => {
+  if (!classInfo.value) return []
+  const q = rosterSearch.value.trim().toLowerCase()
+
+  return classInfo.value.students.filter(s => {
+    if (rosterGenderFilter.value && s.gender !== rosterGenderFilter.value) return false
+    if (!q) return true
+    return s.name?.toLowerCase().includes(q) || s.student_id?.toLowerCase().includes(q)
+  })
+})
+
+const rosterExportHeader = ['#', 'Student ID', 'Name', 'Gender', 'Email', 'Status']
+
+const rosterExportRows = () => filteredStudents.value.map((s, i) => [
+  i + 1, s.student_id, s.name, s.gender, s.email, 'Enrolled',
+])
+
+function exportRosterCsv() {
+  downloadCsv('student-roster.csv', rosterExportHeader, rosterExportRows())
+}
+
+function exportRosterXlsx() {
+  downloadXlsx('student-roster.xlsx', rosterExportHeader, rosterExportRows(), 'Roster')
+}
+
+const rosterExportMenuItems = [
+  { label: 'Export as CSV', icon: 'pi pi-file', command: exportRosterCsv },
+  { label: 'Export as Excel (.xlsx)', icon: 'pi pi-file-excel', command: exportRosterXlsx },
+]
+
 function formatType(type) {
   if (type === 'multiple_choice') return 'MC'
   if (type === 'true_false') return 'T/F'
@@ -575,6 +674,7 @@ function defaultBuilderForm() {
     shuffleQuestions: false,
     shuffleOptions: false,
     passMark: null,
+    totalScore: 100,
     startAt: '',
     endAt: '',
     selectedQuestionIds: [],
@@ -624,6 +724,21 @@ const selectedPoints = computed(() => {
     .reduce((sum, q) => sum + (q.points || 0), 0)
 })
 
+// Live points-equivalent of the % pass mark, so a teacher can reason about
+// it in terms of the quiz's actual Total Score rather than a bare percentage.
+const passMarkPoints = computed(() => {
+  const pct = builderForm.value.passMark ?? 0
+  const total = builderForm.value.totalScore || selectedPoints.value
+  return Math.round((pct / 100) * total)
+})
+
+// Selecting more raw points than the Total Score is still allowed (points
+// get scaled down to fit), but the teacher should know it's happening.
+const pointsOverLimit = computed(() => {
+  const total = builderForm.value.totalScore
+  return !!total && selectedPoints.value > total
+})
+
 async function openQuizModal(quiz = null) {
   pickerSearch.value = ''
   pickerTypeFilter.value = ''
@@ -641,6 +756,7 @@ async function openQuizModal(quiz = null) {
         shuffleQuestions: full.shuffleQuestions,
         shuffleOptions: full.shuffleOptions,
         passMark: full.passMark,
+        totalScore: full.totalScore ?? 100,
         startAt: full.startAt || '',
         endAt: full.endAt || '',
         selectedQuestionIds: full.questions.map(q => q.id),
@@ -677,6 +793,7 @@ async function saveQuiz() {
     shuffle_questions: builderForm.value.shuffleQuestions,
     shuffle_options: builderForm.value.shuffleOptions,
     pass_mark: builderForm.value.passMark === null || builderForm.value.passMark === undefined ? null : builderForm.value.passMark,
+    total_score: builderForm.value.totalScore === null || builderForm.value.totalScore === undefined ? null : builderForm.value.totalScore,
     start_at: builderForm.value.startAt || null,
     end_at: builderForm.value.endAt || null,
     question_ids: builderForm.value.selectedQuestionIds,
@@ -777,5 +894,18 @@ const selectedFeedbackQuiz = ref(null)
   color: #4f46e5;
   font-weight: 700;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.export-split-button :deep(.p-splitbutton-button),
+.export-split-button :deep(.p-splitbutton-dropdown) {
+  background: #059669;
+  border-color: #059669;
+  color: #fff;
+}
+
+.export-split-button :deep(.p-splitbutton-button:hover),
+.export-split-button :deep(.p-splitbutton-dropdown:hover) {
+  background: #047857;
+  border-color: #047857;
 }
 </style>

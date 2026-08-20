@@ -101,7 +101,7 @@
             </span>
           </div>
 
-          <router-link to="/student/myexam"
+          <router-link :to="{ name: 'student.courseWorkspace', params: { classId: course.classId, subjectId: course.id } }"
             class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-semibold text-xs rounded-xl transition-all no-underline flex items-center gap-2 shadow-md shadow-[#002060]/20">
             <span>View Quizzes</span>
             <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>

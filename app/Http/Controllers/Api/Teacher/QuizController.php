@@ -11,6 +11,7 @@ use App\Models\Quiz;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -31,7 +32,7 @@ class QuizController extends Controller
             ->where('teacher_profile_id', $teacher->id)
             ->with(['subject', 'classroom'])
             ->withCount('submissions')
-            ->withSum('questions as total_points', 'points')
+            ->with('questions')
             ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
             ->when($request->input('subject_id'), fn ($query, $id) => $query->where('subject_id', $id))
             ->when($request->input('class_id'), fn ($query, $id) => $query->where('class_id', $id))
@@ -52,7 +53,7 @@ class QuizController extends Controller
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
 
         return response()->json([
             'quiz' => array_merge($this->transform($quiz), [
@@ -81,18 +82,19 @@ class QuizController extends Controller
                 'shuffle_questions' => $validated['shuffle_questions'] ?? false,
                 'shuffle_options' => $validated['shuffle_options'] ?? false,
                 'pass_mark' => $validated['pass_mark'] ?? null,
+                'total_score' => $validated['total_score'] ?? null,
                 'start_at' => $validated['start_at'] ?? null,
                 'end_at' => $validated['end_at'] ?? null,
                 'total_questions' => 0,
                 'status' => 'Draft',
             ]);
 
-            $this->syncQuestions($quiz, $validated['question_ids'] ?? []);
+            $this->syncQuestions($quiz, $validated['question_ids'] ?? [], $validated['total_score'] ?? null);
 
             return $quiz;
         });
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
 
         return response()->json([
             'message' => 'Quiz created successfully.',
@@ -128,14 +130,15 @@ class QuizController extends Controller
                 'shuffle_questions' => $validated['shuffle_questions'] ?? false,
                 'shuffle_options' => $validated['shuffle_options'] ?? false,
                 'pass_mark' => $validated['pass_mark'] ?? null,
+                'total_score' => $validated['total_score'] ?? null,
                 'start_at' => $validated['start_at'] ?? null,
                 'end_at' => $validated['end_at'] ?? null,
             ]);
 
-            $this->syncQuestions($quiz, $validated['question_ids'] ?? []);
+            $this->syncQuestions($quiz, $validated['question_ids'] ?? [], $validated['total_score'] ?? null);
         });
 
-        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
 
         return response()->json([
             'message' => 'Quiz updated successfully.',
@@ -159,7 +162,7 @@ class QuizController extends Controller
         }
 
         $quiz->update(['status' => 'Published']);
-        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
 
         return response()->json([
             'message' => 'Quiz published.',
@@ -186,7 +189,7 @@ class QuizController extends Controller
         }
 
         $quiz->update(['status' => 'Closed']);
-        $quiz->load('subject', 'classroom')->loadCount('submissions')->loadSum('questions as total_points', 'points');
+        $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
 
         return response()->json([
             'message' => 'Quiz closed.',
@@ -237,6 +240,7 @@ class QuizController extends Controller
             'shuffle_questions' => ['boolean'],
             'shuffle_options' => ['boolean'],
             'pass_mark' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'total_score' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after:start_at'],
             'question_ids' => ['array'],
@@ -265,20 +269,74 @@ class QuizController extends Controller
                     'question_ids' => ['One or more selected questions are invalid for this subject.'],
                 ]);
             }
+
+            $uniqueCount = count(array_unique($validated['question_ids']));
+
+            if (! empty($validated['total_score']) && $validated['total_score'] < $uniqueCount) {
+                throw ValidationException::withMessages([
+                    'total_score' => ["Total Score must be at least {$uniqueCount} (1 point per selected question) to scale down to."],
+                ]);
+            }
         }
 
         return $validated;
     }
 
-    private function syncQuestions(Quiz $quiz, array $questionIds): void
+    /**
+     * Attach the quiz's questions and, when a Total Score target is set,
+     * scale each question's points to sum to it (stored per-quiz on the
+     * pivot, leaving the question bank's own points untouched). Uses the
+     * largest-remainder method so the scaled points always sum to exactly
+     * the target despite integer rounding.
+     */
+    private function syncQuestions(Quiz $quiz, array $questionIds, ?int $totalScore): void
     {
         $questionIds = array_values(array_unique($questionIds));
 
-        $quiz->questions()->sync(
-            collect($questionIds)->mapWithKeys(fn ($id, $position) => [$id => ['position' => $position]])
-        );
+        $pivotData = collect($questionIds)->mapWithKeys(fn ($id, $position) => [$id => ['position' => $position]])->all();
+
+        if ($totalScore && count($questionIds) > 0) {
+            $basePoints = Question::whereIn('id', $questionIds)->pluck('points', 'id');
+            $scaled = $this->scalePointsToTotal($basePoints, $totalScore);
+
+            foreach ($scaled as $id => $points) {
+                $pivotData[$id]['points'] = $points;
+            }
+        }
+
+        $quiz->questions()->sync($pivotData);
 
         $quiz->update(['total_questions' => count($questionIds)]);
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, int>  $basePoints  question_id => bank points
+     * @return array<int, int> question_id => scaled points, summing to exactly $totalScore
+     */
+    private function scalePointsToTotal($basePoints, int $totalScore): array
+    {
+        $weightSum = $basePoints->sum();
+
+        if ($weightSum <= 0) {
+            $weightSum = $basePoints->count();
+            $basePoints = $basePoints->map(fn () => 1);
+        }
+
+        $raw = $basePoints->map(fn ($points) => $points / $weightSum * $totalScore);
+        $floored = $raw->map(fn ($value) => (int) floor($value));
+        $remainder = $totalScore - $floored->sum();
+
+        $fractionalOrder = $raw->map(fn ($value, $id) => $value - floor($value))
+            ->sortDesc()
+            ->keys();
+
+        $result = $floored->all();
+
+        foreach ($fractionalOrder->take($remainder) as $id) {
+            $result[$id]++;
+        }
+
+        return $result;
     }
 
     private function transformQuestions(Quiz $quiz): array
@@ -290,17 +348,23 @@ class QuizController extends Controller
                 'id' => $question->id,
                 'type' => $question->type,
                 'difficulty' => $question->difficulty,
-                'points' => $question->points,
+                'points' => $quiz->pointsFor($question),
+                'bankPoints' => $question->points,
                 'title' => $question->title,
+                'imageUrl' => $question->image_path ? Storage::disk('public')->url($question->image_path) : null,
+                'imageAlt' => $question->image_alt,
                 'options' => $question->options->sortBy('position')->values()->map(fn (QuestionOption $option) => [
                     'id' => $option->id,
                     'text' => $option->text,
                     'isCorrect' => $option->is_correct,
+                    'imageUrl' => $option->image_path ? Storage::disk('public')->url($option->image_path) : null,
                 ]),
                 'matchingPairs' => $question->matchingPairs->sortBy('position')->values()->map(fn (QuestionMatchingPair $pair) => [
                     'id' => $pair->id,
                     'leftText' => $pair->left_text,
+                    'leftImageUrl' => $pair->left_image_path ? Storage::disk('public')->url($pair->left_image_path) : null,
                     'rightText' => $pair->right_text,
+                    'rightImageUrl' => $pair->right_image_path ? Storage::disk('public')->url($pair->right_image_path) : null,
                 ]),
             ])
             ->values()
@@ -319,6 +383,7 @@ class QuizController extends Controller
             'description' => $quiz->description,
             'subject_id' => $quiz->subject_id,
             'subjectCode' => $quiz->subject?->code,
+            'subjectName' => $quiz->subject?->name,
             'class_id' => $quiz->class_id,
             'className' => $quiz->classroom?->name,
             'duration' => $quiz->duration_minutes,
@@ -326,10 +391,11 @@ class QuizController extends Controller
             'shuffleQuestions' => $quiz->shuffle_questions,
             'shuffleOptions' => $quiz->shuffle_options,
             'passMark' => $quiz->pass_mark,
+            'totalScore' => $quiz->total_score,
             'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
             'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             'totalQuestions' => $quiz->total_questions,
-            'totalPoints' => (int) ($quiz->total_points ?? 0),
+            'totalPoints' => $quiz->relationLoaded('questions') ? $quiz->computeTotalPoints() : (int) $quiz->questions()->sum('points'),
             'submittedCount' => $quiz->submissions_count ?? 0,
             'totalStudents' => $totalStudents,
             'status' => $quiz->status,

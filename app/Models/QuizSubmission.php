@@ -38,6 +38,9 @@ class QuizSubmission extends Model
         'attempt_number',
         'mcq_score',
         'essay_score',
+        'total_points',
+        'pass_mark',
+        'started_at',
         'submitted_at',
         'status',
     ];
@@ -46,6 +49,9 @@ class QuizSubmission extends Model
         'attempt_number' => 'integer',
         'mcq_score' => 'integer',
         'essay_score' => 'integer',
+        'total_points' => 'integer',
+        'pass_mark' => 'integer',
+        'started_at' => 'datetime',
         'submitted_at' => 'datetime',
     ];
 

@@ -51,44 +51,49 @@ class QuizGradingService
                 continue;
             }
 
-            $awarded = $this->scoreAnswer($question, $answer);
+            $points = $quiz->pointsFor($question);
+            $awarded = $this->scoreAnswer($question, $answer, $points);
             $total += $awarded;
 
             $answer->forceFill([
                 'awarded_score' => $awarded,
-                'is_correct' => $awarded >= $question->points,
+                'is_correct' => $awarded >= $points,
             ])->saveQuietly();
         }
 
-        $submission->forceFill(['mcq_score' => $total])->saveQuietly();
+        $submission->forceFill([
+            'mcq_score' => $total,
+            'total_points' => $quiz->computeTotalPoints(),
+            'pass_mark' => $quiz->pass_mark ?? 50,
+        ])->saveQuietly();
     }
 
-    private function scoreAnswer(Question $question, SubmissionAnswer $answer): int
+    private function scoreAnswer(Question $question, SubmissionAnswer $answer, int $points): int
     {
         return match ($question->type) {
-            'true_false' => $this->scoreTrueFalse($question, $answer),
-            'multiple_choice' => $this->scoreMultipleChoice($question, $answer),
-            'matching' => $this->scoreMatching($question, $answer),
+            'true_false' => $this->scoreTrueFalse($question, $answer, $points),
+            'multiple_choice' => $this->scoreMultipleChoice($question, $answer, $points),
+            'matching' => $this->scoreMatching($question, $answer, $points),
             default => 0,
         };
     }
 
-    private function scoreTrueFalse(Question $question, SubmissionAnswer $answer): int
+    private function scoreTrueFalse(Question $question, SubmissionAnswer $answer, int $points): int
     {
         $selected = $question->options->firstWhere('id', $answer->selected_option_id);
 
-        return $selected?->is_correct ? $question->points : 0;
+        return $selected?->is_correct ? $points : 0;
     }
 
-    private function scoreMultipleChoice(Question $question, SubmissionAnswer $answer): int
+    private function scoreMultipleChoice(Question $question, SubmissionAnswer $answer, int $points): int
     {
         $correctIds = $question->options->where('is_correct', true)->pluck('id')->sort()->values()->all();
         $selectedIds = $answer->selectedOptions->pluck('question_option_id')->sort()->values()->all();
 
-        return $correctIds === $selectedIds ? $question->points : 0;
+        return $correctIds === $selectedIds ? $points : 0;
     }
 
-    private function scoreMatching(Question $question, SubmissionAnswer $answer): int
+    private function scoreMatching(Question $question, SubmissionAnswer $answer, int $points): int
     {
         $pairCount = $question->matchingPairs->count();
 
@@ -100,6 +105,6 @@ class QuizGradingService
             ->filter(fn ($match) => $match->left_pair_id !== null && $match->left_pair_id === $match->selected_right_pair_id)
             ->count();
 
-        return (int) round($question->points * $correctCount / $pairCount);
+        return (int) round($points * $correctCount / $pairCount);
     }
 }

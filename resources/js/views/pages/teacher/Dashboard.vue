@@ -134,7 +134,7 @@
       <div class="space-y-6">
 
         <!-- Today's Schedule -->
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <!-- <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-slate-800">Today's Schedule</h3>
             <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
@@ -157,7 +157,7 @@
               Timetable scheduling isn't available in the system yet.
             </p>
           </div>
-        </div>
+        </div> -->
 
         <!-- Upcoming Quizzes -->
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

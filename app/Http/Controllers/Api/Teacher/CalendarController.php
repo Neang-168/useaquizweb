@@ -32,8 +32,7 @@ class CalendarController extends Controller
             ->where(function ($query) {
                 $query->whereNotNull('start_at')->orWhereNotNull('end_at');
             })
-            ->with(['subject', 'classroom'])
-            ->withSum('questions as total_points', 'points')
+            ->with(['subject', 'classroom', 'questions'])
             ->get()
             ->filter(function (Quiz $quiz) use ($monthStart, $monthEnd) {
                 $displayStart = $quiz->start_at ?? $quiz->end_at;
@@ -41,6 +40,8 @@ class CalendarController extends Controller
 
                 return $displayStart->lte($monthEnd) && $displayEnd->gte($monthStart);
             });
+
+        $quizzes->each(fn (Quiz $quiz) => $quiz->total_points = $quiz->computeTotalPoints());
 
         return response()->json([
             'data' => $quizzes->map(fn (Quiz $quiz) => $this->transform($quiz, $teacher->id))->values(),

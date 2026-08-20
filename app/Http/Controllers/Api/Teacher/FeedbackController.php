@@ -26,21 +26,27 @@ class FeedbackController extends Controller
             ->orderBy('submitted_at')
             ->get();
 
+        $quiz->load('questions');
         $passMark = $quiz->pass_mark ?? 50;
-        $totalPoints = (int) $quiz->questions()->sum('points');
+        $totalPoints = $quiz->computeTotalPoints();
 
         $data = $submissions->map(function (QuizSubmission $submission) use ($passMark, $totalPoints) {
+            // Prefer the submission's own score snapshot (taken at grading
+            // time) so editing the quiz's questions/points later doesn't
+            // retroactively change an already-graded attempt's pass/fail.
+            $submissionTotalPoints = $submission->total_points ?? $totalPoints;
+            $submissionPassMark = $submission->pass_mark ?? $passMark;
             $score = $submission->mcq_score + ($submission->essay_score ?? 0);
-            $percentage = $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0;
+            $percentage = $submissionTotalPoints > 0 ? ($score / $submissionTotalPoints) * 100 : 0;
 
             return [
                 'submissionId' => $submission->id,
                 'studentId' => $submission->studentProfile?->student_code,
                 'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
                 'score' => $score,
-                'totalPoints' => $totalPoints,
-                'passMark' => $passMark,
-                'passed' => $percentage >= $passMark,
+                'totalPoints' => $submissionTotalPoints,
+                'passMark' => $submissionPassMark,
+                'passed' => $percentage >= $submissionPassMark,
                 'hasFeedbackSent' => $submission->feedback->isNotEmpty(),
             ];
         });

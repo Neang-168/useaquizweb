@@ -17,8 +17,9 @@ class ScoreController extends Controller
         $this->authorizeOwner($request, $quiz);
 
         $hasEssay = $quiz->questions()->where('type', 'essay')->exists();
+        $quiz->load('questions');
         $passMark = $quiz->pass_mark ?? 50;
-        $totalPoints = (int) $quiz->questions()->sum('points');
+        $totalPoints = $quiz->computeTotalPoints();
 
         $submissions = $quiz->submissions()
             ->with('studentProfile.user')
@@ -26,8 +27,13 @@ class ScoreController extends Controller
             ->get();
 
         $data = $submissions->map(function (QuizSubmission $submission) use ($hasEssay, $passMark, $totalPoints) {
+            // Prefer each submission's own score snapshot (taken at grading
+            // time) so editing the quiz's questions/points later doesn't
+            // retroactively change an already-graded attempt's pass/fail.
+            $submissionTotalPoints = $submission->total_points ?? $totalPoints;
+            $submissionPassMark = $submission->pass_mark ?? $passMark;
             $totalScore = $submission->mcq_score + ($submission->essay_score ?? 0);
-            $percentage = $totalPoints > 0 ? ($totalScore / $totalPoints) * 100 : 0;
+            $percentage = $submissionTotalPoints > 0 ? ($totalScore / $submissionTotalPoints) * 100 : 0;
 
             return [
                 'id' => $submission->id,
@@ -37,8 +43,8 @@ class ScoreController extends Controller
                 'mcqScore' => $submission->mcq_score,
                 'essayScore' => $submission->essay_score,
                 'essayNeedsGrade' => $hasEssay && is_null($submission->essay_score),
-                'passMark' => $passMark,
-                'passed' => $percentage >= $passMark,
+                'passMark' => $submissionPassMark,
+                'passed' => $percentage >= $submissionPassMark,
             ];
         });
 

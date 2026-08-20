@@ -44,9 +44,9 @@ class DashboardController extends Controller
             ->whereIn('class_id', $classIds)
             ->where(fn ($q) => $q->whereNull('start_at')->orWhere('start_at', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_at')->orWhere('end_at', '>=', $now))
-            ->with('subject')
-            ->withSum('questions as total_points', 'points')
+            ->with('subject', 'classroom', 'questions')
             ->get();
+        $publishedQuizzes->each(fn (Quiz $quiz) => $quiz->total_points = $quiz->computeTotalPoints());
 
         $submissions = QuizSubmission::where('student_profile_id', $student->id)->get();
         $attemptsByQuiz = $submissions->groupBy('quiz_id');
@@ -56,7 +56,7 @@ class DashboardController extends Controller
         );
 
         $percentageOf = function (QuizSubmission $s) use ($publishedQuizzes): float {
-            $totalPoints = (int) ($publishedQuizzes->firstWhere('id', $s->quiz_id)?->total_points ?? 0);
+            $totalPoints = $s->total_points ?? (int) ($publishedQuizzes->firstWhere('id', $s->quiz_id)?->total_points ?? 0);
             $score = $s->mcq_score + ($s->essay_score ?? 0);
 
             return $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0.0;
@@ -75,8 +75,12 @@ class DashboardController extends Controller
                 'id' => $quiz->id,
                 'title' => $quiz->title,
                 'subject' => $quiz->subject?->name,
+                'subjectId' => $quiz->subject_id,
+                'classId' => $quiz->class_id,
+                'className' => $quiz->classroom?->name,
                 'duration' => $quiz->duration_minutes,
                 'totalQuestions' => $quiz->total_questions,
+                'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
                 'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             ]);
 
@@ -94,7 +98,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'todoCount' => $todoQuizzes->count(),
-            'completedCount' => $submissions->count(),
+            'completedCount' => $gradedSubmissions->count(),
             'averageScore' => $averageScore,
             'enrolledSubjectsCount' => $enrolledSubjectsCount,
             'dueSoon' => $dueSoon,

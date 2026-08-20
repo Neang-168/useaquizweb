@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { quizInProgress } from '../utils/quizLock'
 
 
 import AdminLayout from '../views/AdminContentView.vue'
@@ -22,6 +23,7 @@ import TeachSubjects from '../views/pages/teacher/Subjects.vue'
 import ScoreReport from '../views/pages/teacher/ScoreReport.vue'
 import Feedback from '../views/pages/teacher/Feedback.vue'
 import QuestionBank from '../views/pages/teacher/QuestionBank.vue'
+import QuestionImportExport from '../views/pages/teacher/QuestionImportExport.vue'
 
 import StudentLayout from '../views/StudentLayout.vue'
 import Mycourse from '../views/pages/student/Mycourse.vue'
@@ -139,6 +141,11 @@ const routes = [
         component: QuestionBank,
       },
       {
+        path: 'questionbank/import-export',
+        name: 'teacher.questionbank.importExport',
+        component: QuestionImportExport,
+      },
+      {
         path: 'scoreReport',
         name: 'teacher.scoreReport',
         component: ScoreReport,
@@ -179,6 +186,11 @@ const routes = [
         component: Mycourse,
       },
       {
+        path: 'courses/:classId/:subjectId',
+        name: 'student.courseWorkspace',
+        component: () => import('../views/pages/student/CourseWorkspace.vue'),
+      },
+      {
         path: 'myexam',
         name: 'student.myexam',
         component: MyExam,
@@ -215,6 +227,17 @@ const router = createRouter({
 
 // ================= Navigation Guard (ការពារតាម Role) =================
 router.beforeEach((to, from) => {
+  // While a timed quiz attempt is open, block leaving the quiz page for
+  // anything else (sidebar links, back button, address bar) unless the
+  // student explicitly confirms — the server-side timer keeps running
+  // regardless, so this is about preventing accidental abandonment, not
+  // protecting the clock itself.
+  if (quizInProgress.value && from.name === 'student.takeQuiz' && to.name !== 'student.takeQuiz') {
+    const leave = window.confirm('Your quiz is still in progress. Leaving now will not stop the timer or save your answers. Leave anyway?')
+    if (!leave) return false
+    quizInProgress.value = false
+  }
+
   const token = localStorage.getItem('auth_token')
   const userRole = localStorage.getItem('auth_role') // "Admin", "Teacher", ឬ "Student"
 

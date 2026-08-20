@@ -12,7 +12,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
@@ -69,7 +68,7 @@ class StudentController extends Controller
                 'role_id' => $role?->id,
                 'username' => $validated['student_id'],
                 'email' => $validated['email'] ?? "{$validated['student_id']}@usea.edu.kh",
-                'password' => Hash::make(Str::random(16)),
+                'password' => Hash::make($validated['password']),
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
@@ -153,6 +152,7 @@ class StudentController extends Controller
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],
                 'status' => $validated['status'] !== 'Inactive',
+                ...($validated['password'] ? ['password' => Hash::make($validated['password'])] : []),
             ]);
 
             $student->update([
@@ -293,6 +293,7 @@ class StudentController extends Controller
             ],
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
+            'password' => [$student ? 'nullable' : 'required', 'string', 'min:8'],
             'class_id' => ['required', 'exists:classes,id'],
             'faculty_id' => ['nullable', 'exists:faculties,id'],
             'department_id' => ['nullable', 'exists:departments,id'],
@@ -319,6 +320,7 @@ class StudentController extends Controller
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? null,
+            'password' => $validated['password'] ?? null,
             'class_id' => $validated['class_id'],
             'faculty_id' => $validated['faculty_id'] ?? null,
             'department_id' => $validated['department_id'] ?? null,

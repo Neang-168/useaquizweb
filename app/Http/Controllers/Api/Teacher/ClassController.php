@@ -49,6 +49,7 @@ class ClassController extends Controller
                 'major' => $class?->major?->name,
                 'subject' => $assignment->subject?->name,
                 'subject_id' => $assignment->subject_id,
+                'subject_code' => $assignment->subject?->code,
                 'shift' => $class?->shift?->name,
                 'academicYear' => $class?->academicYear?->name,
                 'room' => $class?->room,

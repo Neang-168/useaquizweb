@@ -41,8 +41,9 @@ class DashboardController extends Controller
             ->count();
 
         $quizzes = Quiz::where('teacher_profile_id', $teacher->id)
-            ->withSum('questions as total_points', 'points')
+            ->with('questions')
             ->get();
+        $quizzes->each(fn (Quiz $quiz) => $quiz->total_points = $quiz->computeTotalPoints());
         $activeQuizzesCount = $quizzes->where('status', 'Published')->count();
 
         $quizIds = $quizzes->pluck('id');
@@ -60,7 +61,7 @@ class DashboardController extends Controller
         // isn't meaningful.
         $percentageOf = function (QuizSubmission $s) use ($quizzes): float {
             $quiz = $quizzes->firstWhere('id', $s->quiz_id);
-            $totalPoints = (int) ($quiz?->total_points ?? 0);
+            $totalPoints = $s->total_points ?? (int) ($quiz?->total_points ?? 0);
             $score = $s->mcq_score + ($s->essay_score ?? 0);
 
             return $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0.0;

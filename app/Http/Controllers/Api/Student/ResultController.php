@@ -21,9 +21,18 @@ class ResultController extends Controller
         }
 
         $submissions = QuizSubmission::where('student_profile_id', $student->id)
+            ->whereIn('status', ['submitted', 'graded'])
+            ->when($request->input('class_id'), fn ($q, $id) => $q->whereHas('quiz', fn ($qq) => $qq->where('class_id', $id)))
+            ->when($request->input('subject_id'), fn ($q, $id) => $q->whereHas('quiz', fn ($qq) => $qq->where('subject_id', $id)))
             ->with(['quiz.subject', 'quiz.classroom', 'quiz.questions'])
             ->orderByDesc('submitted_at')
             ->get();
+
+        $submissions->each(function (QuizSubmission $submission) {
+            if ($submission->quiz) {
+                $submission->quiz->total_points = $submission->quiz->computeTotalPoints();
+            }
+        });
 
         return response()->json([
             'data' => $submissions->map(fn (QuizSubmission $submission) => $this->transform($submission))->values(),
@@ -33,15 +42,17 @@ class ResultController extends Controller
     private function transform(QuizSubmission $submission): array
     {
         $quiz = $submission->quiz;
-        $totalPoints = (int) ($quiz?->questions->sum('points') ?? 0);
+        $totalPoints = $submission->total_points ?? (int) ($quiz?->total_points ?? 0);
         $score = $submission->mcq_score + ($submission->essay_score ?? 0);
-        $passMark = $quiz?->pass_mark ?? 50;
+        $passMark = $submission->pass_mark ?? ($quiz?->pass_mark ?? 50);
         $percentage = $totalPoints > 0 ? ($score / $totalPoints) * 100 : 0;
 
         return [
             'id' => $submission->id,
             'quizId' => $quiz?->id,
             'quizTitle' => $quiz?->title,
+            'subjectId' => $quiz?->subject_id,
+            'classId' => $quiz?->class_id,
             'subject' => $quiz?->subject?->name,
             'className' => $quiz?->classroom?->name,
             'attemptNumber' => $submission->attempt_number,

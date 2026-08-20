@@ -19,8 +19,6 @@ html, body {
   overflow: hidden;
 }
 
-/* resources/css/app.css */
-
 /* ==========================================
    GLOBAL REUSABLE TABLE STYLE (Floating Card Row)
    ========================================== */
@@ -63,6 +61,7 @@ html, body {
   border-top-right-radius: 0.6rem;
   border-bottom-right-radius: 0.6rem;
 }
+
 
 /* Floating Rows (White Card Effect) */
 .custom-app-table .p-datatable-tbody > tr > td {

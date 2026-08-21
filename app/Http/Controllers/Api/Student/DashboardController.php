@@ -25,9 +25,12 @@ class DashboardController extends Controller
                 'averageScore' => 0,
                 'enrolledSubjectsCount' => 0,
                 'dueSoon' => [],
+                'recentQuizzes' => [],
                 'announcements' => [],
             ]);
         }
+
+        Quiz::autoCloseExpired();
 
         $classIds = StudentEnrollment::where('student_profile_id', $student->id)
             ->where('status', 'Active')
@@ -47,6 +50,17 @@ class DashboardController extends Controller
             ->with('subject', 'classroom', 'questions')
             ->get();
         $publishedQuizzes->each(fn (Quiz $quiz) => $quiz->total_points = $quiz->computeTotalPoints());
+
+        // Every Published quiz for this student (open or not yet started), so a
+        // teacher's publish action shows up on the dashboard right away even if
+        // the quiz's window hasn't opened yet or it isn't due "soon".
+        $recentlyPublishedQuizzes = Quiz::where('status', 'Published')
+            ->whereIn('class_id', $classIds)
+            ->with('subject', 'classroom', 'questions')
+            ->orderByDesc('created_at')
+            ->take(3)
+            ->get();
+        $recentlyPublishedQuizzes->each(fn (Quiz $quiz) => $quiz->total_points = $quiz->computeTotalPoints());
 
         $submissions = QuizSubmission::where('student_profile_id', $student->id)->get();
         $attemptsByQuiz = $submissions->groupBy('quiz_id');
@@ -84,6 +98,30 @@ class DashboardController extends Controller
                 'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
             ]);
 
+        $recentQuizzes = $recentlyPublishedQuizzes
+            ->map(function (Quiz $quiz) use ($attemptsByQuiz, $now) {
+                $attemptsUsed = $attemptsByQuiz->get($quiz->id, collect())->count();
+
+                return [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'subject' => $quiz->subject?->name,
+                    'subjectId' => $quiz->subject_id,
+                    'classId' => $quiz->class_id,
+                    'className' => $quiz->classroom?->name,
+                    'duration' => $quiz->duration_minutes,
+                    'totalQuestions' => $quiz->total_questions,
+                    'startAt' => $quiz->start_at?->format('Y-m-d\TH:i'),
+                    'endAt' => $quiz->end_at?->format('Y-m-d\TH:i'),
+                    'isUpcoming' => (bool) ($quiz->start_at && $quiz->start_at->gt($now)),
+                    'isClosed' => (bool) ($quiz->end_at && $quiz->end_at->lt($now)),
+                    'attemptsUsed' => $attemptsUsed,
+                    'maxAttempts' => $quiz->max_attempts,
+                    'attemptsExhausted' => $attemptsUsed >= $quiz->max_attempts,
+                    'publishedAt' => $quiz->created_at?->format('Y-m-d\TH:i:s'),
+                ];
+            });
+
         $announcements = Feedback::where('student_profile_id', $student->id)
             ->with('teacherProfile.user')
             ->orderByDesc('sent_at')
@@ -102,6 +140,7 @@ class DashboardController extends Controller
             'averageScore' => $averageScore,
             'enrolledSubjectsCount' => $enrolledSubjectsCount,
             'dueSoon' => $dueSoon,
+            'recentQuizzes' => $recentQuizzes,
             'announcements' => $announcements,
         ]);
     }

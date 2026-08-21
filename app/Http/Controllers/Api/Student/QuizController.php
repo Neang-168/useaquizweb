@@ -33,6 +33,8 @@ class QuizController extends Controller
             return response()->json(['data' => []]);
         }
 
+        Quiz::autoCloseExpired();
+
         $classIds = $this->enrolledClassIds($student);
 
         // Every Published quiz in the student's classes is listed here
@@ -378,7 +380,9 @@ class QuizController extends Controller
             'totalPoints' => $totalPoints,
             'status' => $latest ? $latest->status : 'not_started',
             'isUpcoming' => ! $hasStarted,
-            'isOpen' => $hasStarted && ! $hasEnded && $attemptsUsed < $quiz->max_attempts,
+            'isOpen' => $hasStarted,
+            'isClosed' => $hasEnded,
+            'attemptsExhausted' => $attemptsUsed >= $quiz->max_attempts,
             'bestScore' => $best ? $best->mcq_score + ($best->essay_score ?? 0) : null,
             'bestPercentage' => $best && $totalPoints > 0
                 ? round((($best->mcq_score + ($best->essay_score ?? 0)) / $totalPoints) * 100, 1)

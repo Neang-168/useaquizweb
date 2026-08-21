@@ -14,17 +14,43 @@
 
     <template v-else>
       <!-- Header -->
-      <div class="bg-white border border-[#D8E7EC] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <i class="pi pi-book text-[#002060] text-sm"></i>
-            <h1 class="text-xl font-bold text-[#002060] m-0">{{ course?.title || 'Course' }}</h1>
-            <span v-if="course?.code" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#D8E7EC]/50 text-[#002060]">{{ course.code }}</span>
+      <div class="bg-white border border-[#D8E7EC] rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <i class="pi pi-book text-[#002060] text-sm"></i>
+              <h1 class="text-xl font-bold text-[#002060] m-0">{{ course?.title || 'Course' }}</h1>
+              <span v-if="course?.code" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#D8E7EC]/50 text-[#002060]">{{ course.code }}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">
+              <span class="font-semibold text-slate-600">{{ course?.className }}</span>
+              <span v-if="course?.teacher"> • Teacher: {{ course.teacher }}</span>
+            </p>
           </div>
-          <p class="text-xs text-slate-500 mt-1">
-            <span class="font-semibold text-slate-600">{{ course?.className }}</span>
-            <span v-if="course?.teacher"> • Teacher: {{ course.teacher }}</span>
-          </p>
+        </div>
+
+        <!-- Class & subject detail -->
+        <div v-if="course" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-[#D8E7EC]/60">
+          <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+            <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Shift</p>
+            <p class="text-xs font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
+              <i class="pi pi-clock text-xs text-[#63C7DF]"></i> {{ course.shift || '—' }}
+            </p>
+          </div>
+          <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+            <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Room</p>
+            <p class="text-xs font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
+              <i class="pi pi-building text-xs text-[#63C7DF]"></i> {{ course.room || '—' }}
+            </p>
+          </div>
+          <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+            <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Major</p>
+            <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ course.major || '—' }}</p>
+          </div>
+          <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+            <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Academic Year</p>
+            <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ course.academicYear || '—' }}</p>
+          </div>
         </div>
       </div>
 
@@ -58,7 +84,7 @@
                   <span v-if="exam.status === 'in_progress'" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">Continue</span>
                   <span v-else class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#002060] text-white">Open</span>
                   <span v-if="exam.endAt" class="text-xs font-bold text-[#D71818] flex items-center gap-1 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
-                    <i class="pi pi-clock text-xs"></i> Due: {{ exam.endAt }}
+                    <i class="pi pi-clock text-xs"></i> Due: {{ formatDateTime(exam.endAt) }}
                   </span>
                 </div>
                 <h3 class="text-base font-bold text-[#002060] m-0 mt-2">{{ exam.title }}</h3>
@@ -70,7 +96,15 @@
               </div>
               <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <span class="text-xs font-semibold text-slate-500">Attempts: <b class="text-[#002060]">{{ exam.attemptsUsed }}</b> / {{ exam.maxAttempts }}</span>
-                <router-link :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
+                <button v-if="exam.isClosed && exam.status !== 'in_progress'" disabled type="button" title="This quiz's availability window has closed"
+                  class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
+                  <i class="pi pi-calendar-times text-xs"></i> Closed
+                </button>
+                <button v-else-if="exam.attemptsExhausted && exam.status !== 'in_progress'" disabled type="button" title="You have used all of your attempts for this quiz"
+                  class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
+                  <i class="pi pi-lock text-xs"></i> No Attempts Left
+                </button>
+                <router-link v-else :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
                   <span>{{ exam.status === 'in_progress' ? 'Continue' : 'Start Exam' }}</span>
                   <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>
                 </router-link>
@@ -85,7 +119,7 @@
             <div v-for="exam in upcomingQuizzes" :key="exam.id" class="bg-white/80 rounded-2xl border border-[#D8E7EC] p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div>
                 <span class="text-xs font-semibold text-slate-600 flex items-center gap-1 bg-[#F8F8F8] px-2 py-0.5 rounded-md border border-slate-200 w-fit">
-                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ exam.startAt }}
+                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ formatDateTime(exam.startAt) }}
                 </span>
                 <h3 class="text-base font-bold text-slate-700 m-0 mt-2">{{ exam.title }}</h3>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
@@ -128,7 +162,7 @@
                 <p class="font-bold text-[#002060] m-0">{{ r.quizTitle }}</p>
                 <p class="text-[11px] text-slate-400 m-0 mt-0.5">Attempt {{ r.attemptNumber }}</p>
               </td>
-              <td class="p-4 text-slate-500">{{ r.submittedAt }}</td>
+              <td class="p-4 text-slate-500">{{ formatDateTime(r.submittedAt) }}</td>
               <td class="p-4 font-bold text-sm text-[#002060]">{{ r.score }} / {{ r.totalPoints }} ({{ r.percentage }}%)</td>
               <td class="p-4">
                 <span :class="['px-3 py-1 rounded-full text-[10px] font-bold border',
@@ -149,6 +183,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api, { extractError } from '../../../api'
+import { formatDateTime } from '../../../utils/formatDateTime'
 
 const route = useRoute()
 const classId = computed(() => Number(route.params.classId))

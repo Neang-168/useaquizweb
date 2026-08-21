@@ -29,7 +29,7 @@ class CourseController extends Controller
             ->unique();
 
         $assignments = TeacherSubject::whereIn('class_id', $classIds)
-            ->with(['subject', 'classroom', 'teacherProfile.user'])
+            ->with(['subject', 'classroom.major', 'classroom.shift', 'classroom.academicYear', 'teacherProfile.user'])
             ->get()
             ->unique(fn (TeacherSubject $a) => $a->subject_id.'-'.$a->class_id);
 
@@ -51,6 +51,10 @@ class CourseController extends Controller
                 'title' => $assignment->subject?->name,
                 'className' => $assignment->classroom?->name,
                 'teacher' => $assignment->teacherProfile?->user?->full_name,
+                'shift' => $assignment->classroom?->shift?->name,
+                'academicYear' => $assignment->classroom?->academicYear?->name,
+                'room' => $assignment->classroom?->room,
+                'major' => $assignment->classroom?->major?->name,
                 'totalQuizzes' => $subjectQuizzes->count(),
                 'completedQuizzes' => $subjectQuizzes->pluck('id')->intersect($submittedQuizIds)->count(),
             ];

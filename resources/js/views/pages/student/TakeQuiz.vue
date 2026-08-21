@@ -162,7 +162,7 @@
         <button
           v-else
           type="button"
-          @click="submitQuiz"
+          @click="openSubmitConfirm"
           :disabled="submitting"
           class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all border-0 cursor-pointer"
         >
@@ -171,6 +171,44 @@
       </div>
     </template>
 
+    <!-- ======= SUBMIT CONFIRMATION ======= -->
+    <Dialog :visible="showConfirm" @update:visible="(v) => (showConfirm = v)" modal dismissable-mask class="w-full max-w-md">
+      <template #header>
+        <h3 class="text-sm font-bold text-slate-800 m-0 flex items-center gap-2">
+          <i :class="['pi', unansweredQuestions.length ? 'pi-exclamation-triangle text-amber-500' : 'pi-check-circle text-emerald-500']"></i>
+          Submit this quiz?
+        </h3>
+      </template>
+
+      <div class="space-y-3 text-sm">
+        <p v-if="!unansweredQuestions.length" class="text-slate-600 m-0">
+          You've answered all {{ quiz?.questions.length }} questions. Once submitted, you can't change your answers.
+        </p>
+        <template v-else>
+          <p class="text-slate-600 m-0">
+            You have <b class="text-red-600">{{ unansweredQuestions.length }}</b> unanswered question{{ unansweredQuestions.length === 1 ? '' : 's' }} out of {{ quiz?.questions.length }}. Review them below before submitting, or submit anyway.
+          </p>
+          <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-0.5">
+            <button
+              v-for="q in unansweredQuestions"
+              :key="q.index"
+              type="button"
+              class="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 cursor-pointer"
+              :title="q.title"
+              @click="goToQuestion(q.index)"
+            >
+              Q{{ q.index + 1 }}
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <template #footer>
+        <Button label="Continue Editing" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="showConfirm = false" />
+        <Button label="Submit Anyway" size="small" :disabled="submitting" class="!bg-emerald-600 hover:!bg-emerald-700 !border-emerald-600 !text-white !rounded-lg !text-xs" @click="confirmSubmit" />
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -178,6 +216,8 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Image from 'primevue/image'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
 import api, { extractError } from '../../../api'
 import { quizInProgress } from '../../../utils/quizLock'
 
@@ -192,6 +232,7 @@ const result = ref(null)
 const answers = reactive({})
 const currentIndex = ref(0)
 const timeLeft = ref(0)
+const showConfirm = ref(false)
 let timer = null
 
 // The server hands us an absolute deadline (started_at + duration), not a
@@ -205,6 +246,27 @@ const currentQuestion = computed(() => quiz.value.questions[currentIndex.value])
 
 const answeredCount = computed(() => quiz.value.questions.filter(isAnswered).length)
 const progressPct = computed(() => Math.round(((currentIndex.value + 1) / quiz.value.questions.length) * 100))
+
+const unansweredQuestions = computed(() => {
+  if (!quiz.value) return []
+  return quiz.value.questions
+    .map((question, index) => ({ index, title: question.title }))
+    .filter(({ index }) => !isAnswered(quiz.value.questions[index]))
+})
+
+function openSubmitConfirm() {
+  showConfirm.value = true
+}
+
+function goToQuestion(index) {
+  currentIndex.value = index
+  showConfirm.value = false
+}
+
+async function confirmSubmit() {
+  showConfirm.value = false
+  await submitQuiz()
+}
 
 function isAnswered(question) {
   const a = answers[question.id]

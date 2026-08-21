@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppNotification;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\QuestionMatchingPair;
@@ -27,6 +28,10 @@ class QuizController extends Controller
         if (! $teacher) {
             return response()->json(['data' => []]);
         }
+
+        // Self-heals expired quizzes to Closed even if the scheduler isn't
+        // wired to a system cron — cheap, idempotent single UPDATE.
+        Quiz::autoCloseExpired();
 
         $quizzes = Quiz::query()
             ->where('teacher_profile_id', $teacher->id)
@@ -106,16 +111,17 @@ class QuizController extends Controller
      * Update a quiz's metadata and question selection. Status is not editable here
      * (see publish()/close()) so an in-review Published quiz can't silently revert.
      *
-     * Only a Draft quiz can be edited. Once Published, its content and
-     * settings are locked — otherwise a teacher could change the question
-     * set, duration, or pass mark out from under a quiz students are (or
-     * were) already being assessed against.
+     * A Draft quiz can always be edited. A Published quiz can still be edited as
+     * long as its start window hasn't opened yet (no student could have started
+     * an attempt) — once started, or once Closed, content and settings are
+     * locked so a teacher can't change the question set, duration, or pass mark
+     * out from under a quiz students are (or were) already being assessed against.
      */
     public function update(Request $request, Quiz $quiz)
     {
         $teacher = $request->user()->teacherProfile;
         $this->authorizeOwner($teacher, $quiz);
-        $this->assertDraft($quiz, 'edited');
+        $this->assertEditable($quiz);
 
         $validated = $this->validated($request, $teacher->id);
 
@@ -163,6 +169,8 @@ class QuizController extends Controller
 
         $quiz->update(['status' => 'Published']);
         $quiz->load('subject', 'classroom')->loadCount('submissions')->load('questions');
+
+        AppNotification::notifyQuizPublished($quiz);
 
         return response()->json([
             'message' => 'Quiz published.',
@@ -219,6 +227,31 @@ class QuizController extends Controller
                 'status' => ["Only a draft quiz can be {$action}. This quiz is {$quiz->status}."],
             ]);
         }
+    }
+
+    /**
+     * Draft is always editable. Published is editable only while it has a
+     * future start_at — i.e. it hasn't opened to students yet. A Published
+     * quiz with no start_at (or a past one) is open the instant it's
+     * published, so it may already have attempts in progress and is locked.
+     */
+    private function assertEditable(Quiz $quiz): void
+    {
+        if ($quiz->status === 'Draft') {
+            return;
+        }
+
+        if ($quiz->status === 'Published' && $quiz->start_at && $quiz->start_at->isFuture()) {
+            return;
+        }
+
+        $reason = $quiz->status === 'Published'
+            ? 'it has already started'
+            : 'it is Closed';
+
+        throw ValidationException::withMessages([
+            'status' => ["This quiz can no longer be edited because {$reason}."],
+        ]);
     }
 
     private function authorizeOwner(?object $teacher, Quiz $quiz): void

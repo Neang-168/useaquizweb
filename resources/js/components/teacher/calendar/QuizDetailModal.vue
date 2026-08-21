@@ -47,10 +47,10 @@
     <template v-if="quiz" #footer>
       <Button label="Close" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="$emit('close')" />
       <Button
-        v-if="quiz.assignmentId"
+        v-if="resolvedDetailRoute"
         as="router-link"
-        :to="{ name: 'teacher.classWorkspace', params: { assignmentId: quiz.assignmentId }, query: { tab: 'quizzes' } }"
-        label="Manage Quiz"
+        :to="resolvedDetailRoute"
+        :label="detailLabel"
         icon="pi pi-cog"
         size="small"
         class="!bg-indigo-600 hover:!bg-indigo-700 !border-indigo-600 !text-white !rounded-lg !text-xs no-underline"
@@ -63,9 +63,23 @@
 import { computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import { formatDateTime } from '../../../utils/formatDateTime'
 
 const props = defineProps({
   quiz: { type: Object, default: null },
+  // Optional override for the footer action link. When omitted, defaults to
+  // the teacher's "Manage Quiz" route (existing behavior for teacher/Calendar.vue).
+  detailRoute: { type: [Object, Function], default: null },
+  detailLabel: { type: String, default: 'Manage Quiz' },
+})
+
+const resolvedDetailRoute = computed(() => {
+  if (!props.quiz) return null
+  if (props.detailRoute) {
+    return typeof props.detailRoute === 'function' ? props.detailRoute(props.quiz) : props.detailRoute
+  }
+  if (!props.quiz.assignmentId) return null
+  return { name: 'teacher.classWorkspace', params: { assignmentId: props.quiz.assignmentId }, query: { tab: 'quizzes' } }
 })
 
 defineEmits(['close'])
@@ -76,15 +90,10 @@ function statusBadgeClass(status) {
   return 'bg-rose-50 text-rose-500 border-rose-200'
 }
 
-function formatDateTime(value) {
-  if (!value) return null
-  return value.replace('T', ' ')
-}
-
 const formattedWindow = computed(() => {
   if (!props.quiz) return 'No fixed schedule'
-  const start = formatDateTime(props.quiz.startAt)
-  const end = formatDateTime(props.quiz.endAt)
+  const start = props.quiz.startAt ? formatDateTime(props.quiz.startAt) : null
+  const end = props.quiz.endAt ? formatDateTime(props.quiz.endAt) : null
   if (start && end) return `${start} → ${end}`
   if (start) return `From ${start}`
   if (end) return `Until ${end}`

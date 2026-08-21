@@ -30,8 +30,10 @@ use App\Http\Controllers\Api\Teacher\QuestionImportExportController as TeacherQu
 use App\Http\Controllers\Api\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Api\Teacher\ScoreController as TeacherScoreController;
 use App\Http\Controllers\Api\Teacher\SubjectController as TeacherSubjectController;
+use App\Http\Controllers\Api\Student\CalendarController as StudentCalendarController;
 use App\Http\Controllers\Api\Student\CourseController as StudentCourseController;
 use App\Http\Controllers\Api\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Api\Student\NotificationController as StudentNotificationController;
 use App\Http\Controllers\Api\Student\QuizController as StudentQuizController;
 use App\Http\Controllers\Api\Student\ResultController as StudentResultController;
 use App\Http\Controllers\Api\UserController;
@@ -160,11 +162,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('student')->middleware('permission:take_exam')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index']);
         Route::get('/courses', [StudentCourseController::class, 'index']);
+        Route::get('/calendar', [StudentCalendarController::class, 'index']);
 
         Route::get('/quizzes', [StudentQuizController::class, 'index']);
         Route::get('/quizzes/{quiz}', [StudentQuizController::class, 'show']);
         Route::post('/quizzes/{quiz}/submit', [StudentQuizController::class, 'submit']);
 
         Route::get('/results', [StudentResultController::class, 'index']);
+
+        Route::get('/notifications', [StudentNotificationController::class, 'index']);
+        Route::post('/notifications/{notification}/read', [StudentNotificationController::class, 'markRead']);
+        Route::post('/notifications/read-all', [StudentNotificationController::class, 'markAllRead']);
+        Route::delete('/notifications/clear-all', [StudentNotificationController::class, 'clearAll']);
+        Route::delete('/notifications/{notification}', [StudentNotificationController::class, 'destroy']);
     });
 });

@@ -63,7 +63,12 @@
             <router-link  to="/student/notification"
                 class="relative text-slate-400 hover:text-blue-600 transition-colors p-1 cursor-pointer border-0 bg-transparent">
               <i class="pi pi-bell text-lg"></i>
-              <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600"></span>
+              <span
+                v-if="notificationState.unreadCount > 0"
+                class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center"
+              >
+                {{ notificationState.unreadCount > 9 ? '9+' : notificationState.unreadCount }}
+              </span>
             </router-link>
 
             <div class="h-6 w-px bg-slate-200"></div>
@@ -101,17 +106,24 @@
       <router-view :key="$route.fullPath" />
     </main>
 
+    <NotificationToastContainer />
+
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import LogoUsea from '../images/usea_logo.png'
 import { authUser, clearAuthUser } from '../store/authUser'
 import { quizInProgress } from '../utils/quizLock'
+import { notificationState, startPolling, stopPolling } from '../store/notifications'
+import NotificationToastContainer from './student/NotificationToastContainer.vue'
 
 const router = useRouter()
+
+onMounted(startPolling)
+onUnmounted(stopPolling)
 
 // បង្ហាញឈ្មោះពេញ
 const userFullName = computed(() => {

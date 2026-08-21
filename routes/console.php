@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('question-images:prune-tmp')->hourly();
 Schedule::command('quizzes:auto-close')->everyFiveMinutes();
+Schedule::command('notifications:generate-quiz-timing')->everyMinute();

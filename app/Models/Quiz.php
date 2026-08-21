@@ -40,6 +40,9 @@ class Quiz extends Model
         'total_score' => 'integer',
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'start_reminder_sent_at' => 'datetime',
+        'end_reminder_sent_at' => 'datetime',
+        'end_hour_reminder_sent_at' => 'datetime',
     ];
 
     public function teacherProfile(): BelongsTo
@@ -89,5 +92,19 @@ class Quiz extends Model
     public function submissions(): HasMany
     {
         return $this->hasMany(QuizSubmission::class);
+    }
+
+    /**
+     * Flip every Published quiz whose end_at has passed to Closed. Idempotent —
+     * safe to call from the scheduled command and also inline from read paths
+     * (quiz/calendar/dashboard listings) so a quiz closes on time even in an
+     * environment where the scheduler isn't wired to a system cron.
+     */
+    public static function autoCloseExpired(): int
+    {
+        return static::where('status', 'Published')
+            ->whereNotNull('end_at')
+            ->where('end_at', '<', now())
+            ->update(['status' => 'Closed']);
     }
 }

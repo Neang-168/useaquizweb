@@ -31,6 +31,8 @@ class DashboardController extends Controller
             ]);
         }
 
+        Quiz::autoCloseExpired();
+
         $classIds = TeacherSubject::where('teacher_profile_id', $teacher->id)
             ->whereNotNull('class_id')
             ->pluck('class_id')

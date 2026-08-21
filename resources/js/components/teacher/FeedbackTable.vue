@@ -1,25 +1,12 @@
 <template>
   <div class="space-y-3">
-    <!-- Stats Summary -->
-    <!-- <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <span class="text-[11px] font-bold text-slate-400 uppercase">Total Submissions</span>
-        <h3 class="text-lg font-bold text-slate-800 m-0 mt-1">{{ students.length }}</h3>
-      </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200">
-        <span class="text-[11px] font-bold text-slate-400 uppercase">Passed</span>
-        <h3 class="text-lg font-bold text-emerald-600 m-0 mt-1">{{ passedStudents.length }}</h3>
-      </div>
-      <div class="bg-white p-4 rounded-2xl border border-rose-200 bg-rose-50/20">
-        <span class="text-[11px] font-bold text-rose-500 uppercase">Failed (needs support)</span>
-        <h3 class="text-lg font-bold text-rose-600 m-0 mt-1">{{ failedStudents.length }}</h3>
-      </div>
-    </div> -->
-
-    <!-- Student List Table -->
+    <!-- Student List Tree Table -->
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
       <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="text-sm font-bold text-slate-800 m-0">Students & Results</h3>
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 m-0">Students & Results</h3>
+          <p class="text-[11px] text-slate-400 m-0 mt-0.5">Expand a student to see how they scored on each question.</p>
+        </div>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div class="relative w-full sm:w-56">
             <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
@@ -57,10 +44,13 @@
         </div>
       </div>
 
-      <DataTable :value="displayedStudents" dataKey="submissionId" :loading="loading"
+      <TreeTable
+        :value="treeNodes"
+        :loading="loading"
         paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]"
-        scrollable scrollHeight="calc(100vh - 428px)"
-        responsiveLayout="scroll" class="p-datatable-sm feedback-table">
+        scrollable scrollHeight="calc(100vh - 460px)"
+        class="p-treetable-sm feedback-treetable"
+      >
         <template #empty>
           <div class="text-center py-10 text-xs text-slate-400">
             No submissions yet.
@@ -69,80 +59,111 @@
 
         <template #paginatorstart>
           <span class="text-xs text-slate-500">
-            Showing <span class="font-semibold text-slate-700">{{ displayedStudents.length ? first + 1 : 0 }}</span>
-            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, displayedStudents.length) }}</span>
-            of <span class="font-semibold text-slate-700">{{ displayedStudents.length }}</span>
+            Showing <span class="font-semibold text-slate-700">{{ treeNodes.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, treeNodes.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ treeNodes.length }}</span> students
           </span>
         </template>
 
-        <Column header="NO" style="width: 60px; padding-left: 1.25rem">
-          <template #body="{ index }">
-            <span class="text-slate-400 font-semibold text-sm">{{ index + 1 }}</span>
+        <Column field="label" header="STUDENT / QUESTION" expander style="min-width: 260px; padding-left: 1.25rem">
+          <template #body="{ node }">
+            <span v-if="node.data.type === 'student'" class="font-semibold text-slate-800 text-sm">
+              {{ node.data.name }}
+            </span>
+            <div v-else class="text-slate-600 text-sm py-1">
+              <span class="flex items-center gap-2">
+                <i :class="['pi text-xs shrink-0', node.data.isCorrect ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-rose-500']"></i>
+                <span class="truncate">{{ node.data.label }}</span>
+              </span>
+              <div v-if="!node.data.isCorrect" class="mt-1 ml-5 space-y-0.5 text-[11px] leading-relaxed">
+                <p class="m-0">
+                  <span class="font-semibold text-rose-500">Their answer:</span>
+                  <span class="text-slate-500">{{ node.data.studentAnswer }}</span>
+                </p>
+                <p class="m-0">
+                  <span class="font-semibold text-emerald-600">Correct answer:</span>
+                  <span class="text-slate-500">{{ node.data.correctAnswer }}</span>
+                </p>
+              </div>
+            </div>
           </template>
         </Column>
 
-        <Column field="studentId" header="STUDENT ID">
-          <template #body="{ data }">
-            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.studentId }}</span>
+        <Column header="STUDENT ID" style="width: 130px">
+          <template #body="{ node }">
+            <span v-if="node.data.type === 'student'" class="font-mono font-bold text-indigo-600 text-sm">{{ node.data.studentId }}</span>
+            <span v-else class="text-slate-300 text-xs">—</span>
           </template>
         </Column>
 
-        <Column field="name" header="NAME">
-          <template #body="{ data }">
-            <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
+        <Column header="TYPE" style="width: 100px">
+          <template #body="{ node }">
+            <span v-if="node.data.type === 'question'" class="text-[11px] font-semibold text-slate-400 uppercase">{{ formatType(node.data.questionType) }}</span>
           </template>
         </Column>
 
-        <Column field="score" header="SCORE">
-          <template #body="{ data }">
-            <span class="font-bold text-slate-700 text-sm">{{ data.score }} / 100</span>
+        <Column header="POINTS" style="width: 110px">
+          <template #body="{ node }">
+            <span class="font-bold text-slate-700 text-sm">{{ node.data.pointsLabel }}</span>
           </template>
         </Column>
 
-        <Column header="RESULT">
-          <template #body="{ data }">
+        <Column header="RESULT" style="width: 140px">
+          <template #body="{ node }">
             <span
-              :class="data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              v-if="node.data.type === 'student'"
+              :class="node.data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
               class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block"
-              :title="`Pass mark: ${data.passMark}`"
+              :title="`Pass mark: ${node.data.passMark}%`"
             >
-              {{ data.passed ? 'PASSED' : 'FAILED' }}
+              {{ node.data.passed ? 'PASSED' : 'FAILED' }}
             </span>
-          </template>
-        </Column>
-
-        <Column header="FEEDBACK STATUS">
-          <template #body="{ data }">
-            <span v-if="data.hasFeedbackSent" class="text-emerald-600 font-semibold inline-flex items-center gap-1 text-sm">
-              <i class="pi pi-check-circle text-sm"></i> Sent
-            </span>
-            <span v-else-if="!data.passed" class="text-rose-500 font-semibold inline-flex items-center gap-1 text-sm">
-              <i class="pi pi-exclamation-circle text-sm"></i> Needs Feedback
-            </span>
-            <span v-else class="text-slate-400 text-sm">-</span>
-          </template>
-        </Column>
-
-        <Column header="ACTION">
-          <template #body="{ data }">
-            <Button
-              v-if="!data.passed"
-              label="Send Study Guidance"
-              icon="pi pi-send"
-              size="small"
-              class="!bg-rose-500 hover:!bg-rose-600 !border-rose-500 !text-white !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
-              @click="openFeedbackModal(data)"
-            />
-            <Button
+            <span
               v-else
-              label="Send Feedback"
-              size="small"
-              class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-600 !rounded-xl !text-xs !px-3 !py-1.5"
-              @click="openFeedbackModal(data)"
-            />
+              :class="node.data.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              class="font-semibold px-2 py-0.5 rounded-full text-[11px] border inline-block"
+            >
+              {{ node.data.isCorrect ? 'Correct' : (node.data.answered ? 'Incorrect' : 'Not answered') }}
+            </span>
           </template>
         </Column>
-      </DataTable>
+
+        <Column header="FEEDBACK STATUS" style="width: 160px">
+          <template #body="{ node }">
+            <template v-if="node.data.type === 'student'">
+              <span v-if="node.data.hasFeedbackSent" class="text-emerald-600 font-semibold inline-flex items-center gap-1 text-sm">
+                <i class="pi pi-check-circle text-sm"></i> Sent
+              </span>
+              <span v-else-if="!node.data.passed" class="text-rose-500 font-semibold inline-flex items-center gap-1 text-sm">
+                <i class="pi pi-exclamation-circle text-sm"></i> Needs Feedback
+              </span>
+              <span v-else class="text-slate-400 text-sm">-</span>
+            </template>
+          </template>
+        </Column>
+
+        <Column header="ACTION" style="width: 170px">
+          <template #body="{ node }">
+            <template v-if="node.data.type === 'student'">
+              <Button
+                v-if="!node.data.passed"
+                label="Send Study Guidance"
+                icon="pi pi-send"
+                size="small"
+                class="!bg-rose-500 hover:!bg-rose-600 !border-rose-500 !text-white !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
+                @click="openFeedbackModal(node.data)"
+              />
+              <Button
+                v-else
+                label="Send Feedback"
+                size="small"
+                class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-600 !rounded-xl !text-xs !px-3 !py-1.5"
+                @click="openFeedbackModal(node.data)"
+              />
+            </template>
+          </template>
+        </Column>
+      </TreeTable>
     </div>
 
     <!-- Modal: Send Feedback to Student -->
@@ -158,7 +179,7 @@
             Send Feedback to: <span class="text-indigo-600">{{ selectedStudent?.name }}</span>
           </h3>
           <p class="text-xs text-slate-400 mt-0.5 mb-0">
-            Score: <span class="font-bold text-rose-600">{{ selectedStudent?.score }}/100</span>
+            Score: <span class="font-bold text-rose-600">{{ selectedStudent?.score }}/{{ selectedStudent?.totalPoints }}</span>
           </p>
         </div>
       </template>
@@ -206,7 +227,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import DataTable from 'primevue/datatable'
+import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import SplitButton from 'primevue/splitbutton'
@@ -269,13 +290,41 @@ watch(displayedStudents, () => {
   first.value = 0
 })
 
+function formatType(type) {
+  if (type === 'multiple_choice') return 'MC'
+  if (type === 'true_false') return 'T/F'
+  if (type === 'matching') return 'Matching'
+  return type
+}
+
+// One tree node per student (their score/result/feedback status + actions),
+// expanding into one child node per quiz question (correct/incorrect + points).
+const treeNodes = computed(() => displayedStudents.value.map((s) => ({
+  key: `s-${s.submissionId}`,
+  data: {
+    ...s,
+    type: 'student',
+    pointsLabel: `${s.score} / ${s.totalPoints}`,
+  },
+  children: (s.questions || []).map((q, idx) => ({
+    key: `s-${s.submissionId}-q-${q.questionId}`,
+    data: {
+      ...q,
+      type: 'question',
+      questionType: q.type,
+      label: `Q${idx + 1}. ${q.title}`,
+      pointsLabel: `${q.pointsAwarded} / ${q.pointsPossible}`,
+    },
+  })),
+})))
+
 const exportHeader = ['#', 'Student ID', 'Name', 'Score', 'Result', 'Feedback Status']
 
 const exportRows = () => displayedStudents.value.map((s, i) => [
   i + 1,
   s.studentId,
   s.name,
-  `${s.score}/100`,
+  `${s.score}/${s.totalPoints}`,
   s.passed ? 'PASSED' : 'FAILED',
   s.hasFeedbackSent ? 'Sent' : (s.passed ? '-' : 'Needs Feedback'),
 ])
@@ -314,9 +363,9 @@ function applyTemplate(type) {
   if (!selectedStudent.value) return
 
   if (type === 'restudy') {
-    feedbackMessage.value = `Hi ${selectedStudent.value.name},\n\nYour latest result was ${selectedStudent.value.score}/100, which didn't reach the pass mark. Please review the lesson material again, and feel free to reach out if you have any questions.`
+    feedbackMessage.value = `Hi ${selectedStudent.value.name},\n\nYour latest result was ${selectedStudent.value.score}/${selectedStudent.value.totalPoints}, which didn't reach the pass mark. Please review the lesson material again, and feel free to reach out if you have any questions.`
   } else if (type === 'consult') {
-    feedbackMessage.value = `Hi ${selectedStudent.value.name},\n\nI noticed your recent score (${selectedStudent.value.score}/100) could use some improvement. Let's schedule a time to meet and go over your study approach together.`
+    feedbackMessage.value = `Hi ${selectedStudent.value.name},\n\nI noticed your recent score (${selectedStudent.value.score}/${selectedStudent.value.totalPoints}) could use some improvement. Let's schedule a time to meet and go over your study approach together.`
   }
 }
 
@@ -342,11 +391,11 @@ async function sendFeedback() {
 
 <style scoped>
 /* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
-.feedback-table :deep(.p-datatable-thead > tr > th) {
+.feedback-treetable :deep(.p-treetable-thead > tr > th) {
   font-size: 13px;
 }
 
-.feedback-table :deep(.p-datatable-tbody > tr > td) {
+.feedback-treetable :deep(.p-treetable-tbody > tr > td) {
   font-size: 14px;
 }
 

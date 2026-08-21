@@ -13,10 +13,7 @@ class AutoCloseExpiredQuizzes extends Command
 
     public function handle(): int
     {
-        $closed = Quiz::where('status', 'Published')
-            ->whereNotNull('end_at')
-            ->where('end_at', '<', now())
-            ->update(['status' => 'Closed']);
+        $closed = Quiz::autoCloseExpired();
 
         $this->info("Closed {$closed} expired quiz(zes).");
 

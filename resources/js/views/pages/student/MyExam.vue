@@ -13,13 +13,33 @@
         </div>
       </div>
 
-      <!-- Filter Subject -->
-      <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
-        <i class="pi pi-filter text-[#E4AC40] text-xs"></i>
-        <select v-model="selectedSubject" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
-          <option value="all">All Subjects</option>
-          <option v-for="subject in subjectOptions" :key="subject" :value="subject">{{ subject }}</option>
-        </select>
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
+          <i class="pi pi-users text-[#E4AC40] text-xs"></i>
+          <select v-model="selectedClass" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
+            <option value="all">All Classes</option>
+            <option v-for="cls in classOptions" :key="cls" :value="cls">{{ cls }}</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
+          <i class="pi pi-filter text-[#E4AC40] text-xs"></i>
+          <select v-model="selectedSubject" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
+            <option value="all">All Subjects</option>
+            <option v-for="subject in subjectOptions" :key="subject" :value="subject">{{ subject }}</option>
+          </select>
+        </div>
+
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search quiz title..."
+            class="bg-[#F8F8F8] border border-[#D8E7EC] rounded-xl text-xs font-medium text-slate-700 outline-none py-2 pl-9 pr-3 focus:border-[#63C7DF]"
+          />
+        </div>
       </div>
     </div>
 
@@ -87,7 +107,7 @@
                   {{ exam.subject }}
                 </span>
                 <span v-if="exam.endAt" class="text-xs font-bold text-[#D71818] flex items-center gap-1 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
-                  <i class="pi pi-clock text-xs"></i> Due: {{ exam.endAt }}
+                  <i class="pi pi-clock text-xs"></i> Due: {{ formatDateTime(exam.endAt) }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-[#002060] m-0 mt-2">{{ exam.title }}</h3>
@@ -101,7 +121,15 @@
 
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-500">Attempts: <b class="text-[#002060]">{{ exam.attemptsUsed }}</b> / {{ exam.maxAttempts }}</span>
-              <router-link :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
+              <button v-if="exam.isClosed" disabled type="button" title="This quiz's availability window has closed"
+                class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
+                <i class="pi pi-calendar-times text-xs"></i> Closed
+              </button>
+              <button v-else-if="exam.attemptsExhausted" disabled type="button" title="You have used all of your attempts for this quiz"
+                class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
+                <i class="pi pi-lock text-xs"></i> No Attempts Left
+              </button>
+              <router-link v-else :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
                 <span>Start Exam</span>
                 <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>
               </router-link>
@@ -131,7 +159,7 @@
                   {{ exam.subject }}
                 </span>
                 <span class="text-xs font-semibold text-slate-600 flex items-center gap-1 bg-[#F8F8F8] px-2 py-0.5 rounded-md border border-slate-200">
-                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ exam.startAt }}
+                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ formatDateTime(exam.startAt) }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-slate-700 m-0 mt-1">{{ exam.title }}</h3>
@@ -183,7 +211,7 @@
                 <p class="font-bold text-[#002060] m-0">{{ exam.title }}</p>
                 <p class="text-[11px] text-slate-400 m-0 mt-0.5">{{ exam.subject }}</p>
               </td>
-              <td class="p-4 text-slate-500">{{ exam.submittedAt }}</td>
+              <td class="p-4 text-slate-500">{{ formatDateTime(exam.submittedAt) }}</td>
               <td class="p-4 font-bold text-sm text-[#002060]">{{ exam.score }} / {{ exam.totalPoints }}</td>
               <td class="p-4">
                 <span :class="['px-3 py-1 rounded-full text-[10px] font-bold border', 
@@ -209,25 +237,33 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api, { extractError } from '../../../api'
+import { formatDateTime } from '../../../utils/formatDateTime'
 
 const activeTab = ref('active')
 const selectedSubject = ref('all')
+const selectedClass = ref('all')
+const searchQuery = ref('')
 const loading = ref(true)
 const quizzes = ref([])
 const submissions = ref([])
 
 const subjectOptions = computed(() => [...new Set(quizzes.value.map((q) => q.subject).filter(Boolean))])
+const classOptions = computed(() => [...new Set(quizzes.value.map((q) => q.className).filter(Boolean))])
 
-const bySubject = (list) => selectedSubject.value === 'all'
-  ? list
-  : list.filter((item) => item.subject === selectedSubject.value)
+const applyFilters = (list) => list.filter((item) => {
+  if (selectedSubject.value !== 'all' && item.subject !== selectedSubject.value) return false
+  if (selectedClass.value !== 'all' && item.className !== selectedClass.value) return false
+  if (searchQuery.value && !item.title?.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
+  return true
+})
 
-const activeExams = computed(() => bySubject(quizzes.value.filter((q) => q.isOpen)))
-const upcomingExams = computed(() => bySubject(quizzes.value.filter((q) => q.isUpcoming)))
-const completedExams = computed(() => bySubject(submissions.value.map((s) => ({
+const activeExams = computed(() => applyFilters(quizzes.value.filter((q) => q.isOpen)))
+const upcomingExams = computed(() => applyFilters(quizzes.value.filter((q) => q.isUpcoming)))
+const completedExams = computed(() => applyFilters(submissions.value.map((s) => ({
   id: s.id,
   title: s.quizTitle,
   subject: s.subject,
+  className: s.className,
   submittedAt: s.submittedAt,
   score: s.score,
   totalPoints: s.totalPoints,

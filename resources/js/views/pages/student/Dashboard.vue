@@ -89,10 +89,78 @@
       </div>
     </div>
 
-    <!-- ======= MAIN CONTENT GRID ======= -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ======= NEWLY PUBLISHED QUIZZES ======= -->
+    <div v-if="stats.recentQuizzes.length" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-slate-800 m-0 flex items-center gap-2">
+          <i class="pi pi-sparkles text-emerald-500"></i>
+          Newly Published Quizzes
+        </h3>
+        <router-link to="/student/myexam" class="text-xs font-bold text-blue-600 hover:underline no-underline">
+          View All
+        </router-link>
+      </div>
 
-      <!-- LEFT (2 Cols): Quiz Schedule -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-for="quiz in stats.recentQuizzes" :key="quiz.id" class="p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col justify-between gap-3">
+          <div>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 mb-2">
+              <i class="pi pi-sparkles text-[9px]"></i> New
+            </span>
+            <h4 class="text-sm font-bold text-slate-800 m-0">{{ quiz.title }}</h4>
+            <p class="text-xs text-slate-400 m-0 mt-1">
+              <span v-if="quiz.subject" class="font-semibold text-slate-500">{{ quiz.subject }}</span>
+              <span v-if="quiz.className"> • {{ quiz.className }}</span>
+            </p>
+            <p class="text-[11px] text-slate-500 m-0 mt-2 flex items-center gap-3">
+              <span><i class="pi pi-clock text-xs"></i> {{ quiz.duration }} min</span>
+              <span><i class="pi pi-list text-xs"></i> {{ quiz.totalQuestions }} q's</span>
+            </p>
+          </div>
+          <router-link
+            v-if="quiz.isUpcoming"
+            :to="{ name: 'student.courseWorkspace', params: { classId: quiz.classId, subjectId: quiz.subjectId } }"
+            class="px-3 py-2 bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all no-underline text-center"
+          >
+            Opens {{ formatDate(quiz.startAt) }}
+          </router-link>
+          <button
+            v-else-if="quiz.isClosed"
+            disabled
+            type="button"
+            title="This quiz's availability window has closed"
+            class="px-3 py-2 bg-slate-100 text-slate-400 font-semibold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center justify-center gap-1.5"
+          >
+            <i class="pi pi-calendar-times text-xs"></i> Closed
+          </button>
+          <button
+            v-else-if="quiz.attemptsExhausted"
+            disabled
+            type="button"
+            title="You have used all of your attempts for this quiz"
+            class="px-3 py-2 bg-slate-100 text-slate-400 font-semibold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center justify-center gap-1.5"
+          >
+            <i class="pi pi-lock text-xs"></i> No Attempts Left
+          </button>
+          <router-link
+            v-else
+            :to="`/student/take-quiz?id=${quiz.id}`"
+            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all no-underline text-center"
+          >
+            Start Exam
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= CALENDAR ======= -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+      <StudentCalendar />
+    </div>
+
+    <!-- ======= MAIN CONTENT GRID ======= -->
+    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between mb-4">
@@ -107,7 +175,6 @@
 
           <p v-if="!stats.dueSoon.length" class="text-sm text-slate-400 m-0">No quizzes to take right now</p>
 
-          <!-- Vertical timeline: one entry per quiz, anchored to its date -->
           <ol v-else class="relative border-l-2 border-slate-100 ml-2 space-y-6">
             <li v-for="quiz in stats.dueSoon" :key="quiz.id" class="ml-5 relative">
               <span class="absolute -left-[27px] top-0.5 w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow"></span>
@@ -141,9 +208,7 @@
         </div>
       </div>
 
-      <!-- RIGHT (1 Col): Announcements & Recent Results -->
       <div class="space-y-6">
-        <!-- Announcements -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <h3 class="text-base font-bold text-slate-800 m-0 mb-4 flex items-center gap-2">
             <i class="pi pi-bell text-blue-500"></i>
@@ -160,7 +225,7 @@
         </div>
       </div>
 
-    </div>
+    </div> -->
 
   </div>
 </template>
@@ -168,6 +233,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api, { extractError } from '../../../api'
+import StudentCalendar from '../../../components/student/StudentCalendar.vue'
+import { formatDateTime as formatDate } from '../../../utils/formatDateTime'
 
 const authUser = computed(() => {
   try {
@@ -187,17 +254,11 @@ const stats = ref({
   averageScore: 0,
   enrolledSubjectsCount: 0,
   dueSoon: [],
+  recentQuizzes: [],
   announcements: [],
 })
 
 const myClasses = ref([])
-
-function formatDate(value) {
-  if (!value) return ''
-  const [datePart, timePart] = value.split('T')
-  const [y, m, d] = datePart.split('-')
-  return `${m}/${d}/${y}${timePart ? ' ' + timePart : ''}`
-}
 
 async function fetchDashboard() {
   try {

@@ -185,7 +185,7 @@
               <div class="flex items-center gap-1">
                 <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600" @click="openPreview(quiz)" />
                 <Button
-                  v-if="quiz.status === 'Draft'"
+                  v-if="isEditable(quiz)"
                   icon="pi pi-pencil" text rounded size="small" severity="secondary" title="Edit"
                   class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600"
                   @click="openQuizModal(quiz)"
@@ -526,6 +526,7 @@ import ScoreTable from '../../../components/teacher/ScoreTable.vue'
 import FeedbackTable from '../../../components/teacher/FeedbackTable.vue'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
 import { downloadCsv, downloadXlsx } from '../../../utils/exportTable'
+import { formatDateTime } from '../../../utils/formatDateTime'
 
 const route = useRoute()
 const assignmentId = computed(() => Number(route.params.assignmentId))
@@ -644,12 +645,21 @@ function statusBadgeClass(status) {
 }
 
 function formatWindow(quiz) {
-  const start = quiz.startAt ? quiz.startAt.replace('T', ' ') : null
-  const end = quiz.endAt ? quiz.endAt.replace('T', ' ') : null
+  const start = quiz.startAt ? formatDateTime(quiz.startAt) : null
+  const end = quiz.endAt ? formatDateTime(quiz.endAt) : null
   if (start && end) return `${start} → ${end}`
   if (start) return `From ${start}`
   if (end) return `Until ${end}`
   return 'No fixed schedule'
+}
+
+// Mirrors the backend's assertEditable(): Draft is always editable; a
+// Published quiz stays editable only while its start window hasn't opened
+// yet (a future start_at) — once open, students may already have attempts
+// in progress.
+function isEditable(quiz) {
+  if (quiz.status === 'Draft') return true
+  return quiz.status === 'Published' && !!quiz.startAt && new Date(quiz.startAt) > new Date()
 }
 
 /* ===== Quiz builder modal ===== */

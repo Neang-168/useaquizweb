@@ -124,166 +124,190 @@
     </div>
 
     <!-- ======= 1. LIST VIEW (DataTable) ======= -->
-    <DataTable v-if="viewMode === 'list'" :value="filteredClasses" dataKey="id" paginator :rows="5"
-      :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll" class="p-datatable-sm custom-app-table">
-      <template #empty>
-        <div class="text-center py-8 text-slate-400 text-sm">
-          No classes found.
+    <div v-if="viewMode === 'list'" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h3 class="text-sm font-bold text-slate-800 m-0">All Classes</h3>
+        <div class="flex items-center gap-2">
+          <!-- <span class="text-xs text-slate-500">
+            <span class="font-semibold text-slate-700">{{ filteredClasses.length }}</span> class(es) found
+          </span> -->
+
+          <!-- Show More / Show Less Toggle Button -->
+          <Button :label="showAllColumns ? 'Show Less' : 'Show More'"
+            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'" size="small"
+            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            @click="showAllColumns = !showAllColumns" />
         </div>
-      </template>
+      </div>
 
-      <!-- Class Code -->
-      <Column field="code" header="CODE" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span
-            class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-            {{ data.code }}
+      <DataTable :value="filteredClasses" dataKey="id" paginator :rows="rows" v-model:first="first"
+        :rowsPerPageOptions="[10, 20, 50]" scrollable scrollHeight="calc(100vh - 428px)"
+        :scrollDirection="showAllColumns ? 'both' : 'vertical'"
+        :tableStyle="tableMinWidthStyle"
+        responsiveLayout="scroll" class="p-datatable-sm classes-table">
+        <template #empty>
+          <div class="text-center py-10 text-xs text-slate-400">
+            No classes found.
+          </div>
+        </template>
+
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ filteredClasses.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredClasses.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ filteredClasses.length }}</span>
           </span>
         </template>
-      </Column>
 
-      <!-- Class Name -->
-      <Column field="name" header="CLASS NAME" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
-        </template>
-      </Column>
+        <!-- Class Code - តែងតែបង្ហាញ -->
+        <Column field="code" header="CODE" sortable style="padding-left: 1.25rem">
+          <template #body="{ data }">
+            <span class="font-mono font-bold text-indigo-600 text-sm whitespace-nowrap">{{ data.code }}</span>
+          </template>
+        </Column>
 
-      <!-- Class Name (Khmer) -->
-      <Column field="name_kh" header="CLASS NAME (KH)" class="!py-3.5">
-        <template #body="{ data }">
-          <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
+        <!-- Class Name - តែងតែបង្ហាញ -->
+        <Column field="name" header="CLASS NAME" sortable>
+          <template #body="{ data }">
+            <span class="font-semibold text-slate-800 text-sm whitespace-nowrap">{{ data.name }}</span>
+          </template>
+        </Column>
 
-      <!-- Faculty -->
-      <Column field="faculty_name" header="FACULTY" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.faculty_name || '—' }}</span>
-        </template>
-      </Column>
+        <!-- Class Name (Khmer) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="name_kh" header="CLASS NAME (KH)">
+          <template #body="{ data }">
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer whitespace-nowrap">{{ data.name_kh }}</span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
 
-      <!-- Department -->
-      <Column field="department_name" header="DEPARTMENT" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
-        </template>
-      </Column>
+        <!-- Faculty - តែងតែបង្ហាញ -->
+        <Column field="faculty_name" header="FACULTY" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.faculty_name || '—' }}</span>
+          </template>
+        </Column>
 
-      <!-- Major -->
-      <Column field="major_name" header="MAJOR" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.major_name || '—' }}</span>
-        </template>
-      </Column>
+        <!-- Department - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.department_name || '—' }}</span>
+          </template>
+        </Column>
 
-      <!-- Promotion -->
-      <Column field="promotion_name" header="PROMOTION" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span v-if="data.promotion_name"
-            class="text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-lg">
-            {{ data.promotion_name }}
-          </span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
+        <!-- Major - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="major_name" header="MAJOR" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.major_name || '—' }}</span>
+          </template>
+        </Column>
 
-      <!-- Academic Year -->
-      <Column field="academic_year" header="ACADEMIC YEAR" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.academic_year || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Stage -->
-      <Column field="stage" header="STAGE" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs font-medium text-slate-700">{{ data.stage }}</span>
-        </template>
-      </Column>
-
-      <!-- Semester -->
-      <Column field="semester" header="SEMESTER" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-xs text-slate-600 font-medium">{{ data.semester || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Session -->
-      <!-- <Column field="study_session_name" header="SESSION" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span v-if="data.study_session_name"
-            class="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-lg">
-            {{ data.study_session_name }}
-          </span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column> -->
-
-      <!-- Term -->
-      <Column field="term" header="TERM" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span v-if="data.term"
-            class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg">
-            {{ data.term }}
-          </span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
-
-      <!-- Shift -->
-      <Column field="shift" header="SHIFT" class="!py-3.5">
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-500">{{ data.shift }}</span>
-        </template>
-      </Column>
-
-      <!-- Enrolled / Capacity -->
-      <Column field="students_count" header="STUDENTS" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-700">
-              {{ data.students_count }} / {{ data.capacity }}
+        <!-- Promotion - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="promotion_name" header="PROMOTION" sortable>
+          <template #body="{ data }">
+            <span v-if="data.promotion_name"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ data.promotion_name }}
             </span>
-            <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div class="h-full rounded-full"
-                :class="data.students_count >= data.capacity ? 'bg-rose-500' : 'bg-blue-500'"
-                :style="{ width: Math.min((data.students_count / data.capacity) * 100, 100) + '%' }"></div>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Academic Year - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="academic_year" header="ACADEMIC YEAR" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.academic_year || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Stage - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="stage" header="STAGE" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-700 text-sm font-semibold whitespace-nowrap">{{ data.stage }}</span>
+          </template>
+        </Column>
+
+        <!-- Semester - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="semester" header="SEMESTER" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.semester || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Session -->
+        <!-- <Column field="study_session_name" header="SESSION" sortable>
+          <template #body="{ data }">
+            <span v-if="data.study_session_name"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block bg-teal-50 text-teal-600 border-teal-200">
+              {{ data.study_session_name }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column> -->
+
+        <!-- Term - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="term" header="TERM" sortable>
+          <template #body="{ data }">
+            <span v-if="data.term"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-amber-50 text-amber-600 border-amber-200">
+              {{ data.term }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Shift - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="shift" header="SHIFT">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.shift }}</span>
+          </template>
+        </Column>
+
+        <!-- Enrolled / Capacity - តែងតែបង្ហាញ -->
+        <Column field="students_count" header="STUDENTS" sortable>
+          <template #body="{ data }">
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              <span class="font-bold text-slate-700 text-sm whitespace-nowrap">
+                {{ data.students_count }} / {{ data.capacity }}
+              </span>
+              <div class="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden shrink-0">
+                <div class="h-full rounded-full"
+                  :class="data.students_count >= data.capacity ? 'bg-rose-500' : 'bg-blue-500'"
+                  :style="{ width: Math.min((data.students_count / data.capacity) * 100, 100) + '%' }"></div>
+              </div>
             </div>
-          </div>
-        </template>
-      </Column>
+          </template>
+        </Column>
 
-      <!-- Status -->
-      <Column field="status" header="STATUS" sortable class="!py-3.5">
-        <template #body="{ data }">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-            :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
-            <span class="w-1.5 h-1.5 rounded-full"
-              :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
-            {{ data.status }}
-          </span>
-        </template>
-      </Column>
+        <!-- Status - តែងតែបង្ហាញ -->
+        <Column field="status" header="STATUS" sortable>
+          <template #body="{ data }">
+            <span
+              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap">
+              {{ data.status.toUpperCase() }}
+            </span>
+          </template>
+        </Column>
 
-      <!-- Actions -->
-      <Column header="ACTIONS" class="!text-right !py-3.5">
-        <template #body="{ data }">
-          <div class="flex items-center justify-end gap-1.5">
-            <Button icon="pi pi-book"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
-              title="Subjects Taught" @click="openSubjectsDialog(data)" />
-            <Button icon="pi pi-pencil"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
-              title="Edit Class" @click="editClass(data)" />
-            <Button icon="pi pi-trash"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
-              title="Delete Class" @click="confirmDeleteClass(data)" />
-          </div>
-        </template>
-      </Column>
-    </DataTable>
+        <!-- Actions - តែងតែបង្ហាញ -->
+        <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
+          <template #body="{ data }">
+            <div class="flex items-center justify-end gap-1.5">
+              <Button icon="pi pi-book"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
+                title="Subjects Taught" @click="openSubjectsDialog(data)" />
+              <Button icon="pi pi-pencil"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-800 !border !border-slate-100 shadow-xs"
+                title="Edit Class" @click="editClass(data)" />
+              <Button icon="pi pi-trash"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 shadow-xs"
+                title="Delete Class" @click="confirmDeleteClass(data)" />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
 
     <!-- ======= 2. REDESIGNED COMPACT CARD VIEW ======= -->
     <div v-else>
@@ -569,6 +593,17 @@ import Dropdown from 'primevue/dropdown'
 // View Mode State: 'grid' or 'list'
 const viewMode = ref('grid')
 
+//show column more and less
+const showAllColumns = ref(false);
+
+// Visual-only sizing for the table wrapper: with all columns shown the table
+// needs enough min-width to fit every column (so it scrolls horizontally),
+// but with only the "always visible" columns shown it should fit the
+// container width without a horizontal scrollbar.
+const tableMinWidthStyle = computed(() =>
+  showAllColumns.value ? 'min-width: 1700px' : 'min-width: 100%'
+)
+
 const classes = ref([])
 const majors = ref([])
 const faculties = ref([])
@@ -624,6 +659,10 @@ onMounted(() => {
 
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+
+// Pagination display state for the list-view table (visual only).
+const first = ref(0)
+const rows = ref(10)
 
 // ======= Filter Bar (Major / Stage / Shift / Term / Status) =======
 const majorFilter = ref(null)
@@ -836,111 +875,15 @@ const removeSubjectFromClass = async (assignment) => {
 }
 </script>
 
-<!-- <style scoped>
-/* =========================================================
-   1. TABLE LIST VIEW - FLOATING CARD ROWS STYLE
-   ========================================================= */
-
-/* បង្កើតចន្លោះឃ្លាតរវាង Row នីមួយៗ (Floating Cards) */
-.classes-table :deep(.p-datatable-table) {
-  border-collapse: separate !important;
-  border-spacing: 0 0.5rem !important;
-}
-
-/* លុប Container Border & Background ចាស់ចេញ */
-.classes-table :deep(.p-datatable-table-container),
-.classes-table :deep(.p-datatable-header),
-.classes-table :deep(.p-datatable-footer),
-.classes-table :deep(.p-datatable-thead),
-.classes-table :deep(.p-datatable),
-.classes-table :deep(.p-datatable-mask) {
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-
-/* --- TABLE HEADER STYLE --- */
-/* បង្ខំកម្ពស់ Header ឲ្យខ្ពស់ស្រឡះជាង Data Rows */
+<style scoped>
+/* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
 .classes-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
-  color: #1d4ed8 !important;
-  /* ពណ៌អក្សរខៀវ Primary */
-  font-size: 0.75rem !important;
-  /* Font Header */
-  font-weight: 700 !important;
-  letter-spacing: 0.05em !important;
-
-  height: 52px !important;
-  /* បង្ខំកម្ពស់ 52px */
-  padding: 0.75rem 1rem !important;
-
-  vertical-align: middle !important;
-  white-space: nowrap !important;
+  font-size: 13px;
 }
 
-/* កោងជ្រុងខាងឆ្វេង និងស្ដាំនៃ Header */
-.classes-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.75rem !important;
-  border-bottom-left-radius: 0.75rem !important;
-}
-
-.classes-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.75rem !important;
-  border-bottom-right-radius: 0.75rem !important;
-}
-
-/* --- TABLE BODY ROWS (STU-xxxx) STYLE --- */
-/* Data Rows ទាប និង Compact ជាង Header */
 .classes-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-  color: #334155 !important;
-  font-size: 0.82rem !important;
-
-  height: 44px !important;
-  /* កម្ពស់ Data Row */
-  padding: 0.5rem 1rem !important;
-
-  vertical-align: middle !important;
-  white-space: nowrap !important;
-  transition: all 0.15s ease !important;
+  font-size: 14px;
 }
-
-/* កោងជ្រុងខាងឆ្វេង និងស្ដាំនៃ Body Rows */
-.classes-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.75rem !important;
-  border-bottom-left-radius: 0.75rem !important;
-}
-
-.classes-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.75rem !important;
-  border-bottom-right-radius: 0.75rem !important;
-  overflow: visible !important;
-}
-
-/* Effect ពេល Hover លើ Row */
-.classes-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc !important;
-}
-
-.classes-table :deep(.p-datatable-tbody > tr) {
-  outline: none !important;
-}
-
-/* --- PAGINATOR STYLE --- */
-.classes-table :deep(.p-paginator) {
-  background: transparent !important;
-  border: none !important;
-  padding-top: 1rem !important;
-}
-
-
-/* =========================================================
-   2. UTILITY HELPER STYLES
-   ========================================================= */
 
 /* បង្ខំកាត់ Text វែងៗកុំឲ្យធ្លាក់ជួរ (សម្រាប់ Card View) */
 .line-clamp-1 {
@@ -949,8 +892,6 @@ const removeSubjectFromClass = async (assignment) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-
 
 :deep(.custom-filter-dropdown) {
   background-color: #f8fafc !important;
@@ -996,4 +937,4 @@ const removeSubjectFromClass = async (assignment) => {
   /* slate-400 */
   width: 2rem !important;
 }
-</style> -->
+</style>

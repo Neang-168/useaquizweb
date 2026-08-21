@@ -65,47 +65,99 @@
     </div>
 
     <!-- MAIN REPORT TABLE SECTION -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Detailed Quiz Results</h2>
-        <span class="p-input-icon-left w-full sm:w-64">
-          <i class="pi pi-search text-slate-400 text-xs" />
-          <InputText v-model="searchQuery" placeholder="Search student or quiz..." class="w-full !bg-slate-50 !border-slate-200 !rounded-xl !py-1.5 !pl-8 !text-xs" />
-        </span>
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h3 class="text-sm font-bold text-slate-800 m-0">Detailed Quiz Results</h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative w-full sm:w-56">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText
+              v-model="searchQuery"
+              size="small"
+              placeholder="Search student or quiz..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+            />
+          </div>
+        </div>
       </div>
 
-      <!-- TABLE CONTAINER -->
-      <div class="classes-table">
-        <DataTable :value="reportData" paginator :rows="8" class="p-datatable-sm">
-          <Column field="code" header="STUDENT ID" sortable></Column>
-          <Column field="name" header="STUDENT NAME" sortable></Column>
-          <Column field="quizTitle" header="QUIZ TITLE"></Column>
-          <Column field="attempts" header="ATTEMPTS" sortable></Column>
-          <Column field="score" header="SCORE (%)" sortable>
-            <template #body="slotProps">
-              <span class="font-bold" :class="slotProps.data.score >= 70 ? 'text-emerald-600' : 'text-rose-600'">
-                {{ slotProps.data.score }}%
-              </span>
-            </template>
-          </Column>
-          <Column field="timeSpent" header="TIME SPENT"></Column>
-          <Column field="submittedAt" header="SUBMITTED DATE"></Column>
-          <Column field="status" header="RESULT">
-            <template #body="slotProps">
-              <span 
-                :class="{
-                  'bg-emerald-50 text-emerald-600 border-emerald-200': slotProps.data.status === 'Passed',
-                  'bg-rose-50 text-rose-600 border-rose-200': slotProps.data.status === 'Failed',
-                  'bg-amber-50 text-amber-600 border-amber-200': slotProps.data.status === 'Pending'
-                }" 
-                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border"
-              >
-                {{ slotProps.data.status }}
-              </span>
-            </template>
-          </Column>
-        </DataTable>
-      </div>
+      <DataTable :value="reportData" dataKey="code"
+        paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]"
+        scrollable scrollHeight="calc(100vh - 428px)" scrollDirection="both"
+        responsiveLayout="scroll" class="p-datatable-sm report-table" tableStyle="min-width: 1200px">
+        <template #empty>
+          <div class="text-center py-10 text-xs text-slate-400">
+            No quiz results found.
+          </div>
+        </template>
+
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ reportData.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, reportData.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ reportData.length }}</span>
+          </span>
+        </template>
+
+        <Column field="code" header="STUDENT ID" sortable style="padding-left: 1.25rem">
+          <template #body="slotProps">
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ slotProps.data.code }}</span>
+          </template>
+        </Column>
+
+        <Column field="name" header="STUDENT NAME" sortable>
+          <template #body="slotProps">
+            <span class="font-semibold text-slate-800 text-sm">{{ slotProps.data.name }}</span>
+          </template>
+        </Column>
+
+        <Column field="quizTitle" header="QUIZ TITLE">
+          <template #body="slotProps">
+            <span class="text-slate-600 text-sm">{{ slotProps.data.quizTitle }}</span>
+          </template>
+        </Column>
+
+        <Column field="attempts" header="ATTEMPTS" sortable>
+          <template #body="slotProps">
+            <span class="font-bold text-slate-700 text-sm">{{ slotProps.data.attempts }}</span>
+          </template>
+        </Column>
+
+        <Column field="score" header="SCORE (%)" sortable>
+          <template #body="slotProps">
+            <span class="font-bold text-sm" :class="slotProps.data.score >= 70 ? 'text-emerald-600' : 'text-rose-600'">
+              {{ slotProps.data.score }}%
+            </span>
+          </template>
+        </Column>
+
+        <Column field="timeSpent" header="TIME SPENT">
+          <template #body="slotProps">
+            <span class="text-slate-600 text-sm">{{ slotProps.data.timeSpent }}</span>
+          </template>
+        </Column>
+
+        <Column field="submittedAt" header="SUBMITTED DATE">
+          <template #body="slotProps">
+            <span class="text-slate-600 text-sm">{{ slotProps.data.submittedAt }}</span>
+          </template>
+        </Column>
+
+        <Column field="status" header="RESULT" style="padding-right: 1.25rem">
+          <template #body="slotProps">
+            <span
+              :class="{
+                'bg-emerald-50 text-emerald-600 border-emerald-200': slotProps.data.status === 'Passed',
+                'bg-rose-50 text-rose-600 border-rose-200': slotProps.data.status === 'Failed',
+                'bg-amber-50 text-amber-600 border-amber-200': slotProps.data.status === 'Pending'
+              }"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap"
+            >
+              {{ slotProps.data.status }}
+            </span>
+          </template>
+        </Column>
+      </DataTable>
     </div>
 
   </div>
@@ -118,6 +170,9 @@ import Column from 'primevue/column'
 import Dropdown from 'primevue/dropdown'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+
+const first = ref(0)
+const rows = ref(10)
 
 // Filter States
 const majorFilter = ref(null)
@@ -182,40 +237,11 @@ const reportData = ref([
   color: #334155 !important;
 }
 
-.classes-table :deep(.p-datatable-table) {
-  border-collapse: separate !important;
-  border-spacing: 0 0.5rem !important;
+.report-table :deep(.p-datatable-thead > tr > th) {
+  font-size: 13px;
 }
-.classes-table :deep(.p-datatable-table-container),
-.classes-table :deep(.p-datatable-thead),
-.classes-table :deep(.p-datatable) {
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-.classes-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
-  color: #1d4ed8 !important;
-  font-size: 0.75rem !important;
-  font-weight: 700 !important;
-  height: 52px !important;
-  padding: 0.75rem 1rem !important;
-}
-.classes-table :deep(.p-datatable-thead > tr > th:first-child) { border-top-left-radius: 0.75rem !important; border-bottom-left-radius: 0.75rem !important; }
-.classes-table :deep(.p-datatable-thead > tr > th:last-child) { border-top-right-radius: 0.75rem !important; border-bottom-right-radius: 0.75rem !important; }
 
-.classes-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-  color: #334155 !important;
-  font-size: 0.82rem !important;
-  height: 44px !important;
-  padding: 0.5rem 1rem !important;
+.report-table :deep(.p-datatable-tbody > tr > td) {
+  font-size: 14px;
 }
-.classes-table :deep(.p-datatable-tbody > tr > td:first-child) { border-top-left-radius: 0.75rem !important; border-bottom-left-radius: 0.75rem !important; }
-.classes-table :deep(.p-datatable-tbody > tr > td:last-child) { border-top-right-radius: 0.75rem !important; border-bottom-right-radius: 0.75rem !important; }
-.classes-table :deep(.p-datatable-tbody > tr:hover > td) { background: #f8fafc !important; }
 </style>

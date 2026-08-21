@@ -52,28 +52,6 @@
       </div>
     </div>
 
-    <!-- ======= TABLE HEADER BAR / SEARCH & SHOW MORE/LESS TOGGLE ======= -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-      <!-- Search Input -->
-      <div class="relative w-full sm:w-80">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <InputText v-model="filters['global'].value" placeholder="Search ID, student name, or class..."
-          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white" />
-      </div>
-
-      <div class="flex items-center justify-between w-full sm:w-auto gap-4">
-        <!-- <div class="text-xs text-slate-400 shrink-0">
-          Showing <b>{{ filteredStudents.length }}</b> entries
-        </div> -->
-
-        <!-- Show More / Show Less Button -->
-        <Button :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
-          class="!bg-blue-600 hover:!bg-blue-700 !text-white !border !border-slate-200 !rounded-xl !py-2 !px-3.5 !text-xs !font-semibold transition-all shadow-xs cursor-pointer"
-          @click="showAllColumns = !showAllColumns" />
-
-      </div>
-    </div>
-
     <!-- ======= FILTER BAR ======= -->
     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
       <!-- Header/Title Section សម្រាប់ Filter Bar -->
@@ -116,180 +94,206 @@
     </div>
 
     <!-- ======= DATA TABLE ======= -->
-    <DataTable :value="filteredStudents" v-model:filters="filters"
-      :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
-      paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]" responsiveLayout="scroll"
-      class="p-datatable-sm custom-app-table">
-      <template #empty>
-        <div class="text-center py-6 text-slate-400 text-sm">
-          No students found.
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h3 class="text-sm font-bold text-slate-800 m-0">Students List</h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative w-full sm:w-64">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText
+              v-model="filters['global'].value"
+              size="small"
+              placeholder="Search ID, name, or class..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+            />
+          </div>
+          <Button
+            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+            :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
+            size="small"
+            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
+            @click="showAllColumns = !showAllColumns"
+          />
         </div>
-      </template>
+      </div>
 
-      <!-- Student ID -->
-      <Column field="student_id" header="STUDENT ID" sortable>
-        <template #body="{ data }">
-          <span
-            class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-            {{ data.student_id }}
-          </span>
-        </template>
-      </Column>
-
-      <!-- Student Name (English) -->
-      <Column field="name_en" header="STUDENT NAME" sortable>
-        <template #body="{ data }">
-          <span class="font-semibold text-slate-800 text-xs">{{ data.name_en }}</span>
-        </template>
-      </Column>
-
-      <!-- Student Name (Khmer) -->
-      <Column v-if="showAllColumns" field="name_kh" header="STUDENT NAME (KH)">
-        <template #body="{ data }">
-          <span v-if="data.name_kh" class="text-slate-600 text-xs font-khmer">{{ data.name_kh }}</span>
-          <span v-else class="text-slate-400 text-xs">—</span>
-        </template>
-      </Column>
-
-      <!-- Gender -->
-      <Column v-if="showAllColumns" field="gender" header="GENDER">
-        <template #body="{ data }">
-          <span v-if="data.gender"
-            class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border"
-            :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200'">
-            <i class="text-[9px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
-            {{ data.gender }}
-          </span>
-          <span v-else class="text-slate-400 text-xs">—</span>
-        </template>
-      </Column>
-
-      <!-- Class -->
-      <Column field="class_name" header="CLASS" sortable>
-        <template #body="{ data }">
-          <span class="text-xs font-semibold text-slate-700">{{ data.class_name }}</span>
-        </template>
-      </Column>
-
-      <!-- Shift -->
-      <Column v-if="showAllColumns" field="shift" header="SHIFT">
-        <template #body="{ data }">
-          <span class="text-[11px] text-indigo-600 font-medium">{{ data.shift }}</span>
-        </template>
-      </Column>
-
-      <!-- Phone -->
-      <Column field="phone" header="PHONE">
-        <template #body="{ data }">
-          <span class="text-slate-700 text-xs">{{ data.phone }}</span>
-        </template>
-      </Column>
-
-      <!-- Email -->
-      <Column v-if="showAllColumns" field="email" header="EMAIL">
-        <template #body="{ data }">
-          <span class="text-slate-700 text-[11px]">{{ data.email }}</span>
-        </template>
-      </Column>
-
-      <!-- Faculty -->
-      <Column v-if="showAllColumns" field="faculty_name" header="FACULTY" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.faculty_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Department -->
-      <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Major / Department -->
-      <Column v-if="showAllColumns" field="major" header="MAJOR" sortable>
-        <template #body="{ data }">
-          <span
-            class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
-            {{ data.major }}
-          </span>
-        </template>
-      </Column>
-
-      <!-- Generation -->
-      <Column v-if="showAllColumns" field="generation" header="GENERATION" sortable>
-        <template #body="{ data }">
-          <span v-if="data.generation"
-            class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
-            {{ data.generation }}
-          </span>
-          <span v-else class="text-slate-400 text-xs">—</span>
-        </template>
-      </Column>
-
-      <!-- Academic Year -->
-      <Column v-if="showAllColumns" field="academic_year_name" header="ACADEMIC YEAR" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.academic_year_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Stage -->
-      <Column v-if="showAllColumns" field="stage_name" header="STAGE" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.stage_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Semester -->
-      <Column v-if="showAllColumns" field="semester_name" header="SEMESTER" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.semester_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Term -->
-      <Column v-if="showAllColumns" field="term_name" header="TERM" sortable>
-        <template #body="{ data }">
-          <span class="text-[11px] text-slate-600 font-medium">{{ data.term_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Status -->
-      <Column field="status" header="STATUS" sortable>
-        <template #body="{ data }">
-          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium" :class="{
-            'bg-emerald-50 text-emerald-700 border border-emerald-200': data.status === 'Active',
-            'bg-rose-50 text-rose-700 border border-rose-200': data.status === 'Inactive',
-            'bg-amber-50 text-amber-700 border border-amber-200': data.status === 'Suspended'
-          }">
-            <span class="w-1.5 h-1.5 rounded-full" :class="{
-              'bg-emerald-500': data.status === 'Active',
-              'bg-rose-500': data.status === 'Inactive',
-              'bg-amber-500': data.status === 'Suspended'
-            }"></span>
-            {{ data.status }}
-          </span>
-        </template>
-      </Column>
-
-      <!-- Actions -->
-      <Column header="ACTIONS" class="!text-right">
-        <template #body="{ data }">
-          <div class="flex items-center justify-end gap-1">
-            <Button icon="pi pi-sitemap"
-              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-emerald-50 !text-emerald-600 hover:!bg-emerald-100 hover:!text-emerald-700 !border !border-emerald-100 cursor-pointer text-xs"
-              title="Assign Class" @click="openAssignDialog(data)" />
-            <Button icon="pi pi-pencil"
-              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100 cursor-pointer text-xs"
-              title="Edit Student" @click="editStudent(data)" />
-            <Button icon="pi pi-trash"
-              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 cursor-pointer text-xs"
-              title="Delete Student" @click="confirmDeleteStudent(data)" />
+      <DataTable :value="filteredStudents" v-model:filters="filters"
+        :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
+        paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
+        scrollable scrollDirection="both" :tableStyle="showAllColumns ? 'min-width: 2200px' : 'min-width: 100%'"
+        class="p-datatable-sm students-table">
+        <template #empty>
+          <div class="text-center py-10 text-xs text-slate-400">
+            No students found.
           </div>
         </template>
-      </Column>
-    </DataTable>
+
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ filteredStudents.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredStudents.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ filteredStudents.length }}</span>
+          </span>
+        </template>
+
+        <!-- Student ID -->
+        <Column field="student_id" header="STUDENT ID" sortable style="padding-left: 1.25rem">
+          <template #body="{ data }">
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.student_id }}</span>
+          </template>
+        </Column>
+
+        <!-- Student Name (English) -->
+        <Column field="name_en" header="STUDENT NAME" sortable>
+          <template #body="{ data }">
+            <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
+          </template>
+        </Column>
+
+        <!-- Student Name (Khmer) -->
+        <Column v-if="showAllColumns" field="name_kh" header="STUDENT NAME (KH)">
+          <template #body="{ data }">
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Gender -->
+        <Column v-if="showAllColumns" field="gender" header="GENDER">
+          <template #body="{ data }">
+            <span v-if="data.gender"
+              class="inline-flex items-center gap-1 font-bold px-2.5 py-0.5 rounded-full text-xs border whitespace-nowrap"
+              :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-pink-50 text-pink-600 border-pink-200'">
+              <i class="text-[9px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
+              {{ data.gender }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Class -->
+        <Column field="class_name" header="CLASS" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-700 text-sm font-semibold">{{ data.class_name }}</span>
+          </template>
+        </Column>
+
+        <!-- Shift -->
+        <Column v-if="showAllColumns" field="shift" header="SHIFT">
+          <template #body="{ data }">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ data.shift }}
+            </span>
+          </template>
+        </Column>
+
+        <!-- Phone -->
+        <Column field="phone" header="PHONE">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.phone }}</span>
+          </template>
+        </Column>
+
+        <!-- Email -->
+        <Column v-if="showAllColumns" field="email" header="EMAIL">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.email }}</span>
+          </template>
+        </Column>
+
+        <!-- Faculty -->
+        <Column v-if="showAllColumns" field="faculty_name" header="FACULTY" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.faculty_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Department -->
+        <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.department_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Major / Department -->
+        <Column v-if="showAllColumns" field="major" header="MAJOR" sortable>
+          <template #body="{ data }">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block align-bottom bg-slate-100 text-slate-700 border-slate-200">
+              {{ data.major }}
+            </span>
+          </template>
+        </Column>
+
+        <!-- Generation -->
+        <Column v-if="showAllColumns" field="generation" header="GENERATION" sortable>
+          <template #body="{ data }">
+            <span v-if="data.generation"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ data.generation }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Academic Year -->
+        <Column v-if="showAllColumns" field="academic_year_name" header="ACADEMIC YEAR" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.academic_year_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Stage -->
+        <Column v-if="showAllColumns" field="stage_name" header="STAGE" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.stage_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Semester -->
+        <Column v-if="showAllColumns" field="semester_name" header="SEMESTER" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.semester_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Term -->
+        <Column v-if="showAllColumns" field="term_name" header="TERM" sortable>
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm">{{ data.term_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Status -->
+        <Column field="status" header="STATUS" sortable>
+          <template #body="{ data }">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap" :class="{
+              'bg-emerald-50 text-emerald-600 border-emerald-200': data.status === 'Active',
+              'bg-rose-50 text-rose-600 border-rose-200': data.status === 'Inactive',
+              'bg-amber-50 text-amber-600 border-amber-200': data.status === 'Suspended'
+            }">
+              {{ data.status }}
+            </span>
+          </template>
+        </Column>
+
+        <!-- Actions -->
+        <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
+          <template #body="{ data }">
+            <div class="flex items-center justify-end gap-1.5">
+              <Button icon="pi pi-sitemap"
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs cursor-pointer text-xs"
+                title="Assign Class" @click="openAssignDialog(data)" />
+              <Button icon="pi pi-pencil"
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-700 !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+                title="Edit Student" @click="editStudent(data)" />
+              <Button icon="pi pi-trash"
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 shadow-xs cursor-pointer text-xs"
+                title="Delete Student" @click="confirmDeleteStudent(data)" />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="studentDialog" :header="isEdit ? 'Edit Student Information' : 'Add New Student'"
@@ -614,6 +618,10 @@ onMounted(() => {
 // Search Filter
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 
+// Pagination display state (purely visual — mirrors FeedbackTable.vue's pattern)
+const first = ref(0)
+const rows = ref(10)
+
 // ======= Filter Bar (Faculty / Major / Class / Generation / Status) =======
 const facultyFilter = ref(null)
 const majorFilter = ref(null)
@@ -653,6 +661,12 @@ const filteredStudents = computed(() => students.value.filter((s) => {
   if (statusFilter.value && s.status !== statusFilter.value) return false
   return true
 }))
+
+// Jump back to page 1 whenever the filtered list changes shape, so the
+// paginator never gets stranded past the end of a smaller filtered list.
+watch(filteredStudents, () => {
+  first.value = 0
+})
 
 // Dialog States & Form
 const studentDialog = ref(false)
@@ -846,88 +860,14 @@ const saveAssign = async () => {
 }
 </script>
 
-<!-- <style scoped>
-/* Spacing រវាង Card Rows */
-.students-table :deep(.p-datatable-table) {
-  border-collapse: separate;
-  border-spacing: 0 0.35rem;
-}
-
-.students-table :deep(.p-datatable-table-container),
-.students-table :deep(.p-datatable-header),
-.students-table :deep(.p-datatable-footer),
-.students-table :deep(.p-datatable-thead),
-.students-table :deep(.p-datatable),
-.students-table :deep(.p-datatable-mask) {
-  border: none !important;
-  box-shadow: none;
-  background: transparent;
-}
-
-/* TABLE HEADER: បន្ថែម Padding 0.75rem លើ-ក្រោម ឲ្យកម្ពស់ខ្ពស់ស្រឡះ */
+<style scoped>
+/* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
 .students-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 0.75rem 0.85rem;
-  height: 40px !important;
-  /* កំណត់កម្ពស់ Header ឲ្យច្បាស់ (52px) */
-  padding: 0.85rem 0.85rem !important;
-  /* បន្ថែម padding លើ-ក្រោម */
-  white-space: nowrap;
-  background-color: #002060;
+  font-size: 13px;
 }
 
-.students-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.5rem;
-  border-bottom-left-radius: 0.5rem;
-}
-
-.students-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-}
-
-/* TABLE BODY CELLS: រក្សា Padding 0.38rem លើ-ក្រោម ឲ្យទាប Compact */
 .students-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  line-height: 1.2;
-  padding: 0.38rem 0.85rem;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.students-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.5rem;
-  border-bottom-left-radius: 0.5rem;
-}
-
-.students-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-  overflow: visible;
-}
-
-.students-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc;
-}
-
-.students-table :deep(.p-datatable-tbody > tr) {
-  outline: none;
-}
-
-.students-table :deep(.p-paginator) {
-  background: transparent;
-  border: none;
-  padding-top: 0.5rem;
+  font-size: 14px;
 }
 
 /*Filter */
@@ -968,4 +908,4 @@ const saveAssign = async () => {
   color: #94a3b8 !important;             /* slate-400 */
   width: 2rem !important;
 }
-</style> -->
+</style>

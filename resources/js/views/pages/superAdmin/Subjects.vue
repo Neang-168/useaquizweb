@@ -54,21 +54,6 @@
       </div>
     </div>
 
-    <!-- ======= TABLE HEADER BAR / SEARCH & FILTER ======= -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-      <div class="relative w-full sm:w-80">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <InputText
-          v-model="filters['global'].value"
-          placeholder="Search subject code or name..."
-          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white"
-        />
-      </div>
-      <div class="text-xs text-slate-400">
-        Showing <b>{{ filteredSubjects.length }}</b> entries
-      </div>
-    </div>
-
     <!-- ======= FILTER BAR ======= -->
     <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
       <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
@@ -87,41 +72,67 @@
         @click="clearFilters" />
     </div>
 
-    <!-- ======= DATA TABLE (floating card rows) ======= -->
-    <DataTable
-        :value="filteredSubjects"
-        v-model:filters="filters"
-        dataKey="id" 
-        paginator 
-        :rows="5" 
-        :rowsPerPageOptions="[5, 10, 20]"
-        responsiveLayout="scroll"
-        class="p-datatable-sm custom-app-table"
-      >
+    <!-- ======= DATA TABLE ======= -->
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h3 class="text-sm font-bold text-slate-800 m-0">Subjects List</h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative w-full sm:w-56">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText
+              v-model="filters['global'].value"
+              size="small"
+              placeholder="Search subject code or name..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      <DataTable
+          :value="filteredSubjects"
+          v-model:filters="filters"
+          dataKey="id"
+          paginator
+          :rows="rows"
+          v-model:first="first"
+          :rowsPerPageOptions="[10, 20, 50]"
+          scrollable scrollHeight="calc(100vh - 428px)"
+          scrollDirection="both"
+          tableStyle="min-width: 1500px"
+          responsiveLayout="scroll"
+          class="p-datatable-sm subjects-table"
+        >
         <template #empty>
-          <div class="text-center py-8 text-slate-400 text-sm">
+          <div class="text-center py-10 text-xs text-slate-400">
             No subjects found.
           </div>
         </template>
 
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ filteredSubjects.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredSubjects.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ filteredSubjects.length }}</span>
+          </span>
+        </template>
+
         <!-- Subject Code -->
-        <Column field="code" header="CODE" sortable class="!py-3.5">
+        <Column field="code" header="CODE" sortable style="padding-left: 1.25rem">
           <template #body="{ data }">
-            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-              {{ data.code }}
-            </span>
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.code }}</span>
           </template>
         </Column>
 
         <!-- Subject Name (English) -->
-        <Column field="name_en" header="SUBJECT NAME" sortable class="!py-3.5">
+        <Column field="name_en" header="SUBJECT NAME" sortable>
           <template #body="{ data }">
             <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
           </template>
         </Column>
 
         <!-- Subject Name (Khmer) -->
-        <Column field="name_kh" header="SUBJECT NAME (KH)" class="!py-3.5">
+        <Column field="name_kh" header="SUBJECT NAME (KH)">
           <template #body="{ data }">
             <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
             <span v-else class="text-slate-400 text-sm">—</span>
@@ -129,76 +140,73 @@
         </Column>
 
         <!-- Faculty -->
-        <Column field="faculty_name" header="FACULTY" sortable class="!py-3.5">
+        <Column field="faculty_name" header="FACULTY" sortable>
           <template #body="{ data }">
-            <span class="text-xs text-slate-700 font-medium">
-              {{ data.faculty_name }}
-            </span>
+            <span class="text-slate-600 text-sm">{{ data.faculty_name }}</span>
           </template>
         </Column>
 
         <!-- Department -->
-        <Column field="department_name" header="DEPARTMENT" sortable class="!py-3.5">
+        <Column field="department_name" header="DEPARTMENT" sortable>
           <template #body="{ data }">
-            <span class="text-xs text-slate-600 font-medium">{{ data.department_name || '—' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.department_name || '—' }}</span>
           </template>
         </Column>
 
         <!-- Major -->
-        <Column field="major_name" header="MAJOR" sortable class="!py-3.5">
+        <Column field="major_name" header="MAJOR" sortable>
           <template #body="{ data }">
-            <span class="text-xs text-slate-600 font-medium">{{ data.major_name || '—' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.major_name || '—' }}</span>
           </template>
         </Column>
 
         <!-- Academic Year -->
-        <Column field="academic_year_name" header="ACADEMIC YEAR" sortable class="!py-3.5">
+        <Column field="academic_year_name" header="ACADEMIC YEAR" sortable>
           <template #body="{ data }">
-            <span class="text-xs text-slate-600 font-medium">{{ data.academic_year_name || '—' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.academic_year_name || '—' }}</span>
           </template>
         </Column>
 
         <!-- Credits -->
-        <Column field="credits" header="CREDITS" sortable class="!py-3.5">
+        <Column field="credits" header="CREDITS" sortable>
           <template #body="{ data }">
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
               {{ data.credits }} Credits
             </span>
           </template>
         </Column>
 
         <!-- Status -->
-        <Column field="status" header="STATUS" sortable class="!py-3.5">
+        <Column field="status" header="STATUS" sortable>
           <template #body="{ data }">
-            <span 
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+            <span
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap"
+              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="data.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
               {{ data.status }}
             </span>
           </template>
         </Column>
 
         <!-- Actions -->
-        <Column header="ACTIONS" class="!text-right !py-3.5">
+        <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <!-- <Button
                 icon="pi pi-sitemap"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
                 title="Classes Teaching This Subject"
                 @click="openClassesDialog(data)"
               /> -->
               <Button
                 icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-slate-600 !border-slate-100 shadow-xs"
                 title="Edit Subject"
                 @click="editSubject(data)"
               />
               <Button
                 icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 hover:!bg-rose-100 !text-rose-600 !border-rose-100 shadow-xs"
                 title="Delete Subject"
                 @click="confirmDeleteSubject(data)"
               />
@@ -206,6 +214,7 @@
           </template>
         </Column>
       </DataTable>
+    </div>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog
@@ -465,6 +474,10 @@ onMounted(() => {
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 
+// Pagination display state (visual only)
+const first = ref(0)
+const rows = ref(10)
+
 // ======= Filter Bar (Faculty / Department / Major / Academic Year / Status) =======
 const facultyFilter = ref(null)
 const departmentFilter = ref(null)
@@ -667,84 +680,13 @@ const removeClassFromSubject = async (assignment) => {
 }
 </script>
 
-<!-- <style scoped>
-/* "Floating card row" table, matching the Teachers page: header text
-   sitting directly on the page background, and each row as its own
-   white rounded card with a soft shadow — spacing does the separating,
-   not gridlines. */
-.subjects-table :deep(.p-datatable-table) {
-  border-collapse: separate;
-  border-spacing: 0 0.6rem;
-}
-
-.subjects-table :deep(.p-datatable-table-container),
-.subjects-table :deep(.p-datatable-header),
-.subjects-table :deep(.p-datatable-footer),
-.subjects-table :deep(.p-datatable-thead),
-.subjects-table :deep(.p-datatable),
-.subjects-table :deep(.p-datatable-mask) {
-  border: none !important;
-  box-shadow: none;
-  background: transparent;
-}
-
+<style scoped>
+/* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
 .subjects-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #1d4ed8;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.5rem;
-  padding: 1rem 1rem;
-  white-space: nowrap;
-}
-
-.subjects-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.subjects-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  font-size: 13px;
 }
 
 .subjects-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  line-height: 1.25rem;
-  padding: 0.75rem 1rem;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
 }
-
-.subjects-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.subjects-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
-  overflow: visible;
-}
-
-.subjects-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc;
-}
-
-.subjects-table :deep(.p-datatable-tbody > tr) {
-  outline: none;
-}
-
-.subjects-table :deep(.p-paginator) {
-  background: transparent;
-  border: none;
-  padding-top: 0.75rem;
-}
-</style> -->
+</style>

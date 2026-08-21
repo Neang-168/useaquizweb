@@ -15,43 +15,37 @@
       </div>
 
       <Button label="Add New Teacher" icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-xs !font-semibold shadow-xs"
         @click="openNewDialog" />
     </div>
 
-    <!-- ======= TABLE HEADER BAR / SEARCH & SHOW MORE/LESS TOGGLE ======= -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-      <!-- Search Input -->
-      <div class="relative w-full sm:w-80">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <InputText v-model="filters['global'].value" placeholder="Search teacher code, name, or phone..."
-          class="w-full !pl-9 !pr-4 !py-2 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm focus:!bg-white" />
-      </div>
+    <!-- ======= TABLE CARD (header/search/filters/table, styled to match FeedbackTable) ======= -->
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h3 class="text-sm font-bold text-slate-800 m-0">Teachers List</h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <!-- Search Input -->
+          <div class="relative w-full sm:w-56">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText v-model="filters['global'].value" size="small" placeholder="Search teacher code, name, or phone..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
+          </div>
 
-      <!-- Show More / Show Less Toggle Button -->
-      <Button 
-        :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
-        @click="showAllColumns = !showAllColumns" />
-    </div>
+          <!-- Reset Filters Button -->
+          <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash" size="small"
+            class="!bg-rose-50 !border-rose-50 !text-rose-600 hover:!bg-rose-100 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            @click="clearFilters" />
 
-    <!-- ======= FILTER BAR ======= -->
-    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-      <!-- Filter Bar Header -->
-      <div class="flex items-center justify-between px-1">
-        <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
-          <i class="pi pi-filter text-blue-600 text-sm"></i>
-          <span>Filter Options</span>
+          <!-- Show More / Show Less Toggle Button -->
+          <Button :label="showAllColumns ? 'Show Less' : 'Show More'"
+            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'" size="small"
+            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            @click="showAllColumns = !showAllColumns" />
         </div>
-
-        <!-- Clear Filters Button -->
-        <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash"
-          class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
-          @click="clearFilters" />
       </div>
 
-      <!-- Dropdowns Grid Container (5 Columns on Desktop) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      <!-- ======= FILTER BAR ======= -->
+      <div class="p-4 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
 
         <!-- Faculty Filter -->
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
@@ -74,140 +68,145 @@
           class="w-full custom-filter-dropdown" />
 
       </div>
+
+      <!-- ======= DATA TABLE ======= -->
+      <DataTable :value="filteredTeachers" v-model:filters="filters" dataKey="id"
+        paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]"
+        scrollable scrollHeight="calc(100vh - 428px)" :scrollDirection="showAllColumns ? 'both' : 'vertical'"
+        responsiveLayout="scroll" :tableStyle="tableMinWidthStyle" class="p-datatable-sm teachers-table">
+        <template #empty>
+          <div class="text-center py-10 text-xs text-slate-400">
+            No teachers found.
+          </div>
+        </template>
+
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ filteredTeachers.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredTeachers.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ filteredTeachers.length }}</span>
+          </span>
+        </template>
+
+        <!-- No -->
+        <Column header="NO" style="width: 46px; padding-left: 1.25rem">
+          <template #body="{ index }">
+            <span class="text-slate-400 text-sm font-semibold">{{ index + 1 }}</span>
+          </template>
+        </Column>
+
+        <!-- Teacher Name (English) - តែងតែបង្ហាញ -->
+        <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 210px">
+          <template #body="{ data }">
+            <span class="font-semibold text-slate-800 text-sm whitespace-nowrap">{{ data.name_en }}</span>
+          </template>
+        </Column>
+
+        <!-- Teacher Name (Khmer) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="name_kh" header="TEACHER NAME (KH)" sortable style="min-width: 170px">
+          <template #body="{ data }">
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer whitespace-nowrap">{{ data.name_kh }}</span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Gender - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="gender" header="GENDER" sortable style="min-width: 90px">
+          <template #body="{ data }">
+            <span v-if="data.gender"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-flex items-center gap-1.5"
+              :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-pink-50 text-pink-600 border-pink-200'">
+              <i class="text-[10px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
+              {{ data.gender }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Faculty - តែងតែបង្ហាញ -->
+        <Column field="faculty_name" header="FACULTY" sortable style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.faculty_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Department - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.department_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Major - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="major_name" header="MAJOR" sortable style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.major_name || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Degree - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="degree" header="DEGREE" style="min-width: 150px">
+          <template #body="{ data }">
+            <span v-if="data.degree"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block align-bottom bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ data.degree }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Phone - តែងតែបង្ហាញ -->
+        <Column field="phone" header="PHONE" style="min-width: 120px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm font-mono whitespace-nowrap">{{ data.phone || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Email - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="email" header="EMAIL" style="min-width: 170px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.email || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Employment Type - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="type" header="EMPLOYMENT" sortable style="min-width: 110px">
+          <template #body="{ data }">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block"
+              :class="data.type === 'Full-Time' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'">
+              {{ data.type }}
+            </span>
+          </template>
+        </Column>
+
+        <!-- Status - តែងតែបង្ហាញ -->
+        <Column field="status" header="STATUS" sortable style="min-width: 100px">
+          <template #body="{ data }">
+            <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block"
+              :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'">
+              {{ data.status }}
+            </span>
+          </template>
+        </Column>
+
+        <!-- Actions - តែងតែបង្ហាញ -->
+        <Column header="ACTIONS" class="!text-right" style="min-width: 130px; padding-right: 1.25rem">
+          <template #body="{ data }">
+            <div class="flex items-center justify-end gap-1.5">
+              <!-- <Button icon="pi pi-book"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
+                title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
+              <Button icon="pi pi-pencil"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-800 !border-0 shadow-xs"
+                title="Edit Teacher" @click="editTeacher(data)" />
+              <Button icon="pi pi-trash"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border-0 shadow-xs"
+                title="Delete Teacher" @click="confirmDeleteTeacher(data)" />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
     </div>
-
-    <!-- ======= DATA TABLE (floating card rows, scrolls when there are many rows/columns) ======= -->
-    <DataTable :value="filteredTeachers" v-model:filters="filters" dataKey="id" paginator :rows="10"
-      :rowsPerPageOptions="[10, 20, 50]" scrollable scrollHeight="560px" responsiveLayout="scroll"
-      class="p-datatable-sm custom-app-table">
-      <template #empty>
-        <div class="text-center py-8 text-slate-400 text-sm">
-          No teachers found.
-        </div>
-      </template>
-
-      <!-- No -->
-      <Column header="NO" style="width: 46px">
-        <template #body="{ index }">
-          <span class="text-slate-400 text-sm font-semibold">{{ index + 1 }}</span>
-        </template>
-      </Column>
-
-      <!-- Teacher Name (English) - តែងតែបង្ហាញ -->
-      <Column field="name_en" header="TEACHER NAME" sortable style="min-width: 210px">
-        <template #body="{ data }">
-          <div class="flex items-center gap-2.5">
-            <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
-          </div>
-        </template>
-      </Column>
-
-      <!-- Teacher Name (Khmer) - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="name_kh" header="TEACHER NAME (KH)" sortable style="min-width: 170px">
-        <template #body="{ data }">
-          <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
-
-      <!-- Gender - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="gender" header="GENDER" sortable style="min-width: 90px">
-        <template #body="{ data }">
-          <span v-if="data.gender"
-            class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
-            :class="data.gender === 'Male' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200'">
-            <i class="text-[10px]" :class="data.gender === 'Male' ? 'pi pi-mars' : 'pi pi-venus'"></i>
-            {{ data.gender }}
-          </span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
-
-      <!-- Faculty - តែងតែបង្ហាញ -->
-      <Column field="faculty_name" header="FACULTY" sortable style="min-width: 160px">
-        <template #body="{ data }">
-          <span class="text-slate-600 text-sm font-medium">{{ data.faculty_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Department - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable style="min-width: 160px">
-        <template #body="{ data }">
-          <span class="text-slate-600 text-sm font-medium">{{ data.department_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Major - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="major_name" header="MAJOR" sortable style="min-width: 160px">
-        <template #body="{ data }">
-          <span class="text-slate-600 text-sm font-medium">{{ data.major_name || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Degree - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="degree" header="DEGREE" style="min-width: 150px">
-        <template #body="{ data }">
-          <span v-if="data.degree"
-            class="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
-            {{ data.degree }}
-          </span>
-          <span v-else class="text-slate-400 text-sm">—</span>
-        </template>
-      </Column>
-
-      <!-- Phone - តែងតែបង្ហាញ -->
-      <Column field="phone" header="PHONE" style="min-width: 120px">
-        <template #body="{ data }">
-          <span class="text-slate-600 text-sm font-mono">{{ data.phone || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Email - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="email" header="EMAIL" style="min-width: 170px">
-        <template #body="{ data }">
-          <span class="text-slate-500 text-sm">{{ data.email || '—' }}</span>
-        </template>
-      </Column>
-
-      <!-- Employment Type - លាក់/បង្ហាញ -->
-      <Column v-if="showAllColumns" field="type" header="EMPLOYMENT" sortable style="min-width: 110px">
-        <template #body="{ data }">
-          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border"
-            :class="data.type === 'Full-Time' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'">
-            {{ data.type }}
-          </span>
-        </template>
-      </Column>
-
-      <!-- Status - តែងតែបង្ហាញ -->
-      <Column field="status" header="STATUS" sortable style="min-width: 100px">
-        <template #body="{ data }">
-          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full border"
-            :class="data.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'">
-            <span class="w-1.5 h-1.5 rounded-full shrink-0"
-              :class="data.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
-            {{ data.status }}
-          </span>
-        </template>
-      </Column>
-
-      <!-- Actions - តែងតែបង្ហាញ -->
-      <Column header="ACTIONS" class="!text-right" style="min-width: 130px">
-        <template #body="{ data }">
-          <div class="flex items-center justify-end gap-1.5">
-            <!-- <Button icon="pi pi-book"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100"
-              title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
-            <Button icon="pi pi-pencil"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
-              title="Edit Teacher" @click="editTeacher(data)" />
-            <Button icon="pi pi-trash"
-              class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
-              title="Delete Teacher" @click="confirmDeleteTeacher(data)" />
-          </div>
-        </template>
-      </Column>
-    </DataTable>
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="teacherDialog" :header="isEdit ? 'Edit Teacher Information' : 'Add New Teacher'"
@@ -419,7 +418,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import api, { extractError } from '../../../api'
 
 // PrimeVue Components Import
@@ -447,6 +446,19 @@ const formatDateForApi = (date) => {
 
 //show column more and less
 const showAllColumns = ref(false);
+
+// Visual-only sizing for the table wrapper: with all columns shown the table
+// needs enough min-width to fit every column (so it scrolls horizontally),
+// but with only the "always visible" columns shown it should fit the
+// container width without a horizontal scrollbar.
+const tableMinWidthStyle = computed(() =>
+  showAllColumns.value ? 'min-width: 1700px' : 'min-width: 100%'
+)
+
+// Pagination display state (purely visual — mirrors FeedbackTable.vue's pattern
+// so the #paginatorstart slot can show "Showing X to Y of Z").
+const first = ref(0)
+const rows = ref(10)
 
 const teachers = ref([])
 const faculties = ref([])
@@ -534,6 +546,12 @@ const filteredTeachers = computed(() => teachers.value.filter((t) => {
   if (statusFilter.value && t.status !== statusFilter.value) return false
   return true
 }))
+
+// Jump back to page 1 whenever the underlying list changes shape, so the
+// paginator never gets stranded past the end of a smaller filtered list.
+watch(filteredTeachers, () => {
+  first.value = 0
+})
 
 // Dialog States & Form
 const teacherDialog = ref(false)
@@ -732,89 +750,15 @@ const removeAssignment = async (assignment) => {
 }
 </script>
 
-<!-- <style scoped>
-/* "Floating card row" table, styled to match the reference: green column
-   headers sitting directly on the page background, and each row as its
-   own white rounded card with a soft shadow — spacing does the
-   separating, not gridlines. */
-.teachers-table :deep(.p-datatable-table) {
-  border-collapse: separate;
-  border-spacing: 0 0.6rem;
-}
-
-/* Strip every border/outline PrimeVue's default theme puts on the table's
-   wrapper elements — otherwise a 1px frame survives around the scrollable
-   header/body even after the cells themselves go borderless. */
-.teachers-table :deep(.p-datatable-table-container),
-.teachers-table :deep(.p-datatable-header),
-.teachers-table :deep(.p-datatable-footer),
-.teachers-table :deep(.p-datatable-thead),
-.teachers-table :deep(.p-datatable),
-.teachers-table :deep(.p-datatable-mask) {
-  border: none !important;
-  box-shadow: none;
-  background: transparent;
-}
-
+<style scoped>
+/* Header two sizes smaller, body two sizes larger, than the table's base text-xs
+   (same convention as FeedbackTable.vue's .feedback-table). */
 .teachers-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.5rem;
-  padding: 1rem 1rem;
-  white-space: nowrap;
-  background-color: #002060;
-}
-
-.teachers-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.teachers-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  font-size: 13px;
 }
 
 .teachers-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  line-height: 1.25rem;
-  padding: 0.75rem 1rem;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.teachers-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.teachers-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
-  overflow: visible;
-}
-
-.teachers-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc;
-}
-
-.teachers-table :deep(.p-datatable-tbody > tr) {
-  outline: none;
-}
-
-.teachers-table :deep(.p-paginator) {
-  background: transparent;
-  border: none;
-  padding-top: 0.75rem;
+  font-size: 14px;
 }
 
 :deep(.custom-filter-dropdown) {
@@ -853,4 +797,4 @@ const removeAssignment = async (assignment) => {
   color: #94a3b8 !important;             /* slate-400 */
   width: 2rem !important;
 }
-</style> -->
+</style>

@@ -24,19 +24,43 @@
     </div>
 
     <!-- ======= DATA TABLE ======= -->
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex-1 flex flex-col min-h-0">
+
+      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <h3 class="text-sm font-bold text-slate-800 m-0">
+          {{ activeTab === 'all' ? 'All Users' : activeTab === 'admin' ? 'Admins' : activeTab === 'teacher' ? 'Teachers' : 'Students' }}
+        </h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative w-full sm:w-64">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText
+              v-model="filters['global'].value"
+              size="small"
+              placeholder="Search username, name, or email..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+            />
+          </div>
+          <Button
+            :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
+            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+            size="small"
+            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            @click="showAllColumns = !showAllColumns"
+          />
+        </div>
+      </div>
 
       <!-- Tab Header Buttons -->
-      <div class="flex flex-wrap border-b border-slate-200/80 bg-slate-50/70 p-2 gap-1.5 shrink-0">
+      <div class="flex flex-wrap gap-1.5 px-4 pt-3 shrink-0">
         <button
           type="button"
           @click="activeTab = 'all'"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'all' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'all' ? '!bg-slate-800 !text-white' : '!bg-slate-100 !text-slate-600 hover:!bg-slate-200'"
         >
           <i class="pi pi-users text-sm"></i>
           <span>All Users</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'all' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-600'">
             {{ countFor('all') }}
           </span>
         </button>
@@ -44,12 +68,12 @@
         <button
           type="button"
           @click="activeTab = 'admin'"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'admin' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'admin' ? '!bg-indigo-600 !text-white' : '!bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100'"
         >
           <i class="pi pi-shield text-sm"></i>
           <span>Admin</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'admin' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600'">
             {{ countFor('admin') }}
           </span>
         </button>
@@ -57,12 +81,12 @@
         <button
           type="button"
           @click="activeTab = 'teacher'"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'teacher' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'teacher' ? '!bg-blue-600 !text-white' : '!bg-blue-50 !text-blue-600 hover:!bg-blue-100'"
         >
           <i class="pi pi-id-card text-sm"></i>
           <span>Teacher</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'teacher' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'teacher' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600'">
             {{ countFor('teacher') }}
           </span>
         </button>
@@ -70,36 +94,15 @@
         <button
           type="button"
           @click="activeTab = 'student'"
-          class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'student' ? 'bg-white text-blue-600 shadow-xs ring-1 ring-slate-200/60 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/80 bg-transparent'"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
+          :class="activeTab === 'student' ? '!bg-emerald-600 !text-white' : '!bg-emerald-50 !text-emerald-600 hover:!bg-emerald-100'"
         >
           <i class="pi pi-graduation-cap text-sm"></i>
           <span>Student</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'student' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-200/70 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'student' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-600'">
             {{ countFor('student') }}
           </span>
         </button>
-      </div>
-
-      <!-- Table Header Bar / Search & Show More/Less Toggle -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 p-4 pb-0">
-        <!-- Search Input -->
-        <div class="relative w-full sm:w-80">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-          <InputText
-            v-model="filters['global'].value"
-            placeholder="Search username, name, or email..."
-            class="w-full !pl-9 !pr-3.5 !py-2 !bg-slate-50/80 hover:!bg-slate-100/80 focus:!bg-white !border-slate-200 focus:!border-blue-500 focus:!ring-2 focus:!ring-blue-100 !rounded-lg !text-xs transition-all placeholder:text-slate-400"
-          />
-        </div>
-
-        <!-- Show More / Show Less Toggle Button -->
-        <Button
-          
-          :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
-          class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
-          @click="showAllColumns = !showAllColumns"
-        />
       </div>
 
       <!-- ======= FILTER BAR ======= -->
@@ -111,8 +114,8 @@
           placeholder="All Genders" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
         <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
           placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
-        <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash"
-          class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-lg !py-2 !px-3 !text-xs !font-semibold cursor-pointer"
+        <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash" size="small"
+          class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-rose-50 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
           @click="clearFilters" />
       </div>
 
@@ -120,84 +123,88 @@
       <DataTable
         :value="filteredUsers"
         v-model:filters="filters"
+        v-model:first="first"
         :globalFilterFields="['username', 'email', 'first_name', 'last_name', 'name_kh', 'phone']"
         dataKey="id"
         paginator
         paginatorPosition="bottom"
-        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-        :rows="10"
+        :rows="rows"
         :rowsPerPageOptions="[10, 20, 50]"
         scrollable
         scrollHeight="flex"
+        :scrollDirection="showAllColumns ? 'both' : 'vertical'"
         responsiveLayout="scroll"
         :loading="loading"
-        class="p-datatable-sm custom-app-table flex-1 min-h-0 mt-4 mx-4 mb-4 text-xs"
+        :tableStyle="showAllColumns ? 'min-width: 1900px' : 'min-width: 100%'"
+        class="p-datatable-sm users-table flex-1 min-h-0 mt-3"
       >
         <template #empty>
-          <div class="text-center py-16 text-slate-400 text-xs flex flex-col items-center gap-2.5">
-            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-              <i class="pi pi-inbox text-xl"></i>
-            </div>
-            <p class="m-0 font-medium text-slate-500">No users found</p>
+          <div class="text-center py-10 text-xs text-slate-400">
+            No users found.
           </div>
         </template>
 
+        <template #paginatorstart>
+          <span class="text-xs text-slate-500">
+            Showing <span class="font-semibold text-slate-700">{{ filteredUsers.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredUsers.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ filteredUsers.length }}</span>
+          </span>
+        </template>
+
         <!-- Username - តែងតែបង្ហាញ -->
-        <Column field="username" header="USERNAME" sortable style="min-width: 130px">
+        <Column field="username" header="USERNAME" sortable style="min-width: 130px; padding-left: 1.25rem">
           <template #body="{ data }">
-            <span class="font-mono text-[11px] font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100 inline-block tracking-tight">
-              {{ data.username }}
-            </span>
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.username }}</span>
           </template>
         </Column>
 
         <!-- Full Name - តែងតែបង្ហាញ -->
         <Column field="first_name" header="FULL NAME" sortable style="min-width: 180px">
           <template #body="{ data }">
-            <span class="font-medium text-slate-800">{{ data.first_name }} {{ data.last_name }}</span>
+            <span class="font-semibold text-slate-800 text-sm">{{ data.first_name }} {{ data.last_name }}</span>
           </template>
         </Column>
 
         <!-- Name (Khmer) - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
           <template #body="{ data }">
-            <span class="text-slate-600 font-khmer">{{ data.name_kh || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm font-khmer">{{ data.name_kh || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Email - តែងតែបង្ហាញ -->
         <Column field="email" header="EMAIL" sortable style="min-width: 190px">
           <template #body="{ data }">
-            <span class="text-slate-600 hover:text-slate-900 transition-colors">{{ data.email }}</span>
+            <span class="text-slate-600 text-sm">{{ data.email }}</span>
           </template>
         </Column>
 
         <!-- Phone - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="phone" header="PHONE" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="text-slate-600 font-mono text-[11px]">{{ data.phone || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.phone || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Gender - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="gender" header="GENDER" style="width: 100px">
           <template #body="{ data }">
-            <span class="text-slate-600">{{ data.gender || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.gender || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Date of Birth - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="dob" header="DATE OF BIRTH" style="width: 130px">
           <template #body="{ data }">
-            <span class="text-slate-600 font-mono text-[11px]">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Address - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="address" header="ADDRESS" style="min-width: 180px">
           <template #body="{ data }">
-            <span class="text-slate-600 truncate block max-w-[200px]" :title="data.address">{{ data.address || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm">{{ data.address || 'N/A' }}</span>
           </template>
         </Column>
 
@@ -205,7 +212,7 @@
         <Column header="ROLE" sortable style="width: 150px">
           <template #body="{ data }">
             <span
-              class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border inline-block tracking-tight"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap"
               :class="roleBadgeClass(data.role?.name)"
             >
               {{ data.role?.name || 'No role' }}
@@ -216,16 +223,14 @@
         <!-- Employee / Student Code - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" header="CODE" style="width: 130px">
           <template #body="{ data }">
-            <span class="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/80">
-              {{ detailsFor(data).primary || 'N/A' }}
-            </span>
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ detailsFor(data).primary || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Department / Faculty / Admission - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" header="DEPARTMENT / FACULTY" style="min-width: 180px">
           <template #body="{ data }">
-            <span class="text-slate-500 font-medium">{{ detailsFor(data).secondary || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm">{{ detailsFor(data).secondary || 'N/A' }}</span>
           </template>
         </Column>
 
@@ -233,28 +238,29 @@
         <Column field="status" header="STATUS" sortable style="width: 120px">
           <template #body="{ data }">
             <span
-              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border"
-              :class="data.status ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' : 'bg-rose-50 text-rose-700 border-rose-200/80'"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap"
+              :class="data.status ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="data.status ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
-              {{ data.status ? 'Active' : 'Inactive' }}
+              {{ data.status ? 'ACTIVE' : 'INACTIVE' }}
             </span>
           </template>
         </Column>
 
         <!-- Actions - តែងតែបង្ហាញ -->
-        <Column header="ACTIONS" style="width: 100px" class="!text-center users-actions-col">
+        <Column header="ACTIONS" style="width: 100px; padding-right: 1.25rem" class="!text-center users-actions-col">
           <template #body="{ data }">
             <div class="flex items-center justify-center gap-1.5">
               <Button
                 icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-blue-50 !text-blue-600 hover:!bg-blue-100 hover:!text-blue-700 !border !border-blue-100"
+                size="small"
+                class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-600 !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
                 title="Edit User"
                 @click="editUser(data)"
               />
               <Button
                 icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-lg !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100"
+                size="small"
+                class="!bg-rose-50 hover:!bg-rose-100 !border-rose-50 !text-rose-600 !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
                 title="Delete User"
                 @click="confirmDeleteUser(data)"
               />
@@ -605,7 +611,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { FilterMatchMode } from '@primevue/core/api'
 import api, { extractError } from '../../../api'
 
@@ -726,6 +732,9 @@ const filteredUsers = computed(() => {
   })
 })
 
+const first = ref(0)
+const rows = ref(10)
+
 const defaultRoleForTab = computed(() => {
   if (activeTab.value === 'teacher') return 'Teacher'
   if (activeTab.value === 'student') return 'Student'
@@ -743,6 +752,12 @@ const addLabel = computed(() => {
 // ======= Search Filter =======
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+})
+
+// Jump back to page 1 whenever the tab, filters, or search change, so the
+// paginator never gets stranded past the end of a smaller filtered list.
+watch([filteredUsers, () => filters.value.global.value], () => {
+  first.value = 0
 })
 
 // ======= Dropdown helpers (Teacher section) =======
@@ -1036,95 +1051,17 @@ const onAvatarSelect = async (event) => {
 }
 </script>
 
-<!-- <style scoped>
-/* "Floating card row" table, matching the Teachers page: header text
-   sitting directly on the page background, and each row as its own
-   white rounded card with a soft shadow — spacing does the separating,
-   not gridlines. */
-.users-table :deep(.p-datatable-table) {
-  border-collapse: separate;
-  border-spacing: 0 0.6rem;
-}
-
-.users-table :deep(.p-datatable-table-container),
-.users-table :deep(.p-datatable-header),
-.users-table :deep(.p-datatable-footer),
-.users-table :deep(.p-datatable-thead),
-.users-table :deep(.p-datatable),
-.users-table :deep(.p-datatable-mask) {
-  border: none !important;
-  box-shadow: none;
-  background: transparent;
-}
-
+<style scoped>
+/* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
 .users-table :deep(.p-datatable-thead > tr > th) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.5rem;
-  padding: 1rem 1rem;
-  white-space: nowrap;
-  background-color: #002060;
-}
-
-.users-table :deep(.p-datatable-thead > tr > th:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.users-table :deep(.p-datatable-thead > tr > th:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+  font-size: 13px;
 }
 
 .users-table :deep(.p-datatable-tbody > tr > td) {
-  background: #ffffff;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 5px rgba(15, 23, 42, 0.05);
-  line-height: 1.25rem;
-  padding: 0.75rem 1rem;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 220px;
-}
-
-.users-table :deep(.p-datatable-tbody > tr > td:first-child) {
-  border-top-left-radius: 0.6rem;
-  border-bottom-left-radius: 0.6rem;
-}
-
-.users-table :deep(.p-datatable-tbody > tr > td:last-child) {
-  border-top-right-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
-  overflow: visible;
-  max-width: none;
-}
-
-.users-table :deep(.p-datatable-tbody > tr:hover > td) {
-  background: #f8fafc;
-}
-
-.users-table :deep(.p-datatable-tbody > tr) {
-  outline: none;
+  font-size: 14px;
 }
 
 .font-khmer {
   font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
 }
-
-.users-table :deep(.p-paginator) {
-  background: transparent;
-  border: none;
-  padding-top: 0.75rem;
-}
-
-.users-table :deep(.p-datatable-wrapper) {
-  min-height: 0;
-}
-</style> -->
+</style>

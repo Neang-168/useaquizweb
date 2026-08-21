@@ -1,38 +1,38 @@
 <template>
-  <div class="space-y-3">
-    <!-- 1. Header Page -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <div class="space-y-4 max-w-7xl mx-auto font-sans pb-10">
+    <!-- 1. Header Page & Controls -->
+    <div class="bg-white p-6 rounded-2xl shadow-xs border border-[#D8E7EC] space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-base font-bold text-slate-800 m-0">Grading & Reports</h1>
-          <p class="text-[11px] text-slate-500 m-0 mt-0.5">Grade essay answers and download score reports for any class.</p>
+          <h1 class="text-2xl font-bold text-[#002060] tracking-tight m-0">Grading & Reports</h1>
+          <p class="text-xs text-slate-500 m-0 mt-1">Grade essay answers and download score reports for any class.</p>
         </div>
 
         <!-- Table / Chart view toggle -->
-        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg self-start sm:self-auto">
+        <div class="flex items-center gap-1 bg-[#F8F8F8] p-1.5 rounded-xl border border-[#D8E7EC] self-start sm:self-auto">
           <Button
             label="Show Table"
             icon="pi pi-table"
             size="small"
-            :class="viewMode === 'table' ? '!bg-white !text-indigo-600 shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-slate-700'"
-            class="!border-0 !rounded-md !text-[11px] !font-semibold !px-2.5 !py-1"
+            :class="viewMode === 'table' ? '!bg-[#002060] !text-white shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-[#002060]'"
+            class="!border-0 !rounded-lg !text-xs !font-bold !px-3 !py-1.5 transition-all"
             @click="viewMode = 'table'"
           />
           <Button
             label="Show Chart"
             icon="pi pi-chart-bar"
             size="small"
-            :class="viewMode === 'chart' ? '!bg-white !text-indigo-600 shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-slate-700'"
-            class="!border-0 !rounded-md !text-[11px] !font-semibold !px-2.5 !py-1"
+            :class="viewMode === 'chart' ? '!bg-[#002060] !text-white shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-[#002060]'"
+            class="!border-0 !rounded-lg !text-xs !font-bold !px-3 !py-1.5 transition-all"
             @click="viewMode = 'chart'"
           />
         </div>
       </div>
 
-      <!-- Filter Bar: Class / Subject / Quiz, each narrowing the ones after it -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      <!-- Filter Bar: Class / Subject / Quiz -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Class</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Class</label>
           <Dropdown
             v-model="selectedClass"
             :options="classOptions"
@@ -41,11 +41,11 @@
             placeholder="All Classes"
             showClear
             size="small"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Subject</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
           <Dropdown
             v-model="selectedSubject"
             :options="subjectOptions"
@@ -54,11 +54,11 @@
             placeholder="All Subjects"
             showClear
             size="small"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quiz / Exam</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quiz / Exam</label>
           <Dropdown
             v-model="selectedQuiz"
             :options="quizOptions"
@@ -68,7 +68,7 @@
             :disabled="!quizOptions.length"
             filter
             size="small"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg text-xs"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           />
         </div>
       </div>
@@ -96,8 +96,6 @@ const viewMode = ref('table')
 
 const classOptions = computed(() => myClasses.value.map(c => ({ label: c.className, value: c.class_id })))
 
-// Subject options are built from whichever subjects already appear among
-// this teacher's own quizzes — no separate lookup endpoint needed.
 const subjectOptions = computed(() => {
   const seen = new Map()
   myQuizzes.value.forEach(q => {
@@ -124,8 +122,6 @@ const fetchLookups = async () => {
 
 onMounted(fetchLookups)
 
-// Keep the selected quiz valid whenever the Class/Subject filters narrow
-// (or widen) the list, falling back to the first quiz that still matches.
 watch(quizOptions, (options) => {
   if (!options.some(o => o.id === selectedQuiz.value)) {
     selectedQuiz.value = options[0]?.id ?? null

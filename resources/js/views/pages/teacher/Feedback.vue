@@ -1,21 +1,21 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-7xl mx-auto font-sans pb-10">
     <!-- ======= PAGE HEADER ======= -->
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+    <div class="bg-white p-6 rounded-2xl shadow-xs border border-[#D8E7EC] space-y-4">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
-          <i class="pi pi-comments text-indigo-600 text-2xl"></i>
+        <h1 class="text-2xl font-bold text-[#002060] tracking-tight m-0 flex items-center gap-2.5">
+          <i class="pi pi-comments text-[#63C7DF] text-2xl"></i>
           Student Feedback
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          Send encouragement or study guidance to students, especially those with low scores.
+          Send encouragement or study guidance to students, especially those who need extra support.
         </p>
       </div>
 
-      <!-- Filter Bar: Class / Subject / Quiz, each narrowing the ones after it -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Filter Bar: Class / Subject / Quiz -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Class</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Class</label>
           <Dropdown
             v-model="classFilter"
             :options="classOptions"
@@ -23,11 +23,11 @@
             option-value="value"
             placeholder="All Classes"
             showClear
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Subject</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
           <Dropdown
             v-model="subjectFilter"
             :options="subjectOptions"
@@ -35,11 +35,11 @@
             option-value="value"
             placeholder="All Subjects"
             showClear
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Quiz / Exam</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quiz / Exam</label>
           <Dropdown
             v-model="selectedQuiz"
             :options="quizOptions"
@@ -48,22 +48,25 @@
             :placeholder="quizOptions.length ? 'Select a quiz' : 'No quizzes match'"
             :disabled="!quizOptions.length"
             filter
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+            class="w-full !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs"
           >
             <template #dropdownicon>
-              <i class="pi pi-book text-slate-400 text-xs"></i>
+              <i class="pi pi-book text-[#63C7DF] text-xs"></i>
             </template>
           </Dropdown>
         </div>
       </div>
     </div>
 
-    <div v-if="!quizOptions.length" class="text-center py-12 bg-white rounded-2xl border border-slate-200">
-      <i class="pi pi-inbox text-3xl text-slate-300 mb-2"></i>
-      <p class="text-xs text-slate-500">
+    <!-- Empty State -->
+    <div v-if="!quizOptions.length" class="text-center py-16 bg-white rounded-2xl border border-[#D8E7EC]">
+      <i class="pi pi-inbox text-4xl text-slate-300 mb-3 block"></i>
+      <p class="text-xs font-semibold text-slate-500 m-0">
         {{ myQuizzes.length ? 'No quizzes match this filter.' : "You don't have any quizzes yet — feedback becomes available once students submit one." }}
       </p>
     </div>
+
+    <!-- Feedback Table Component -->
     <FeedbackTable v-else :quiz-id="selectedQuiz" />
   </div>
 </template>
@@ -79,8 +82,6 @@ const selectedQuiz = ref(null)
 const classFilter = ref(null)
 const subjectFilter = ref(null)
 
-// Option lists are built from whichever classes/subjects already appear
-// among this teacher's own quizzes — no separate lookup endpoint needed.
 const uniqueOptions = (idKey, labelKey) => {
   const seen = new Map()
   myQuizzes.value.forEach(q => {
@@ -100,8 +101,6 @@ const filteredQuizzes = computed(() => myQuizzes.value.filter(q => {
 
 const quizOptions = computed(() => filteredQuizzes.value.map(q => ({ label: `${q.title} (${q.className})`, value: q.id })))
 
-// Keep the selected quiz valid whenever the Class/Subject filters narrow
-// (or widen) the list, falling back to the first quiz that still matches.
 watch(quizOptions, (options) => {
   if (!options.some(o => o.value === selectedQuiz.value)) {
     selectedQuiz.value = options[0]?.value ?? null

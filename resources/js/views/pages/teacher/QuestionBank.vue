@@ -13,7 +13,7 @@
           label="Import / Export"
           icon="pi pi-file-import"
           size="small"
-          class="!bg-[#002060]/5 hover:!bg-[#002060]/10 !border-[#002060]/10 !text-[#002060] !rounded-xl !text-xs !font-semibold"
+          class="!bg-[#e4ac40] hover:!bg-[#e8a726] !border-[#e4ac40] !text-white !rounded-xl !text-xs !font-semibold"
           @click="router.push({ name: 'teacher.questionbank.importExport' })"
         />
         <Button

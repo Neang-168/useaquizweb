@@ -1,26 +1,26 @@
 <template>
   <div class="space-y-6">
     <!-- Back link -->
-    <router-link :to="{ name: 'teacher.classes' }" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 no-underline">
+    <router-link :to="{ name: 'teacher.classes' }" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-[#002060] no-underline">
       <i class="pi pi-arrow-left text-[10px]"></i>
       <span>Back to My Classes</span>
     </router-link>
 
-    <div v-if="!classInfo" class="text-center py-16 bg-white rounded-2xl border border-slate-200">
+    <div v-if="!classInfo" class="text-center py-16 bg-[#F8F8F8] rounded-2xl border border-slate-200">
       <p class="text-xs text-slate-400">Loading...</p>
     </div>
 
     <template v-else>
       <!-- Header -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <i class="pi pi-book text-indigo-500 text-sm"></i>
-            <h1 class="text-xl font-bold text-slate-800 m-0">{{ classInfo.subject }}</h1>
-            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">{{ classInfo.shift }}</span>
+            <i class="pi pi-book text-[#002060] text-sm"></i>
+            <h1 class="text-xl font-bold text-[#002060] m-0">{{ classInfo.subject }}</h1>
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC]">{{ classInfo.shift }}</span>
           </div>
           <p class="text-xs text-slate-500 mt-1">
-            <span class="font-semibold text-slate-600">{{ classInfo.className }}</span>
+            <span class="font-semibold text-slate-700">{{ classInfo.className }}</span>
             • {{ classInfo.totalStudents }} students
             • Room {{ classInfo.room }}
           </p>
@@ -29,13 +29,13 @@
           <Button as="router-link" size="small"
             :to="{ name: 'teacher.questionbank', query: { subject_id: classInfo.subject_id } }"
             label="Question Bank" icon="pi pi-book"
-            class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-700 !rounded-lg !text-xs no-underline"
+            class="!bg-[#e4ac40] hover:!bg-[#e4ac40] !border-slate-200 !text-white !rounded-lg !text-xs no-underline !font-semibold"
           />
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="bg-slate-100 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
+      <div class="bg-[#F8F8F8] p-1 rounded-xl w-full sm:w-fit overflow-x-auto border border-slate-200">
         <SelectButton
           v-model="activeTab"
           :options="tabs"
@@ -49,7 +49,7 @@
       <!-- ============ TAB: OVERVIEW ============ -->
       <div v-if="activeTab === 'overview'" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
         <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 class="text-sm font-bold text-slate-800 m-0">
+          <h3 class="text-sm font-bold text-[#002060] m-0">
             Student Roster <span class="text-slate-400 font-medium">({{ filteredStudents.length }})</span>
           </h3>
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -59,7 +59,7 @@
                 v-model="rosterSearch"
                 size="small"
                 placeholder="Search by name or student ID..."
-                class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+                class="w-full !pl-9 !pr-3 !bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs focus:!border-[#002060]"
               />
             </div>
             <Dropdown
@@ -68,7 +68,7 @@
               option-label="label"
               option-value="value"
               size="small"
-              class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs w-full sm:w-36"
+              class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs w-full sm:w-36"
             />
             <SplitButton
               label="Export CSV"
@@ -97,7 +97,7 @@
           </Column>
           <Column field="student_id" header="STUDENT ID">
             <template #body="{ data }">
-              <span class="font-mono font-bold text-indigo-600 text-xs">{{ data.student_id }}</span>
+              <span class="font-mono font-bold text-[#002060] text-xs">{{ data.student_id }}</span>
             </template>
           </Column>
           <Column field="name" header="NAME">
@@ -117,7 +117,7 @@
           </Column>
           <Column header="STATUS" class="!text-center">
             <template #body>
-              <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 font-semibold px-2 py-0.5 rounded-md text-[10px]">
+              <span class="bg-[#63c7df] text-white border border-[#D8E7EC] font-semibold px-2 py-0.5 rounded-md text-[10px]">
                 Enrolled
               </span>
             </template>
@@ -132,7 +132,7 @@
             label="Create Quiz"
             icon="pi pi-plus"
             size="small"
-            class="!bg-indigo-600 hover:!bg-indigo-700 !border-indigo-600 !text-white !rounded-lg !text-xs shadow-sm"
+            class="!bg-[#002060] hover:!bg-[#002060]/90 !border-[#002060] !text-white !rounded-lg !text-xs shadow-sm"
             @click="openQuizModal()"
           />
         </div>
@@ -141,7 +141,7 @@
           <div
             v-for="quiz in quizzes"
             :key="quiz.id"
-            class="bg-white border border-slate-200 rounded-2xl p-5 hover:border-indigo-200 hover:shadow-md transition-all flex flex-col justify-between"
+            class="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#63C7DF] hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div>
               <div class="flex items-center justify-between gap-2 mb-3">
@@ -154,8 +154,8 @@
                 <span v-if="quiz.passMark !== null && quiz.passMark !== undefined" class="text-[10px] text-slate-400">Pass mark: {{ quiz.passMark }}%</span>
               </div>
 
-              <h3 class="text-base font-bold text-slate-800 m-0">{{ quiz.title }}</h3>
-              <p v-if="quiz.description" class="text-xs text-slate-400 mt-1 line-clamp-2">{{ quiz.description }}</p>
+              <h3 class="text-base font-bold text-[#002060] m-0">{{ quiz.title }}</h3>
+              <p v-if="quiz.description" class="text-xs text-slate-500 mt-1 line-clamp-2">{{ quiz.description }}</p>
 
               <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
                 <div class="flex items-center justify-between text-slate-500">
@@ -164,7 +164,7 @@
                 </div>
                 <div class="flex items-center justify-between text-slate-500">
                   <span class="flex items-center gap-1.5"><i class="pi pi-list text-[11px]"></i> Questions:</span>
-                  <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{{ quiz.totalQuestions }} ({{ quiz.totalPoints }} pt{{ quiz.totalPoints === 1 ? '' : 's' }})</span>
+                  <span class="font-bold text-[#002060] bg-[#D8E7EC]/40 px-2 py-0.5 rounded">{{ quiz.totalQuestions }} ({{ quiz.totalPoints }} pt{{ quiz.totalPoints === 1 ? '' : 's' }})</span>
                 </div>
                 <div class="flex items-center justify-between text-slate-500">
                   <span class="flex items-center gap-1.5"><i class="pi pi-refresh text-[11px]"></i> Attempts allowed:</span>
@@ -176,24 +176,24 @@
                 </div>
                 <div class="flex items-center justify-between text-slate-500">
                   <span class="flex items-center gap-1.5"><i class="pi pi-users text-[11px]"></i> Submitted:</span>
-                  <span class="font-bold text-emerald-600">{{ quiz.submittedCount }}/{{ quiz.totalStudents }} students</span>
+                  <span class="font-bold text-[#63C7DF]">{{ quiz.submittedCount }}/{{ quiz.totalStudents }} students</span>
                 </div>
               </div>
             </div>
 
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
               <div class="flex items-center gap-1">
-                <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600" @click="openPreview(quiz)" />
+                <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-slate-400 hover:!text-[#002060]" @click="openPreview(quiz)" />
                 <Button
                   v-if="isEditable(quiz)"
                   icon="pi pi-pencil" text rounded size="small" severity="secondary" title="Edit"
-                  class="!w-7 !h-7 !text-slate-400 hover:!text-indigo-600"
+                  class="!w-7 !h-7 !text-slate-400 hover:!text-[#002060]"
                   @click="openQuizModal(quiz)"
                 />
                 <Button
                   v-if="quiz.status === 'Draft'"
                   icon="pi pi-trash" text rounded size="small" severity="secondary" title="Delete"
-                  class="!w-7 !h-7 !text-slate-400 hover:!text-rose-500"
+                  class="!w-7 !h-7 !text-slate-400 hover:!text-[#D71818]"
                   @click="deleteQuiz(quiz.id)"
                 />
               </div>
@@ -203,7 +203,7 @@
                 label="Publish"
                 size="small"
                 text
-                class="!bg-emerald-50 hover:!bg-emerald-100 !text-emerald-600 !rounded-xl !text-xs !font-bold !px-3 !py-1.5"
+                class="!bg-[#63C7DF]/15 hover:!bg-[#63C7DF]/30 !text-[#002060] !rounded-xl !text-xs !font-bold !px-3 !py-1.5"
                 @click="publishQuiz(quiz)"
               />
               <Button
@@ -211,7 +211,7 @@
                 label="Close Quiz"
                 size="small"
                 text
-                class="!bg-amber-50 hover:!bg-amber-100 !text-amber-600 !rounded-xl !text-xs !font-bold !px-3 !py-1.5"
+                class="!bg-[#E4AC40]/15 hover:!bg-[#E4AC40]/30 !text-[#E4AC40] !rounded-xl !text-xs !font-bold !px-3 !py-1.5"
                 @click="closeQuiz(quiz)"
               />
               <span v-else class="text-[11px] text-slate-400 font-semibold">Closed</span>
@@ -227,19 +227,95 @@
 
       <!-- ============ TAB: SCORE REPORT ============ -->
       <div v-if="activeTab === 'scores'" class="space-y-4">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quiz / Exam</label>
-          <Dropdown
-            v-model="selectedScoreQuiz"
-            :options="quizzes"
-            option-label="title"
-            option-value="id"
-            placeholder="Select a quiz"
-            size="small"
-            class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700 w-full sm:w-64"
-          />
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Select Quiz / Exam</label>
+            <Dropdown
+              v-model="selectedScoreQuiz"
+              :options="quizzes"
+              option-label="title"
+              option-value="id"
+              placeholder="Select a quiz"
+              size="small"
+              class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700 w-full sm:w-64"
+            />
+          </div>
         </div>
-        <ScoreTable v-if="selectedScoreQuiz" :quiz-id="selectedScoreQuiz" />
+
+        <template v-if="selectedScoreQuiz">
+          <!-- Analytics Graph & Summary Card -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h4 class="text-xs font-bold text-[#002060] uppercase tracking-wider m-0 flex items-center gap-2">
+                <i class="pi pi-chart-pie text-[#63C7DF]"></i> Pass / Fail Analytics
+              </h4>
+              <span class="text-xs text-slate-500 font-semibold">
+                Total Submissions: <strong class="text-[#002060]">{{ scoreStats.totalSubmitted }}</strong>
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <!-- Pass Rate Box -->
+              <div class="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p class="text-[11px] font-bold text-emerald-600 uppercase m-0">Passed Students</p>
+                  <h3 class="text-2xl font-black text-emerald-700 m-0 mt-1">{{ scoreStats.passRate }}%</h3>
+                  <p class="text-[10px] text-emerald-600/80 m-0 mt-0.5">{{ scoreStats.passedCount }} Students Passed</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <i class="pi pi-check-circle text-xl"></i>
+                </div>
+              </div>
+
+              <!-- Fail Rate Box -->
+              <div class="bg-rose-50/60 border border-rose-100 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p class="text-[11px] font-bold text-rose-600 uppercase m-0">Failed Students</p>
+                  <h3 class="text-2xl font-black text-rose-700 m-0 mt-1">{{ scoreStats.failRate }}%</h3>
+                  <p class="text-[10px] text-rose-600/80 m-0 mt-0.5">{{ scoreStats.failedCount }} Students Failed</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600">
+                  <i class="pi pi-times-circle text-xl"></i>
+                </div>
+              </div>
+
+              <!-- Visual Progress Bar Graph -->
+              <div class="bg-[#F8F8F8] border border-slate-200 rounded-xl p-4 space-y-2">
+                <div class="flex justify-between items-center text-xs font-bold">
+                  <span class="text-slate-600">Pass vs Fail Ratio</span>
+                  <span class="text-[#002060]">{{ scoreStats.totalSubmitted > 0 ? '100%' : 'No Data' }}</span>
+                </div>
+                
+                <!-- Stacked Bar Visual -->
+                <div class="w-full h-4 bg-slate-200 rounded-full overflow-hidden flex shadow-inner">
+                  <div 
+                    class="bg-emerald-500 h-full transition-all duration-500 flex items-center justify-center text-[9px] font-bold text-white"
+                    :style="{ width: `${scoreStats.passRate}%` }"
+                    title="Passed"
+                  >
+                    <span v-if="Number(scoreStats.passRate) > 15">{{ scoreStats.passRate }}%</span>
+                  </div>
+                  <div 
+                    class="bg-rose-500 h-full transition-all duration-500 flex items-center justify-center text-[9px] font-bold text-white"
+                    :style="{ width: `${scoreStats.failRate}%` }"
+                    title="Failed"
+                  >
+                    <span v-if="Number(scoreStats.failRate) > 15">{{ scoreStats.failRate }}%</span>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center text-[10px] text-slate-500 pt-1 font-medium">
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Passed</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span> Failed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Score Table Component -->
+          <ScoreTable :quiz-id="selectedScoreQuiz" />
+        </template>
+
         <div v-else class="text-center py-12 bg-white rounded-2xl border border-slate-200">
           <p class="text-xs text-slate-500">Create a quiz first to see its score report here.</p>
         </div>
@@ -256,7 +332,7 @@
             option-value="id"
             placeholder="Select a quiz"
             size="small"
-            class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700 w-full sm:w-64"
+            class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs !font-medium !text-slate-700 w-full sm:w-64"
           />
         </div>
         <FeedbackTable v-if="selectedFeedbackQuiz" :quiz-id="selectedFeedbackQuiz" />
@@ -274,7 +350,7 @@
       class="w-full max-w-2xl"
     >
       <template #header>
-        <h3 class="text-sm font-bold text-slate-800 m-0">
+        <h3 class="text-sm font-bold text-[#002060] m-0">
           {{ editingQuizId ? 'Edit Quiz' : 'Create Quiz / Exam' }}
         </h3>
       </template>
@@ -287,7 +363,7 @@
             v-model="builderForm.title"
             size="small"
             placeholder="e.g. Midterm Exam - Vue.js Basics"
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg"
           />
         </div>
         <div>
@@ -297,7 +373,7 @@
             rows="2"
             size="small"
             placeholder="A short summary of this quiz for students..."
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg"
           />
         </div>
 
@@ -305,22 +381,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Duration (minutes) *</label>
-            <InputNumber v-model="builderForm.duration" :min="1" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <InputNumber v-model="builderForm.duration" :min="1" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Attempts allowed *</label>
-            <InputNumber v-model="builderForm.maxAttempts" :min="1" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <InputNumber v-model="builderForm.maxAttempts" :min="1" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Total Score</label>
-            <InputNumber v-model="builderForm.totalScore" :min="1" :max="1000" size="small" placeholder="e.g. 100" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <InputNumber v-model="builderForm.totalScore" :min="1" :max="1000" size="small" placeholder="e.g. 100" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
             <p class="text-[10px] text-slate-400 mt-1">
               Questions are auto-scaled to sum to this ({{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} in the bank).
             </p>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Pass mark (%)</label>
-            <InputNumber v-model="builderForm.passMark" :min="0" :max="100" size="small" placeholder="e.g. 50" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <InputNumber v-model="builderForm.passMark" :min="0" :max="100" size="small" placeholder="e.g. 50" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
             <p class="text-[10px] text-slate-400 mt-1">
               = {{ passMarkPoints }} / {{ builderForm.totalScore || selectedPoints }} pts to pass
             </p>
@@ -331,22 +407,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Opens at</label>
-            <DatePicker v-model="startAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <DatePicker v-model="startAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Closes at</label>
-            <DatePicker v-model="endAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-slate-50 !border-slate-200 !rounded-lg" />
+            <DatePicker v-model="endAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
           </div>
         </div>
         <p class="text-[11px] text-slate-400 -mt-2">Leave these blank for no fixed schedule. A published quiz is only open to students inside this window.</p>
 
         <!-- Shuffle toggles -->
         <div class="flex flex-wrap gap-3">
-          <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+          <label class="flex items-center gap-2 cursor-pointer bg-[#F8F8F8] border border-slate-200 px-2.5 py-1.5 rounded-lg">
             <Checkbox v-model="builderForm.shuffleQuestions" binary />
             <span class="font-semibold text-slate-700">Shuffle question order</span>
           </label>
-          <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+          <label class="flex items-center gap-2 cursor-pointer bg-[#F8F8F8] border border-slate-200 px-2.5 py-1.5 rounded-lg">
             <Checkbox v-model="builderForm.shuffleOptions" binary />
             <span class="font-semibold text-slate-700">Shuffle answer options</span>
           </label>
@@ -357,19 +433,19 @@
           <div class="flex items-center justify-between">
             <label class="block font-bold text-slate-700">
               Select Questions from the Question Bank
-              <span class="text-indigo-600">({{ builderForm.selectedQuestionIds.length }} selected, {{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} &rarr; scaled to Total Score above)</span>
+              <span class="text-[#002060]">({{ builderForm.selectedQuestionIds.length }} selected, {{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} &rarr; scaled to Total Score above)</span>
             </label>
             <Button
               label="Add New Question"
               icon="pi pi-plus"
               text
               size="small"
-              class="!text-indigo-600 hover:!text-indigo-700 !font-bold !text-[11px] !p-0"
+              class="!text-[#002060] hover:!text-[#63C7DF] !font-bold !text-[11px] !p-0"
               @click="openInlineQuestionEditor"
             />
           </div>
 
-          <p v-if="pointsOverLimit" class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+          <p v-if="pointsOverLimit" class="flex items-center gap-1.5 text-[11px] font-semibold text-[#E4AC40] bg-[#E4AC40]/10 border border-[#E4AC40]/30 rounded-lg px-2.5 py-1.5">
             <i class="pi pi-exclamation-triangle text-[10px]"></i>
             Selected questions total {{ selectedPoints }} raw pts, above your Total Score of {{ builderForm.totalScore }} &mdash; they'll be scaled down to fit. You can still add more if you want.
           </p>
@@ -379,7 +455,7 @@
               v-model="pickerSearch"
               size="small"
               placeholder="Search questions..."
-              class="flex-1 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+              class="flex-1 !bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
             />
             <Dropdown
               v-model="pickerTypeFilter"
@@ -387,7 +463,7 @@
               option-label="label"
               option-value="value"
               size="small"
-              class="!bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+              class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
             />
           </div>
 
@@ -395,17 +471,17 @@
             <div
               v-for="q in filteredPickerQuestions"
               :key="q.id"
-              class="flex items-center gap-3 px-3 py-2 hover:bg-slate-50"
+              class="flex items-center gap-3 px-3 py-2 hover:bg-[#F8F8F8]"
             >
               <Checkbox :value="q.id" v-model="builderForm.selectedQuestionIds" class="shrink-0" />
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0">{{ formatType(q.type) }}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F8F8F8] text-slate-600 shrink-0 border border-slate-200">{{ formatType(q.type) }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
               <span class="text-slate-700 flex-1 truncate">{{ q.title || '(image question)' }}</span>
               <span
                 :class="{
-                  'bg-emerald-50 text-emerald-600 border-emerald-200': q.difficulty === 'Easy',
-                  'bg-amber-50 text-amber-600 border-amber-200': q.difficulty === 'Medium',
-                  'bg-rose-50 text-rose-600 border-rose-200': q.difficulty === 'Hard'
+                  'bg-[#63C7DF]/15 text-[#002060] border-[#63C7DF]/40': q.difficulty === 'Easy',
+                  'bg-[#E4AC40]/15 text-[#E4AC40] border-[#E4AC40]/40': q.difficulty === 'Medium',
+                  'bg-[#D71818]/15 text-[#D71818] border-[#D71818]/40': q.difficulty === 'Hard'
                 }"
                 class="text-[10px] font-bold px-2 py-0.5 rounded border shrink-0"
               >
@@ -420,8 +496,8 @@
       </div>
 
       <template #footer>
-        <Button label="Cancel" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="closeQuizModal" />
-        <Button label="Save" size="small" class="!bg-indigo-600 hover:!bg-indigo-700 !border-indigo-600 !text-white !rounded-lg !text-xs" @click="saveQuiz" />
+        <Button label="Cancel" size="small" class="!bg-[#F8F8F8] hover:!bg-slate-200 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="closeQuizModal" />
+        <Button label="Save" size="small" class="!bg-[#002060] hover:!bg-[#002060]/90 !border-[#002060] !text-white !rounded-lg !text-xs" @click="saveQuiz" />
       </template>
     </Dialog>
 
@@ -434,14 +510,14 @@
     >
       <template #header>
         <div>
-          <h3 class="text-sm font-bold text-slate-800 m-0">Preview: {{ previewQuiz?.title }}</h3>
+          <h3 class="text-sm font-bold text-[#002060] m-0">Preview: {{ previewQuiz?.title }}</h3>
           <p class="text-xs text-slate-400 mt-0.5 mb-0">{{ previewQuiz?.totalQuestions }} questions • {{ previewQuiz?.duration }} min • {{ previewQuiz?.maxAttempts }} attempt(s) allowed</p>
         </div>
       </template>
 
       <template v-if="showPreviewModal">
         <div class="space-y-3 text-xs">
-          <p v-if="previewQuiz?.description" class="text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-3">{{ previewQuiz.description }}</p>
+          <p v-if="previewQuiz?.description" class="text-slate-600 bg-[#F8F8F8] border border-slate-200 rounded-xl p-3">{{ previewQuiz.description }}</p>
 
           <div
             v-for="(q, idx) in previewQuiz?.questions ?? []"
@@ -451,11 +527,11 @@
             <div class="flex items-start gap-2">
               <span class="text-xs font-bold text-slate-400 font-mono">Q{{ idx + 1 }}.</span>
               <h4 class="text-sm font-semibold text-slate-800 m-0 flex-1">{{ q.title || '(image question)' }}</h4>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-violet-600 border border-violet-100 shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
             </div>
 
             <div v-if="q.imageUrl" class="pl-6">
-              <div class="inline-block rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+              <div class="inline-block rounded-lg border border-slate-200 bg-[#F8F8F8] overflow-hidden">
                 <Image :src="q.imageUrl" :alt="q.imageAlt || ''" preview image-class="max-h-40 object-contain block" />
               </div>
             </div>
@@ -464,17 +540,17 @@
               <div
                 v-for="(opt, oIdx) in q.options"
                 :key="oIdx"
-                :class="opt.isCorrect ? 'bg-emerald-50/80 border-emerald-300 text-emerald-800 font-semibold' : 'bg-slate-50 border-slate-200 text-slate-600'"
+                :class="opt.isCorrect ? 'bg-[#63C7DF]/15 border-[#63C7DF] text-[#002060] font-semibold' : 'bg-[#F8F8F8] border-slate-200 text-slate-600'"
                 class="p-2 rounded-lg border text-xs flex items-center gap-2"
               >
                 <Image v-if="opt.imageUrl" :src="opt.imageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
                 <span class="flex-1">{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
-                <i v-if="opt.isCorrect" class="pi pi-check-circle text-emerald-600 text-xs shrink-0"></i>
+                <i v-if="opt.isCorrect" class="pi pi-check-circle text-[#002060] text-xs shrink-0"></i>
               </div>
             </div>
 
             <div v-else-if="q.type === 'matching'" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
-              <div v-for="(pair, pIdx) in q.matchingPairs" :key="pIdx" class="p-2 rounded-lg border border-slate-200 bg-slate-50 text-xs flex items-center gap-2 text-slate-600">
+              <div v-for="(pair, pIdx) in q.matchingPairs" :key="pIdx" class="p-2 rounded-lg border border-slate-200 bg-[#F8F8F8] text-xs flex items-center gap-2 text-slate-600">
                 <Image v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" preview image-class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0 cursor-pointer" />
                 <span class="font-semibold text-slate-700">{{ pair.leftText }}</span>
                 <i class="pi pi-arrow-right-arrow-left text-slate-300 text-[10px] shrink-0"></i>
@@ -491,7 +567,7 @@
       </template>
 
       <template #footer>
-        <Button label="Close" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="showPreviewModal = false" />
+        <Button label="Close" size="small" class="!bg-[#F8F8F8] hover:!bg-slate-200 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="showPreviewModal = false" />
       </template>
     </Dialog>
 
@@ -566,11 +642,6 @@ const fetchPickerQuestions = async () => {
 }
 
 async function loadWorkspace() {
-  // Vue Router reuses this component when navigating between two
-  // /teacher/classes/:assignmentId routes (only the param changes), so
-  // onMounted alone won't re-fire — without resetting here, switching
-  // classes would keep showing the previous class's quizzes, question
-  // picker, and selected score/feedback quiz.
   classInfo.value = null
   quizzes.value = []
   pickerQuestions.value = []
@@ -653,10 +724,6 @@ function formatWindow(quiz) {
   return 'No fixed schedule'
 }
 
-// Mirrors the backend's assertEditable(): Draft is always editable; a
-// Published quiz stays editable only while its start window hasn't opened
-// yet (a future start_at) — once open, students may already have attempts
-// in progress.
 function isEditable(quiz) {
   if (quiz.status === 'Draft') return true
   return quiz.status === 'Published' && !!quiz.startAt && new Date(quiz.startAt) > new Date()
@@ -693,8 +760,6 @@ function defaultBuilderForm() {
 
 const builderForm = ref(defaultBuilderForm())
 
-// Converts between the "YYYY-MM-DDTHH:mm" strings the backend expects and a
-// plain local Date (no timezone math) for the DatePicker widget.
 function localStringToDate(str) {
   if (!str) return null
   const [datePart, timePart] = str.split('T')
@@ -734,16 +799,12 @@ const selectedPoints = computed(() => {
     .reduce((sum, q) => sum + (q.points || 0), 0)
 })
 
-// Live points-equivalent of the % pass mark, so a teacher can reason about
-// it in terms of the quiz's actual Total Score rather than a bare percentage.
 const passMarkPoints = computed(() => {
   const pct = builderForm.value.passMark ?? 0
   const total = builderForm.value.totalScore || selectedPoints.value
   return Math.round((pct / 100) * total)
 })
 
-// Selecting more raw points than the Total Score is still allowed (points
-// get scaled down to fit), but the teacher should know it's happening.
 const pointsOverLimit = computed(() => {
   const total = builderForm.value.totalScore
   return !!total && selectedPoints.value > total
@@ -878,12 +939,63 @@ async function openPreview(quiz) {
   }
 }
 
-/* ===== Score / Feedback tabs ===== */
+/* ===== Score / Feedback tabs & Graph Analytics ===== */
 const selectedScoreQuiz = ref(null)
 const selectedFeedbackQuiz = ref(null)
+
+const scoreStats = ref({
+  passedCount: 0,
+  failedCount: 0,
+  passRate: 0,
+  failRate: 0,
+  totalSubmitted: 0,
+  loading: false,
+})
+
+// Fetch Score Analytics dynamically when active quiz changes
+const fetchQuizScoreStats = async (quizId) => {
+  if (!quizId) return
+  scoreStats.value.loading = true
+  try {
+    const { data } = await api.get(`/teacher/quizzes/${quizId}/scores`)
+    const scores = data.data || []
+    
+    const targetQuiz = quizzes.value.find(q => q.id === quizId)
+    const passMark = targetQuiz?.passMark ?? 50 // default Pass Mark = 50%
+    const totalScore = targetQuiz?.totalScore || 100
+
+    let passed = 0
+    let failed = 0
+
+    scores.forEach(s => {
+      const percentage = (s.score / totalScore) * 100
+      if (percentage >= passMark) {
+        passed++
+      } else {
+        failed++
+      }
+    })
+
+    const total = scores.length
+    scoreStats.value = {
+      passedCount: passed,
+      failedCount: failed,
+      passRate: total > 0 ? ((passed / total) * 100).toFixed(1) : 0,
+      failRate: total > 0 ? ((failed / total) * 100).toFixed(1) : 0,
+      totalSubmitted: total,
+      loading: false,
+    }
+  } catch (error) {
+    scoreStats.value.loading = false
+  }
+}
+
+watch(selectedScoreQuiz, (newQuizId) => {
+  if (newQuizId) fetchQuizScoreStats(newQuizId)
+}, { immediate: true })
 </script>
 
-<style scoped>
+ <style scoped>
 .teacher-tabs :deep(.p-togglebutton) {
   border: 0;
   background: transparent;
@@ -901,7 +1013,7 @@ const selectedFeedbackQuiz = ref(null)
 
 .teacher-tabs :deep(.p-togglebutton-checked) {
   background: #ffffff;
-  color: #4f46e5;
+  color: #002060;
   font-weight: 700;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
@@ -918,4 +1030,4 @@ const selectedFeedbackQuiz = ref(null)
   background: #047857;
   border-color: #047857;
 }
-</style>
+</style> 

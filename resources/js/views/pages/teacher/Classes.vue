@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-6 w-full max-w-7xl mx-auto font-sans">
+  <div class="space-y-6 w-full max-w-7xl mx-auto font-sans pb-10">
     
-    <!-- 1. Header Page -->
+    <!-- 1. Header Page & View Toggle -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white rounded-2xl border border-[#D8E7EC] shadow-xs">
       <div>
         <h1 class="text-2xl font-bold text-[#002060] tracking-tight m-0 flex items-center gap-2">
@@ -12,9 +12,30 @@
           &middot; <span class="font-bold text-[#002060]">{{ totalStudentsAcrossClasses }}</span> students total
         </p>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#002060]/5 text-[#002060] border border-[#002060]/10">
-          <i class="pi pi-[#63C7DF] pi-th-large text-[#63C7DF]"></i> Active Semester
+
+      <div class="flex items-center gap-3 self-start sm:self-auto">
+        <!-- Grid / Table View Toggle -->
+        <div class="flex items-center gap-1 bg-[#F8F8F8] p-1.5 rounded-xl border border-[#D8E7EC]">
+          <Button
+            label="Grid"
+            icon="pi pi-th-large"
+            size="small"
+            :class="viewMode === 'grid' ? '!bg-[#002060] !text-white shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-[#002060]'"
+            class="!border-0 !rounded-lg !text-xs !font-bold !px-3 !py-1.5 transition-all"
+            @click="viewMode = 'grid'"
+          />
+          <Button
+            label="Table"
+            icon="pi pi-list"
+            size="small"
+            :class="viewMode === 'table' ? '!bg-[#002060] !text-white shadow-xs' : '!bg-transparent !text-slate-500 hover:!text-[#002060]'"
+            class="!border-0 !rounded-lg !text-xs !font-bold !px-3 !py-1.5 transition-all"
+            @click="viewMode = 'table'"
+          />
+        </div>
+
+        <span class="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-[#002060]/5 text-[#002060] border border-[#002060]/10">
+          <i class="pi pi-calendar text-[#63C7DF]"></i> Active Semester
         </span>
       </div>
     </div>
@@ -95,8 +116,8 @@
       </div>
     </div>
 
-    <!-- 3. Classes Grid Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- 3A. Grid Cards View (Box) -->
+    <div v-if="viewMode === 'grid' && filteredClasses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div
         v-for="item in filteredClasses"
         :key="item.id"
@@ -148,7 +169,7 @@
             <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
               <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Room</p>
               <p class="text-sm font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
-                <i class="pi pi-[#63C7DF] pi-building text-xs text-[#63C7DF]"></i> {{ item.room || '—' }}
+                <i class="pi pi-building text-xs text-[#63C7DF]"></i> {{ item.room || '—' }}
               </p>
             </div>
 
@@ -173,6 +194,67 @@
       </div>
     </div>
 
+    <!-- 3B. Table View -->
+    <div v-else-if="viewMode === 'table' && filteredClasses.length > 0" class="bg-white border border-[#D8E7EC] rounded-2xl shadow-xs overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#F8F8F8] border-b border-[#D8E7EC] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="py-3.5 px-4">Subject</th>
+              <th class="py-3.5 px-4">Class</th>
+              <th class="py-3.5 px-4">Major</th>
+              <th class="py-3.5 px-4 text-center">Shift</th>
+              <th class="py-3.5 px-4 text-center">Year</th>
+              <th class="py-3.5 px-4 text-center">Room</th>
+              <th class="py-3.5 px-4 text-center">Students</th>
+              <th class="py-3.5 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#D8E7EC]/60 text-xs">
+            <tr v-for="item in filteredClasses" :key="item.id" class="hover:bg-[#63C7DF]/5 transition-colors">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-[#002060]">{{ item.subject }}</span>
+                  <button
+                    v-if="item.subject_code"
+                    type="button"
+                    title="Copy subject code"
+                    class="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#63C7DF]/10 text-[#002060] border border-[#63C7DF]/30 hover:bg-[#63C7DF]/20 cursor-pointer"
+                    @click="copySubjectCode(item.subject_code)"
+                  >
+                    {{ item.subject_code }}
+                    <i class="pi pi-copy text-[8px]"></i>
+                  </button>
+                </div>
+              </td>
+              <td class="py-3 px-4 font-semibold text-slate-700">{{ item.className }}</td>
+              <td class="py-3 px-4 text-slate-600 max-w-[180px] truncate">{{ item.major || '—' }}</td>
+              <td class="py-3 px-4 text-center">
+                <span class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#002060] text-white">
+                  {{ item.shift }}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center font-bold text-[#E4AC40]">{{ item.academicYear }}</td>
+              <td class="py-3 px-4 text-center font-semibold text-slate-600">{{ item.room || '—' }}</td>
+              <td class="py-3 px-4 text-center font-bold text-[#002060]">
+                <i class="pi pi-users text-xs text-[#63C7DF] mr-1"></i>{{ item.totalStudents }}
+              </td>
+              <td class="py-3 px-4 text-right">
+                <Button 
+                  as="router-link" 
+                  size="small"
+                  :to="{ name: 'teacher.classWorkspace', params: { assignmentId: item.id } }"
+                  label="Manage" 
+                  icon="pi pi-cog"
+                  class="!bg-[#002060] hover:!bg-[#001540] !border-[#002060] !text-white !rounded-xl !text-xs !font-semibold no-underline shadow-xs"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Empty State -->
     <div v-if="filteredClasses.length === 0" class="text-center py-16 bg-white rounded-2xl border border-[#D8E7EC]">
       <div class="w-12 h-12 rounded-full bg-[#F8F8F8] text-[#002060] flex items-center justify-center mx-auto mb-3 border border-[#D8E7EC]">
@@ -193,6 +275,7 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import api, { extractError } from '../../../api'
 
+const viewMode = ref('grid') // Mode: 'grid' or 'table'
 const searchQuery = ref('')
 const classFilter = ref('')
 const subjectFilter = ref('')

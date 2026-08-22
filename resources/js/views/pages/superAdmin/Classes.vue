@@ -6,7 +6,7 @@
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
         <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
-          <i class="pi pi-users text-blue-600 text-2xl"></i>
+          <i class="pi pi-users text-[#e4ac40] text-2xl"></i>
           Classes Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
@@ -19,8 +19,8 @@
         @click="openNewDialog" />
     </div>
 
-    <!-- ======= STATS CARDS ======= -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- TODO: ======= STATS CARDS ======= -->
+    <!-- <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
         <div>
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Total Classes</span>
@@ -51,10 +51,10 @@
           <i class="pi pi-check-circle"></i>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <!-- ======= TOOLBAR: SEARCH & VIEW MODE SWITCHER ======= -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+    <!-- TODO: ======= TOOLBAR: SEARCH & VIEW MODE SWITCHER ======= -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 ">
       <div class="relative w-full sm:w-80">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
         <InputText v-model="filters['global'].value" placeholder="Search class code or name..."
@@ -67,7 +67,7 @@
         </span> -->
 
         <!-- View Mode Switcher Buttons -->
-        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div class="flex items-center bg-white p-1 rounded-xl border border-slate-200">
           <button @click="viewMode = 'grid'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
             :class="viewMode === 'grid' ? 'bg-[#002060] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'">
@@ -87,7 +87,7 @@
       <!-- Header/Title Section សម្រាប់ Filter Bar -->
       <div class="flex items-center justify-between px-1">
         <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
-          <i class="pi pi-filter text-blue-600 text-sm"></i>
+          <i class="pi pi-filter text-[#e4ac40] text-sm"></i>
           <span>Filter Options</span>
         </div>
 
@@ -126,7 +126,7 @@
     <!-- ======= 1. LIST VIEW (DataTable) ======= -->
     <div v-if="viewMode === 'list'" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
       <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="text-sm font-bold text-slate-800 m-0">All Classes</h3>
+        <h3 class="text-sm font-bold text-[#002060] m-0">All Classes</h3>
         <div class="flex items-center gap-2">
           <!-- <span class="text-xs text-slate-500">
             <span class="font-semibold text-slate-700">{{ filteredClasses.length }}</span> class(es) found
@@ -152,8 +152,8 @@
         </template>
 
         <template #paginatorstart>
-          <span class="text-xs text-slate-500">
-            Showing <span class="font-semibold text-slate-700">{{ filteredClasses.length ? first + 1 : 0 }}</span>
+          <span class="text-xs text-[#002060]">
+            Showing <span class="font-semibold text-[slate-700]">{{ filteredClasses.length ? first + 1 : 0 }}</span>
             to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, filteredClasses.length) }}</span>
             of <span class="font-semibold text-slate-700">{{ filteredClasses.length }}</span>
           </span>

@@ -5,9 +5,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 bg-white/60 backdrop-blur-md p-4 rounded-xl border border-slate-200/60 shadow-xs">
       <div>
         <h1 class="text-xl font-bold text-[#002060] tracking-tight flex items-center gap-2.5">
-          <span class="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100/80">
-            <i class="pi pi-users text-lg"></i>
-          </span>
+            <i class="pi pi-users text-[#e4ac40] text-2xl"></i>
           User Management
         </h1>
         <p class="text-xs sm:text-sm text-slate-500 m-0 mt-1 pl-0.5">
@@ -18,7 +16,7 @@
       <Button
         :label="addLabel"
         icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 active:!bg-blue-800 !text-white !border-0 !rounded-lg !py-2.5 !px-4 !text-xs !font-semibold shadow-sm hover:shadow transition-all duration-200 gap-2 shrink-0 cursor-pointer"
+        class="!bg-[#002060] hover:!bg-blue-900 active:!bg-blue-800 !text-white !border-0 !rounded-lg !py-2.5 !px-4 !text-xs !font-semibold shadow-sm hover:shadow transition-all duration-200 gap-2 shrink-0 cursor-pointer"
         @click="openNewDialog(defaultRoleForTab)"
       />
     </div>
@@ -27,7 +25,7 @@
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex-1 flex flex-col min-h-0">
 
       <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-        <h3 class="text-sm font-bold text-slate-800 m-0">
+        <h3 class="text-sm font-bold text-[#002060] m-0">
           {{ activeTab === 'all' ? 'All Users' : activeTab === 'admin' ? 'Admins' : activeTab === 'teacher' ? 'Teachers' : 'Students' }}
         </h3>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -44,7 +42,7 @@
             :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
             :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
             size="small"
-            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
             @click="showAllColumns = !showAllColumns"
           />
         </div>
@@ -56,11 +54,11 @@
           type="button"
           @click="activeTab = 'all'"
           class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'all' ? '!bg-slate-800 !text-white' : '!bg-slate-100 !text-slate-600 hover:!bg-slate-200'"
+          :class="activeTab === 'all' ? '!bg-[#002060] !text-white' : '!bg-slate-100  !text-[#002060] hover:!bg-slate-200 '"
         >
-          <i class="pi pi-users text-sm"></i>
+          <i class="pi pi-users text-[#e4ac40] text-sm"></i>
           <span>All Users</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'all' ? 'bg-white text-[#002060]' : 'bg-[#002060] text-white'">
             {{ countFor('all') }}
           </span>
         </button>
@@ -69,11 +67,11 @@
           type="button"
           @click="activeTab = 'admin'"
           class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'admin' ? '!bg-indigo-600 !text-white' : '!bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100'"
+          :class="activeTab === 'admin' ? '!bg-[#002060] !text-white' : '!bg-indigo-50 !text-[#002060] hover:!bg-indigo-100'"
         >
-          <i class="pi pi-shield text-sm"></i>
+          <i class="pi pi-shield text-[#e4ac40] text-sm"></i>
           <span>Admin</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'admin' ? 'bg-white text-[#002060]' : 'bg-[#002060] text-white'">
             {{ countFor('admin') }}
           </span>
         </button>
@@ -82,11 +80,11 @@
           type="button"
           @click="activeTab = 'teacher'"
           class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'teacher' ? '!bg-blue-600 !text-white' : '!bg-blue-50 !text-blue-600 hover:!bg-blue-100'"
+          :class="activeTab === 'teacher' ? '!bg-[#002060] !text-white' : '!bg-blue-50 !text-[#002060] hover:!bg-blue-100'"
         >
-          <i class="pi pi-id-card text-sm"></i>
+          <i class="pi pi-id-card text-[#e4ac40] text-sm"></i>
           <span>Teacher</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'teacher' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'teacher' ? 'bg-white text-[#002060]' : 'bg-[#002060] text-white'">
             {{ countFor('teacher') }}
           </span>
         </button>
@@ -95,11 +93,11 @@
           type="button"
           @click="activeTab = 'student'"
           class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border-0 cursor-pointer select-none"
-          :class="activeTab === 'student' ? '!bg-emerald-600 !text-white' : '!bg-emerald-50 !text-emerald-600 hover:!bg-emerald-100'"
+          :class="activeTab === 'student' ? '!bg-[#002060] !text-white' : '!bg-blue-50 !text-[#002060] hover:!bg-blue-100'"
         >
-          <i class="pi pi-graduation-cap text-sm"></i>
+          <i class="pi pi-graduation-cap text-[#e4ac40] text-sm"></i>
           <span>Student</span>
-          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'student' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-600'">
+          <span class="ml-1 px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors" :class="activeTab === 'student' ? 'bg-white text-[#002060]' : 'bg-[#002060] text-white'">
             {{ countFor('student') }}
           </span>
         </button>
@@ -107,7 +105,7 @@
 
       <!-- ======= FILTER BAR ======= -->
       <div class="flex flex-wrap items-center gap-2.5 shrink-0 px-4 pt-3">
-        <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
+        <i class="pi pi-filter text-[#e4ac40] text-sm ml-1"></i>
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
           placeholder="Faculty (Teachers)" showClear class="w-48 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
         <Dropdown v-model="genderFilter" :options="['Male', 'Female']"

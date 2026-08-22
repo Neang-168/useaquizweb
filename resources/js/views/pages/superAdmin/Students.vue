@@ -6,7 +6,7 @@
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
         <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
-          <i class="pi pi-id-card text-blue-600 text-2xl"></i>
+          <i class="pi pi-id-card text-[#e4ac40] text-2xl"></i>
           Students Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
@@ -19,7 +19,8 @@
         @click="openNewDialog" />
     </div>
 
-    <!-- ======= STATS CARDS ======= -->
+    <!-- ======= STATS CARDS (COMMENTED OUT) ======= -->
+    <!-- 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between shadow-sm">
         <div>
@@ -51,72 +52,64 @@
         </div>
       </div>
     </div>
+    -->
 
-    <!-- ======= FILTER BAR ======= -->
-    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-      <!-- Header/Title Section សម្រាប់ Filter Bar -->
-      <div class="flex items-center justify-between px-1">
-        <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs uppercase tracking-wider">
-          <i class="pi pi-filter text-blue-600 text-sm"></i>
-          <span>Filter Options</span>
-        </div>
-
-        <!-- ប៊ូតុង Clear Filters -->
-        <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash"
-          class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
-          @click="clearFilters" />
-      </div>
-
-      <!-- Dropdowns Grid Container -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-
-        <!-- Faculty Filter -->
-        <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-          placeholder="All Faculties" showClear class="w-full custom-filter-dropdown" />
-
-        <!-- Major Filter -->
-        <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
-          placeholder="All Majors" showClear class="w-full custom-filter-dropdown" />
-
-        <!-- Class Filter -->
-        <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id" placeholder="All Classes"
-          showClear class="w-full custom-filter-dropdown" />
-
-        <!-- Generation Filter -->
-        <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
-          placeholder="All Generations" showClear class="w-full custom-filter-dropdown" />
-
-        <!-- Status Filter -->
-        <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']" placeholder="All Statuses"
-          showClear class="w-full custom-filter-dropdown" />
-
-      </div>
-    </div>
-
-    <!-- ======= DATA TABLE ======= -->
+    <!-- ======= DATA TABLE WITH INTEGRATED FILTER BAR ======= -->
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="text-sm font-bold text-slate-800 m-0">Students List</h3>
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div class="relative w-full sm:w-64">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
-            <InputText
-              v-model="filters['global'].value"
+      
+      <!-- Table Header & Search Section -->
+      <div class="p-4 border-b border-slate-100 space-y-4">
+        
+        <!-- Header Row: Title, Search, Columns Toggle -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h3 class="text-base font-bold text-slate-800 m-0">Students List</h3>
+          
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative w-full sm:w-64">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+              <InputText
+                v-model="filters['global'].value"
+                size="small"
+                placeholder="Search ID, name, or class..."
+                class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+              />
+            </div>
+            <Button
+              :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+              :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
               size="small"
-              placeholder="Search ID, name, or class..."
-              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+              class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
+              @click="showAllColumns = !showAllColumns"
             />
           </div>
-          <Button
-            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
-            :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
-            size="small"
-            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
-            @click="showAllColumns = !showAllColumns"
-          />
         </div>
+
+        <!-- Filter Row (Integrated Filters Inside Table Container) -->
+        <div class="flex flex-wrap items-center gap-2.5 pt-1">
+          <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+            placeholder="All Faculties" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
+            placeholder="All Majors" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id" 
+            placeholder="All Classes" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
+            placeholder="All Generations" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']" 
+            placeholder="All Statuses" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <!-- Reset Filter Button -->
+          <Button v-if="hasActiveFilters" icon="pi pi-filter-slash" label="Reset"
+            class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer whitespace-nowrap"
+            @click="clearFilters" />
+        </div>
+
       </div>
 
+      <!-- Data Table Content -->
       <DataTable :value="filteredStudents" v-model:filters="filters"
         :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
         paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
@@ -370,7 +363,7 @@
           </div>
         </div>
 
-        <!-- Address (last Personal Information field, full width) -->
+        <!-- Address -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="sm:col-span-3">
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address</label>
@@ -484,8 +477,6 @@
             placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
 
-        <!-- Subjects for the selected class are automatic: whichever subjects a
-             teacher is assigned to teach for this class (see Teachers > Assignments). -->
         <div v-if="assignForm.class_id">
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subjects</label>
           <div class="flex flex-wrap gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 min-h-[2.5rem]">
@@ -501,19 +492,6 @@
             Subjects follow the class automatically. Assign teachers to subjects for this class on the Teachers page.
           </p>
         </div>
-
-        <!-- <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Generation</label>
-            <Dropdown v-model="assignForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
-              placeholder="Select Generation" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status</label>
-            <Dropdown v-model="assignForm.status" :options="['Active', 'Inactive', 'Suspended']"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-        </div> -->
       </div>
 
       <template #footer>

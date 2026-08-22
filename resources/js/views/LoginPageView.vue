@@ -10,7 +10,7 @@
 
       <!-- Left Section: Form -->
       <div class="p-6 sm:p-10 flex flex-col justify-center">
-        <h1 class="text-2xl sm:text-3xl font-bold text-surface-900 mb-6 text-center md:text-left">
+        <h1 class="text-2xl sm:text-3xl font-bold text-[#002060] mb-6 text-center md:text-left">
           Login
         </h1>
 
@@ -72,7 +72,7 @@
 
           <!-- Submit Button -->
           <Button type="submit" label="Login"
-            class="w-full !bg-indigo-600 hover:!bg-indigo-700 !border-0 !py-3 !rounded-xl !text-white !font-medium transition-all"
+            class="w-full !bg-[#002060] hover:!bg-indigo-900 !border-0 !py-3 !rounded-xl !text-white !font-medium transition-all"
             :loading="loading" />
         </form>
 

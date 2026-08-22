@@ -5,7 +5,7 @@
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
+        <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
           <i class="pi pi-users text-blue-600 text-2xl"></i>
           Classes Management
         </h1>
@@ -15,7 +15,7 @@
       </div>
 
       <Button label="Add New Class" icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
         @click="openNewDialog" />
     </div>
 
@@ -70,12 +70,12 @@
         <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button @click="viewMode = 'grid'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
+            :class="viewMode === 'grid' ? 'bg-[#002060] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'">
             <i class="pi pi-th-large"></i> Cards
           </button>
           <button @click="viewMode = 'list'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
+            :class="viewMode === 'list' ? 'bg-[#002060] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'">
             <i class="pi pi-list"></i> List
           </button>
         </div>
@@ -133,9 +133,9 @@
           </span> -->
 
           <!-- Show More / Show Less Toggle Button -->
-          <Button :label="showAllColumns ? 'Show Less' : 'Show More'"
+          <Button :label="showAllColumns ? 'Fewer Column' : 'More Column'"
             :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'" size="small"
-            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
             @click="showAllColumns = !showAllColumns" />
         </div>
       </div>
@@ -318,12 +318,12 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div v-for="cls in filteredClasses" :key="cls.id"
-          class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group">
+          class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:border-[#63c7df] hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group">
           <div>
             <!-- Header Row: Code & Status -->
             <div class="flex items-center justify-between mb-2.5">
               <span
-                class="font-mono text-[11px] font-bold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-100/80">
+                class="font-mono text-[11px] font-bold text-white bg-[#002060] px-2 py-0.5 rounded-md border border-blue-100/80">
                 {{ cls.code }}
               </span>
 
@@ -337,7 +337,7 @@
 
             <!-- Title & Subtitle -->
             <div class="mb-3">
-              <h3 class="font-bold text-slate-800 text-sm line-clamp-1 m-0" :title="cls.name">{{ cls.name }}</h3>
+              <h3 class="font-bold text-[#002060] text-sm line-clamp-1 m-0" :title="cls.name">{{ cls.name }}</h3>
               <p v-if="cls.name_kh" class="text-[11px] text-slate-500 font-khmer m-0 mt-0.5 line-clamp-1">{{ cls.name_kh
                 }}
               </p>

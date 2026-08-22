@@ -5,7 +5,7 @@
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
+        <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
           <i class="pi pi-briefcase text-emerald-600 text-2xl"></i>
           Teachers Management
         </h1>
@@ -15,14 +15,14 @@
       </div>
 
       <Button label="Add New Teacher" icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-xs !font-semibold shadow-xs"
+        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-xs !font-semibold shadow-xs"
         @click="openNewDialog" />
     </div>
 
     <!-- ======= TABLE CARD (header/search/filters/table, styled to match FeedbackTable) ======= -->
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
       <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="text-sm font-bold text-slate-800 m-0">Teachers List</h3>
+        <h3 class="text-sm font-bold text-[#002060] m-0">Teachers List</h3>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <!-- Search Input -->
           <div class="relative w-full sm:w-56">
@@ -37,9 +37,9 @@
             @click="clearFilters" />
 
           <!-- Show More / Show Less Toggle Button -->
-          <Button :label="showAllColumns ? 'Show Less' : 'Show More'"
+          <Button :label="showAllColumns ? 'Fewer Column' : 'More Column'"
             :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'" size="small"
-            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
             @click="showAllColumns = !showAllColumns" />
         </div>
       </div>

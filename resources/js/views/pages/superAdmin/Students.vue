@@ -5,7 +5,7 @@
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
+        <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
           <i class="pi pi-id-card text-blue-600 text-2xl"></i>
           Students Management
         </h1>
@@ -15,7 +15,7 @@
       </div>
 
       <Button label="Add New Student" icon="pi pi-plus"
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
         @click="openNewDialog" />
     </div>
 
@@ -111,7 +111,7 @@
             :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
             :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
             size="small"
-            class="!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
             @click="showAllColumns = !showAllColumns"
           />
         </div>

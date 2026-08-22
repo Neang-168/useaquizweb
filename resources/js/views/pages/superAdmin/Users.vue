@@ -4,7 +4,7 @@
     <!-- ======= PAGE HEADER ======= -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 bg-white/60 backdrop-blur-md p-4 rounded-xl border border-slate-200/60 shadow-xs">
       <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+        <h1 class="text-xl font-bold text-[#002060] tracking-tight flex items-center gap-2.5">
           <span class="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100/80">
             <i class="pi pi-users text-lg"></i>
           </span>

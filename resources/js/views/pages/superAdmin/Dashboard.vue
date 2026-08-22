@@ -10,19 +10,19 @@
     </div>
 
     <!-- ======= KPI ROW (UPGRADED WITH NUMBER ANIMATION) ======= -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full ">
       <div 
         v-for="card in statCards" 
         :key="card.label"
-        class="group relative bg-white p-4 rounded-2xl border border-slate-100/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer overflow-hidden flex flex-col justify-between"
+        class="group relative bg-white p-4 rounded-2xl border border-slate-100/80 shadow-xs hover:border-[#63c7df] hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer overflow-hidden flex flex-col justify-between"
       >
         <!-- Ambient Background Glow -->
         <div class="absolute -right-3 -top-3 w-16 h-16 bg-slate-900/[0.03] rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
 
         <!-- Top Row: Icon Box & Micro Trend -->
-        <div class="flex items-center justify-between mb-3 relative z-10">
+        <div class="flex items-center justify-between mb-3 relative ">
           <div 
-            class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-2xs"
+            class="w-10 h-10 rounded-xl flex items-center  justify-center transition-transform duration-300 group-hover:scale-105 shadow-2xs"
             :class="[card.bg, card.text]"
           >
             <i :class="card.icon" class="text-base"></i>
@@ -51,7 +51,7 @@
               {{ card.value }}
             </span>
           </h2>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1.5 mb-0 truncate">
+          <p class="text-[11px] font-bold text-[#002060] uppercase tracking-wider mt-1.5 mb-0 truncate">
             {{ card.label }}
           </p>
         </div>
@@ -69,10 +69,10 @@
         <div>
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-base font-bold text-slate-800 m-0">Users by Role</h3>
+              <h3 class="text-base font-bold text-[#002060] m-0">Users by Role</h3>
               <p class="text-xs text-slate-400 m-0 mt-0.5">Distribution across system roles</p>
             </div>
-            <span class="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-600 font-semibold shadow-2xs">
+            <span class="px-2.5 py-1 bg-[#002060] border-slate-100 rounded-lg text-xs text-white font-semibold shadow-2xs">
               {{ animatedTotals.users.toLocaleString() }} total
             </span>
           </div>
@@ -106,10 +106,10 @@
       <div class="lg:col-span-3 p-6 bg-white rounded-2xl border border-slate-100/80 shadow-xs flex flex-col justify-between">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h3 class="text-base font-bold text-slate-800 m-0">New Accounts</h3>
+            <h3 class="text-base font-bold text-[#002060] m-0">New Accounts</h3>
             <p class="text-xs text-slate-400 m-0 mt-0.5">User registrations in the last 7 days</p>
           </div>
-          <span class="px-2.5 py-1 bg-blue-50 border border-blue-100/80 text-blue-600 rounded-lg text-xs font-semibold">
+          <span class="px-2.5 py-1 bg-[#002060] border border-blue-100/80 text-white rounded-lg text-xs font-semibold">
             Last 7 days
           </span>
         </div>
@@ -154,7 +154,7 @@
       <!-- Account Status meter -->
       <div class="p-6 bg-white rounded-2xl border border-slate-100/80 shadow-xs flex flex-col justify-between">
         <div>
-          <h3 class="text-base font-bold text-slate-800 m-0 mb-1">Account Status</h3>
+          <h3 class="text-base font-bold text-[#002060] m-0 mb-1">Account Status</h3>
           <p class="text-xs text-slate-400 m-0 mb-6">Overall system activity ratio</p>
 
           <div v-if="loading" class="h-4 w-full bg-slate-100 rounded-full animate-pulse"></div>
@@ -199,7 +199,7 @@
         <div>
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h3 class="text-base font-bold text-slate-800 m-0">Recently Added</h3>
+              <h3 class="text-base font-bold text-[#002060] m-0">Recently Added</h3>
               <p class="text-xs text-slate-400 m-0 mt-0.5">Latest registrations across all roles</p>
             </div>
             <router-link 

@@ -47,7 +47,7 @@
 
           <!-- Profile Dropdown -->
           <div v-if="profileMenuOpen"
-            class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-20">
+            class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-100">
             <router-link :to="{ name: 'admin.my-profile' }" @click="profileMenuOpen = false"
               class="w-full border-0 bg-transparent text-slate-700 hover:bg-slate-100 py-2 px-3.5 flex items-center gap-2.5 text-sm font-medium no-underline">
               <i class="pi pi-user text-sm"></i>
@@ -55,7 +55,7 @@
             </router-link>
             <div class="h-px bg-slate-200 my-1"></div>
             <button @click="handleLogout" type="button"
-              class="w-full border-0 bg-transparent text-red-500 hover:bg-red-50 py-2 px-3.5 flex items-center gap-2.5 text-sm font-medium cursor-pointer">
+              class="w-full border-0 bg-transparent text-red-500 hover:bg-red-50 py-2 px-3.5 flex items-center gap-2.5 text-sm font-medium cursor-pointer z-50">
               <i class="pi pi-sign-out text-sm"></i>
               <span>Logout</span>
             </button>

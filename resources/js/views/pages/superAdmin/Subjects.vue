@@ -4,7 +4,7 @@
     <!-- ======= PAGE HEADER ======= -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
       <div>
-        <h1 class="text-xl font-bold text-slate-800 m-0 flex items-center gap-2">
+        <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
           <i class="pi pi-book text-blue-600 text-2xl"></i>
           Subjects Management
         </h1>
@@ -16,7 +16,7 @@
       <Button 
         label="Add New Subject" 
         icon="pi pi-plus" 
-        class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
         @click="openNewDialog"
       />
     </div>
@@ -75,7 +75,7 @@
     <!-- ======= DATA TABLE ======= -->
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
       <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h3 class="text-sm font-bold text-slate-800 m-0">Subjects List</h3>
+        <h3 class="text-sm font-bold text-[#002060] m-0">Subjects List</h3>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div class="relative w-full sm:w-56">
             <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>

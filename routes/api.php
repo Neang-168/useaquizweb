@@ -76,6 +76,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/users', [UserController::class, 'store'])
         ->middleware('permission:manage_users');
 
+    Route::get('/users/next-username', [UserController::class, 'nextUsername'])
+        ->middleware('permission:manage_users');
+
     Route::get('/users/{user}', [UserController::class, 'show'])
         ->middleware('permission:manage_users');
 

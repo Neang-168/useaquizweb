@@ -192,7 +192,7 @@
       class="w-full max-w-lg"
     >
       <div class="space-y-4 pt-2">
-        <!-- Faculty / Degree / Major Selection -->
+        <!-- Faculty / Department / Major Selection -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
           <Dropdown
@@ -202,19 +202,19 @@
             optionValue="id"
             placeholder="Select Faculty"
             class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-            @change="sessionForm.degree_id = null; sessionForm.major_id = null"
+            @change="sessionForm.department_id = null; sessionForm.major_id = null"
           />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Degree</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
             <Dropdown
-              v-model="sessionForm.degree_id"
-              :options="degreesForSelectedFaculty"
-              optionLabel="title_en"
+              v-model="sessionForm.department_id"
+              :options="departmentsForSelectedFaculty"
+              optionLabel="name_en"
               optionValue="id"
-              placeholder="Any degree"
+              placeholder="Any department"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
               :disabled="!sessionForm.faculty_id"
@@ -225,13 +225,13 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
             <Dropdown
               v-model="sessionForm.major_id"
-              :options="majorsForSelectedDegree"
+              :options="majorsForSelectedDepartment"
               optionLabel="name_en"
               optionValue="id"
               placeholder="Any major"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              :disabled="!sessionForm.degree_id"
+              :disabled="!sessionForm.department_id"
             />
           </div>
         </div>
@@ -324,7 +324,7 @@ import Textarea from 'primevue/textarea'
 
 const studySessions = ref([])
 const faculties = ref([])
-const degrees = ref([])
+const departments = ref([])
 const majors = ref([])
 const loading = ref(false)
 
@@ -339,13 +339,13 @@ const fetchSessions = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, degreesRes, majorsRes] = await Promise.all([
+  const [facultiesRes, departmentsRes, majorsRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
-    api.get('/degrees', { params: { per_page: 100 } }),
+    api.get('/departments', { params: { per_page: 200 } }),
     api.get('/majors', { params: { per_page: 100 } }),
   ])
   faculties.value = facultiesRes.data.data
-  degrees.value = degreesRes.data.data
+  departments.value = departmentsRes.data.data
   majors.value = majorsRes.data.data
 }
 
@@ -398,19 +398,19 @@ const sessionForm = ref({
   name_en: '',
   name_kh: '',
   faculty_id: null,
-  degree_id: null,
+  department_id: null,
   major_id: null,
   credits: 3,
   description: '',
   status: 'Active'
 })
 
-// Degree/Major options narrow down as Faculty, then Degree, is picked
-const degreesForSelectedFaculty = computed(() =>
-  degrees.value.filter(d => d.faculty_id === sessionForm.value.faculty_id)
+// Department/Major options narrow down as Faculty, then Department, is picked
+const departmentsForSelectedFaculty = computed(() =>
+  departments.value.filter(d => d.faculty_id === sessionForm.value.faculty_id)
 )
-const majorsForSelectedDegree = computed(() =>
-  majors.value.filter(m => m.degree_id === sessionForm.value.degree_id)
+const majorsForSelectedDepartment = computed(() =>
+  majors.value.filter(m => m.department_id === sessionForm.value.department_id)
 )
 
 // Computed Properties
@@ -425,7 +425,7 @@ const openNewDialog = () => {
     name_en: '',
     name_kh: '',
     faculty_id: null,
-    degree_id: null,
+    department_id: null,
     major_id: null,
     credits: 3,
     description: '',
@@ -436,7 +436,8 @@ const openNewDialog = () => {
 }
 
 const editSession = (data) => {
-  sessionForm.value = { ...data }
+  const major = majors.value.find(m => m.id === data.major_id)
+  sessionForm.value = { ...data, department_id: major?.department_id ?? null }
   isEdit.value = true
   sessionDialog.value = true
 }
@@ -449,7 +450,6 @@ const saveSession = async () => {
 
   const payload = {
     faculty_id: sessionForm.value.faculty_id,
-    degree_id: sessionForm.value.degree_id,
     major_id: sessionForm.value.major_id,
     code: sessionForm.value.code,
     name_en: sessionForm.value.name_en,

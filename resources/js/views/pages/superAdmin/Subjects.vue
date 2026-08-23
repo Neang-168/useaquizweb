@@ -264,7 +264,7 @@
               optionValue="id"
               placeholder="Select Faculty"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              @change="subjectForm.degree_id = null; subjectForm.major_id = null"
+              @change="subjectForm.department_id = null; subjectForm.major_id = null"
             />
           </div>
           <div>
@@ -277,20 +277,20 @@
               placeholder="Select Department"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="subjectForm.major_id = null"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
             <Dropdown
               v-model="subjectForm.major_id"
-              :options="majorsForSelectedFaculty"
+              :options="majorsForSelectedDepartment"
               optionLabel="name_en"
               optionValue="id"
               placeholder="Any major"
               showClear
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              :disabled="!subjectForm.faculty_id"
-              @change="onMajorChange"
+              :disabled="!subjectForm.department_id"
             />
           </div>
         </div>
@@ -531,20 +531,11 @@ const subjectForm = ref({
   status: 'Active'
 })
 
-// Major options narrow down by Faculty (via the Faculty -> Degree -> Major chain).
-// Degree itself is resolved automatically from the picked Major and never shown in the UI.
-const majorsForSelectedFaculty = computed(() => {
-  if (!subjectForm.value.faculty_id) return []
-  const degreeIds = degrees.value
-    .filter(d => d.faculty_id === subjectForm.value.faculty_id)
-    .map(d => d.id)
-  return majors.value.filter(m => degreeIds.includes(m.degree_id))
+// Major options narrow down by the selected Department.
+const majorsForSelectedDepartment = computed(() => {
+  if (!subjectForm.value.department_id) return []
+  return majors.value.filter(m => m.department_id === subjectForm.value.department_id)
 })
-
-const onMajorChange = () => {
-  const major = majors.value.find(m => m.id === subjectForm.value.major_id)
-  subjectForm.value.degree_id = major?.degree_id ?? null
-}
 
 // Computed Properties
 const activeSubjectsCount = computed(() => subjects.value.filter(s => s.status === 'Active').length)

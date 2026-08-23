@@ -34,4 +34,9 @@ class Department extends Model
     {
         return $this->hasMany(TeacherProfile::class);
     }
+
+    public function majors(): HasMany
+    {
+        return $this->hasMany(Major::class);
+    }
 }

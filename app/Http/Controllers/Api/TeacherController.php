@@ -53,8 +53,7 @@ class TeacherController extends Controller
 
             $user = User::create([
                 'role_id' => $role?->id,
-                'username' => $validated['code'],
-                'email' => $validated['email'] ?? "{$validated['code']}@usea.edu.kh",
+                'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
@@ -109,7 +108,7 @@ class TeacherController extends Controller
 
         DB::transaction(function () use ($validated, $teacher) {
             $teacher->user->update([
-                'email' => $validated['email'] ?? $teacher->user->email,
+                'username' => $validated['username'],
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
@@ -166,17 +165,16 @@ class TeacherController extends Controller
                 'max:50',
                 Rule::unique('teacher_profiles', 'employee_code')->ignore($teacher?->id),
             ],
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($userId),
+            ],
             'name_en' => ['required', 'string', 'max:255'],
             'name_kh' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', Rule::in(['Male', 'Female'])],
             'dob' => ['nullable', 'date'],
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($userId),
-            ],
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'password' => [$teacher ? 'nullable' : 'required', 'string', 'min:8'],
@@ -195,12 +193,12 @@ class TeacherController extends Controller
 
         return [
             'code' => $validated['code'],
+            'username' => $validated['username'],
             'first_name' => $firstName,
             'last_name' => $lastName,
             'name_kh' => $validated['name_kh'] ?? null,
             'gender' => $validated['gender'],
             'dob' => $validated['dob'] ?? null,
-            'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? null,
             'password' => $validated['password'] ?? null,
@@ -230,12 +228,12 @@ class TeacherController extends Controller
         return [
             'id' => $teacher->id,
             'code' => $teacher->employee_code,
+            'username' => $user->username,
             'name_en' => trim($user->first_name . ' ' . $user->last_name),
             'name_kh' => $user->name_kh,
             'gender' => $user->gender,
             'dob' => $user->dob?->toDateString(),
             'phone' => $user->phone,
-            'email' => $user->email,
             'address' => $user->address,
             'faculty_id' => $teacher->faculty_id,
             'faculty_name' => $teacher->faculty?->name,

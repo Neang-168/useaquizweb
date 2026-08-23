@@ -153,6 +153,7 @@ class QuizController extends Controller
         }
 
         $validated = $request->validate([
+            'tabSwitchCount' => ['nullable', 'integer', 'min:0'],
             'answers' => ['array'],
             'answers.*.questionId' => ['required', 'integer'],
             'answers.*.selectedOptionId' => ['nullable', 'integer'],
@@ -166,7 +167,11 @@ class QuizController extends Controller
         $questions = $quiz->questions()->with('options', 'matchingPairs')->get()->keyBy('id');
 
         $submission = DB::transaction(function () use ($validated, $submission, $questions) {
-            $submission->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
+            $submission->forceFill([
+                'status' => 'submitted',
+                'submitted_at' => now(),
+                'tab_switch_count' => $validated['tabSwitchCount'] ?? 0,
+            ])->save();
 
             foreach ($validated['answers'] ?? [] as $answerInput) {
                 $question = $questions->get($answerInput['questionId']);

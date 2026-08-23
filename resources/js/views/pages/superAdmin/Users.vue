@@ -34,7 +34,7 @@
             <InputText
               v-model="filters['global'].value"
               size="small"
-              placeholder="Search username, name, or email..."
+              placeholder="Search username or name..."
               class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
             />
           </div>
@@ -122,7 +122,7 @@
         :value="filteredUsers"
         v-model:filters="filters"
         v-model:first="first"
-        :globalFilterFields="['username', 'email', 'first_name', 'last_name', 'name_kh', 'phone']"
+        :globalFilterFields="['username', 'first_name', 'last_name', 'name_kh', 'phone']"
         dataKey="id"
         paginator
         paginatorPosition="bottom"
@@ -168,13 +168,6 @@
         <Column v-if="showAllColumns" field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
           <template #body="{ data }">
             <span class="text-slate-600 text-sm font-khmer">{{ data.name_kh || 'N/A' }}</span>
-          </template>
-        </Column>
-
-        <!-- Email - តែងតែបង្ហាញ -->
-        <Column field="email" header="EMAIL" sortable style="min-width: 190px">
-          <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.email }}</span>
           </template>
         </Column>
 
@@ -313,16 +306,11 @@
           <span>Account</span>
         </div>
 
-        <!-- Username / Email / Role -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Username / Role -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username *</label>
-            <InputText v-model="form.username" placeholder="jane.doe"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email *</label>
-            <InputText v-model="form.email" type="email" placeholder="jane@example.com"
+            <InputText v-model="form.username" placeholder="e.g. ADM00001"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
           <div>
@@ -432,7 +420,7 @@
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
               <Dropdown v-model="form.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
                 placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-                @change="form.department_id = null; form.major_id = null; form.degree_id = null" />
+                @change="form.department_id = null; form.major_id = null" />
             </div>
           </div>
 
@@ -442,13 +430,14 @@
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
               <Dropdown v-model="form.department_id" :options="teacherDepartmentOptions" optionLabel="name_en"
                 optionValue="id" placeholder="Select Department" showClear
-                class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+                class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+                @change="form.major_id = null" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
-              <Dropdown v-model="form.major_id" :options="majorsForSelectedFaculty" optionLabel="name_en"
-                optionValue="id" placeholder="Select Major" showClear :disabled="!form.faculty_id"
-                class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" @change="onMajorChange" />
+              <Dropdown v-model="form.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en"
+                optionValue="id" placeholder="Select Major" showClear :disabled="!form.department_id"
+                class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hire Date</label>
@@ -765,20 +754,11 @@ const teacherDepartmentOptions = computed(() =>
   departments.value.filter(d => d.faculty_id === form.value.faculty_id)
 )
 
-// Major options narrow down by Faculty (via the Faculty -> Degree -> Major chain).
-// Degree itself is resolved automatically from the picked Major and never shown in the UI.
-const majorsForSelectedFaculty = computed(() => {
-  if (!form.value.faculty_id) return []
-  const degreeIds = degrees.value
-    .filter(d => d.faculty_id === form.value.faculty_id)
-    .map(d => d.id)
-  return majors.value.filter(m => degreeIds.includes(m.degree_id))
+// Major options narrow down by the selected Department.
+const majorsForSelectedDepartment = computed(() => {
+  if (!form.value.department_id) return []
+  return majors.value.filter(m => m.department_id === form.value.department_id)
 })
-
-const onMajorChange = () => {
-  const major = majors.value.find(m => m.id === form.value.major_id)
-  form.value.degree_id = major?.degree_id ?? null
-}
 
 // ======= Dialog / Form =======
 const userDialog = ref(false)
@@ -787,7 +767,6 @@ const isEdit = ref(false)
 const emptyForm = () => ({
   id: null,
   username: '',
-  email: '',
   password: '',
   first_name: '',
   last_name: '',
@@ -830,6 +809,21 @@ const selectedRoleName = computed(() => roles.value.find(r => r.id === form.valu
 const isTeacherRole = computed(() => selectedRoleName.value === 'Teacher')
 const isStudentRole = computed(() => selectedRoleName.value === 'Student')
 const isAdminRole = computed(() => roleGroups.admin.includes(selectedRoleName.value))
+
+const fetchNextUsername = async (roleName) => {
+  try {
+    const { data } = await api.get('/users/next-username', { params: { role: roleName } })
+    form.value.username = data.username
+  } catch (error) {
+    // Leave the field blank so the admin can type one manually.
+  }
+}
+
+watch(selectedRoleName, (roleName) => {
+  if (!isEdit.value && roleName && ['Admin', 'Teacher', 'Student'].includes(roleName)) {
+    fetchNextUsername(roleName)
+  }
+})
 
 // ======= Formatting helpers =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -887,8 +881,8 @@ const detailsFor = (data) => {
 // ======= Actions =======
 const openNewDialog = (defaultRoleName = null) => {
   const defaultRole = defaultRoleName ? roles.value.find(r => r.name === defaultRoleName) : null
-  form.value = { ...emptyForm(), role_id: defaultRole?.id ?? null }
   isEdit.value = false
+  form.value = { ...emptyForm(), role_id: defaultRole?.id ?? null }
   userDialog.value = true
 }
 
@@ -901,7 +895,6 @@ const editUser = (data) => {
   form.value = {
     id: data.id,
     username: data.username,
-    email: data.email,
     password: '',
     first_name: data.first_name,
     last_name: data.last_name,
@@ -942,8 +935,8 @@ const editUser = (data) => {
 }
 
 const saveUser = async () => {
-  if (!form.value.username || !form.value.email || !form.value.first_name || !form.value.last_name || !form.value.role_id) {
-    alert('Username, email, first name, last name, and role are required.')
+  if (!form.value.username || !form.value.first_name || !form.value.last_name || !form.value.role_id) {
+    alert('Username, first name, last name, and role are required.')
     return
   }
   if (!isEdit.value && !form.value.password) {
@@ -969,7 +962,6 @@ const saveUser = async () => {
 
   const payload = {
     username: form.value.username,
-    email: form.value.email,
     first_name: form.value.first_name,
     last_name: form.value.last_name,
     name_kh: form.value.name_kh || null,

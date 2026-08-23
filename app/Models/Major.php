@@ -14,6 +14,7 @@ class Major extends Model
 
     protected $fillable = [
         'degree_id',
+        'department_id',
         'code',
         'name',
         'name_kh',
@@ -28,6 +29,11 @@ class Major extends Model
     public function degree(): BelongsTo
     {
         return $this->belongsTo(Degree::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function subjects(): HasMany

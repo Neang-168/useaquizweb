@@ -45,6 +45,7 @@ class ScoreController extends Controller
                 'essayNeedsGrade' => $hasEssay && is_null($submission->essay_score),
                 'passMark' => $submissionPassMark,
                 'passed' => $percentage >= $submissionPassMark,
+                'tabSwitchCount' => $submission->tab_switch_count,
             ];
         });
 

@@ -23,6 +23,30 @@ class UserController extends Controller
     private const ADMIN_LIKE_ROLES = ['Admin'];
 
     /**
+     * Username prefix used for auto-generating each role's login username.
+     */
+    private const ROLE_USERNAME_PREFIXES = [
+        'Admin' => 'ADM',
+        'Teacher' => 'TCH',
+        'Student' => 'STU',
+    ];
+
+    /**
+     * Preview the next auto-generated username for a given role, so the
+     * create/edit form can show it before the user is actually saved.
+     */
+    public function nextUsername(Request $request)
+    {
+        $validated = $request->validate([
+            'role' => ['required', Rule::in(array_keys(self::ROLE_USERNAME_PREFIXES))],
+        ]);
+
+        $username = User::generateUsername(self::ROLE_USERNAME_PREFIXES[$validated['role']]);
+
+        return response()->json(['username' => $username]);
+    }
+
+    /**
      * Get authenticated user.
      */
     public function user(Request $request)
@@ -361,7 +385,6 @@ class UserController extends Controller
 
         return $request->validate([
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($user?->id)],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:8'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -417,7 +440,7 @@ class UserController extends Controller
     private function userAttributes(array $data, bool $isCreate): array
     {
         $attributes = collect($data)->only([
-            'username', 'email', 'first_name', 'last_name', 'name_kh',
+            'username', 'first_name', 'last_name', 'name_kh',
             'gender', 'dob', 'phone', 'address', 'role_id', 'status',
         ])->toArray();
 

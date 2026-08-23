@@ -73,6 +73,8 @@ class PromotionController extends Controller
     private function validated(Request $request, ?Promotion $promotion = null): array
     {
         $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'name_kh' => ['nullable', 'string', 'max:255'],
             'year_start' => ['required', 'integer', 'min:2000', 'max:2100'],
             'year_end' => ['required', 'integer', 'min:2000', 'max:2100', 'gt:year_start'],
             'status' => ['nullable', Rule::in(['Active', 'Inactive'])],
@@ -91,6 +93,8 @@ class PromotionController extends Controller
         }
 
         return [
+            'name' => $validated['name'] ?? null,
+            'name_kh' => $validated['name_kh'] ?? null,
             'year_start' => $validated['year_start'],
             'year_end' => $validated['year_end'],
             'status' => $this->statusToBool($validated['status'] ?? 'Active'),
@@ -103,7 +107,8 @@ class PromotionController extends Controller
             'id' => $promotion->id,
             'year_start' => $promotion->year_start,
             'year_end' => $promotion->year_end,
-            'name_en' => "{$promotion->year_start}-{$promotion->year_end}",
+            'name_en' => $promotion->name ?: "{$promotion->year_start}-{$promotion->year_end}",
+            'name_kh' => $promotion->name_kh,
             'status' => $this->statusToLabel($promotion->status),
         ];
     }

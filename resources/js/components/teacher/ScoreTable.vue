@@ -162,6 +162,19 @@
             <span class="text-slate-500 text-sm">{{ data.submittedAt }}</span>
           </template>
         </Column>
+
+        <Column header="TAB SWITCHES">
+          <template #body="{ data }">
+            <span
+              v-if="data.tabSwitchCount > 0"
+              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block bg-amber-50 text-amber-600 border-amber-200"
+              :title="`Left the quiz tab ${data.tabSwitchCount} time${data.tabSwitchCount === 1 ? '' : 's'}`"
+            >
+              {{ data.tabSwitchCount }}
+            </span>
+            <span v-else class="text-slate-300 text-sm">—</span>
+          </template>
+        </Column>
       </DataTable>
     </div>
   </div>
@@ -366,7 +379,7 @@ const radarChartOptions = {
   },
 }
 
-const exportHeader = ['#', 'Student ID', 'Name', 'Submitted At', 'MCQ Score', 'Essay Score', 'Total', 'Result']
+const exportHeader = ['#', 'Student ID', 'Name', 'Submitted At', 'MCQ Score', 'Essay Score', 'Total', 'Result', 'Tab Switches']
 
 const exportRows = () => filteredStudents.value.map((s, i) => [
   i + 1,
@@ -377,6 +390,7 @@ const exportRows = () => filteredStudents.value.map((s, i) => [
   s.essayScore ?? '',
   s.mcqScore + (s.essayScore || 0),
   s.passed ? 'PASSED' : 'FAILED',
+  s.tabSwitchCount ?? 0,
 ])
 
 function exportCsv() {

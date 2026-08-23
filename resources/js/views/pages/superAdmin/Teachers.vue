@@ -162,10 +162,10 @@
           </template>
         </Column>
 
-        <!-- Email - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="email" header="EMAIL" style="min-width: 170px">
+        <!-- Username - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" field="username" header="USERNAME" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.email || '—' }}</span>
+            <span class="font-mono text-slate-600 text-sm whitespace-nowrap">{{ data.username || '—' }}</span>
           </template>
         </Column>
 
@@ -237,8 +237,8 @@
           </div>
         </div>
 
-        <!-- Gender / Phone / Email -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Gender / Phone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
             <Dropdown v-model="teacherForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
@@ -249,15 +249,15 @@
             <InputText v-model="teacherForm.phone" placeholder="012 345 678"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
-            <InputText v-model="teacherForm.email" placeholder="teacher@school.edu.kh"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
-          </div>
         </div>
 
-        <!-- Password -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Username / Password -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username *</label>
+            <InputText v-model="teacherForm.username" placeholder="TCH00001"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
               Password {{ isEdit ? '' : '*' }}
@@ -309,19 +309,20 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
             <Dropdown v-model="teacherForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
               placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              @change="teacherForm.department_id = null; teacherForm.major_id = null; teacherForm.degree_id = null" />
+              @change="teacherForm.department_id = null; teacherForm.major_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
             <Dropdown v-model="teacherForm.department_id" :options="departmentOptions" optionLabel="name_en"
               optionValue="id" placeholder="Select Department" showClear
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="teacherForm.major_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
-            <Dropdown v-model="teacherForm.major_id" :options="majorsForSelectedFaculty" optionLabel="name_en"
-              optionValue="id" placeholder="Select Major" showClear :disabled="!teacherForm.faculty_id"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" @change="onMajorChange" />
+            <Dropdown v-model="teacherForm.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en"
+              optionValue="id" placeholder="Select Major" showClear :disabled="!teacherForm.department_id"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
         </div>
 
@@ -502,20 +503,11 @@ const departmentOptions = computed(() =>
   departments.value.filter(d => d.faculty_id === teacherForm.value.faculty_id)
 )
 
-// Major options narrow down by Faculty (via the Faculty -> Degree -> Major chain).
-// Degree itself is resolved automatically from the picked Major and never shown in the UI.
-const majorsForSelectedFaculty = computed(() => {
-  if (!teacherForm.value.faculty_id) return []
-  const degreeIds = degrees.value
-    .filter(d => d.faculty_id === teacherForm.value.faculty_id)
-    .map(d => d.id)
-  return majors.value.filter(m => degreeIds.includes(m.degree_id))
+// Major options narrow down by the selected Department.
+const majorsForSelectedDepartment = computed(() => {
+  if (!teacherForm.value.department_id) return []
+  return majors.value.filter(m => m.department_id === teacherForm.value.department_id)
 })
-
-const onMajorChange = () => {
-  const major = majors.value.find(m => m.id === teacherForm.value.major_id)
-  teacherForm.value.degree_id = major?.degree_id ?? null
-}
 
 onMounted(() => {
   fetchTeachers()
@@ -578,7 +570,7 @@ const teacherForm = ref({
   specialization: '',
   hire_date: null,
   phone: '',
-  email: '',
+  username: '',
   type: 'Full-Time',
   status: 'Active',
   avatar: ''
@@ -606,7 +598,7 @@ const openNewDialog = () => {
     specialization: '',
     hire_date: null,
     phone: '',
-    email: '',
+    username: '',
     password: '',
     type: 'Full-Time',
     status: 'Active',
@@ -614,6 +606,16 @@ const openNewDialog = () => {
   }
   isEdit.value = false
   teacherDialog.value = true
+  fetchNextUsername()
+}
+
+const fetchNextUsername = async () => {
+  try {
+    const { data } = await api.get('/users/next-username', { params: { role: 'Teacher' } })
+    teacherForm.value.username = data.username
+  } catch (error) {
+    // Leave the field blank so the admin can type one manually.
+  }
 }
 
 const editTeacher = (data) => {
@@ -628,8 +630,8 @@ const editTeacher = (data) => {
 }
 
 const saveTeacher = async () => {
-  if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.faculty_id || !teacherForm.value.phone) {
-    alert('Teacher code, name (English), faculty, and phone are required.')
+  if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.faculty_id || !teacherForm.value.phone || !teacherForm.value.username) {
+    alert('Teacher code, name (English), faculty, phone, and username are required.')
     return
   }
   if (!isEdit.value && (!teacherForm.value.password || teacherForm.value.password.length < 8)) {
@@ -656,7 +658,7 @@ const saveTeacher = async () => {
     specialization: teacherForm.value.specialization,
     hire_date: formatDateForApi(teacherForm.value.hire_date),
     phone: teacherForm.value.phone,
-    email: teacherForm.value.email,
+    username: teacherForm.value.username,
     type: teacherForm.value.type,
     status: teacherForm.value.status,
   }

@@ -76,6 +76,7 @@ class SemesterController extends Controller
         $validated = $request->validate([
             'academic_year_id' => ['required', 'exists:academic_years,id'],
             'name_en' => ['required', 'string', 'max:255'],
+            'name_kh' => ['nullable', 'string', 'max:255'],
             'order_no' => ['required', 'integer', 'min:1'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
@@ -85,6 +86,7 @@ class SemesterController extends Controller
         return [
             'academic_year_id' => $validated['academic_year_id'],
             'name' => $validated['name_en'],
+            'name_kh' => $validated['name_kh'] ?? null,
             'order_no' => $validated['order_no'],
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
@@ -99,9 +101,8 @@ class SemesterController extends Controller
             'academic_year_id' => $semester->academic_year_id,
             'academic_year' => $semester->academicYear?->name,
             'name' => $semester->name,
-            'name_en' => $semester->academicYear
-                ? "{$semester->name} ({$semester->academicYear->name})"
-                : $semester->name,
+            'name_kh' => $semester->name_kh,
+            'name_en' => $semester->name,
             'order_no' => $semester->order_no,
             'start_date' => $semester->start_date?->toDateString(),
             'end_date' => $semester->end_date?->toDateString(),

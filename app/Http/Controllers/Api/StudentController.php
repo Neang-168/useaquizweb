@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
+use App\Models\Major;
 use App\Models\Promotion;
 use App\Models\Role;
 use App\Models\StudentEnrollment;
@@ -66,8 +67,7 @@ class StudentController extends Controller
 
             $user = User::create([
                 'role_id' => $role?->id,
-                'username' => $validated['student_id'],
-                'email' => $validated['email'] ?? "{$validated['student_id']}@usea.edu.kh",
+                'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
@@ -143,7 +143,7 @@ class StudentController extends Controller
 
         DB::transaction(function () use ($validated, $student) {
             $student->user->update([
-                'email' => $validated['email'] ?? $student->user->email,
+                'username' => $validated['username'],
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'name_kh' => $validated['name_kh'],
@@ -236,22 +236,26 @@ class StudentController extends Controller
      */
     private function syncEnrollment(StudentProfile $profile, array $validated): void
     {
-        $class = Classroom::with('major.degree')->findOrFail($validated['class_id']);
+        $class = isset($validated['class_id'])
+            ? Classroom::with('major.degree')->findOrFail($validated['class_id'])
+            : null;
 
         $enrollment = $profile->enrollments()->latest('enrollment_date')->first();
 
+        $major = $class?->major ?? (isset($validated['major_id']) ? Major::find($validated['major_id']) : null);
+
         $attributes = [
-            'class_id' => $class->id,
-            'faculty_id' => $validated['faculty_id'] ?? $class->major->degree->faculty_id,
-            'department_id' => $validated['department_id'] ?? $class->department_id,
-            'degree_id' => $validated['degree_id'] ?? $class->major->degree_id,
-            'major_id' => $validated['major_id'] ?? $class->major_id,
-            'promotion_id' => $validated['promotion_id'] ?? $this->resolveCurrentPromotionId(),
-            'stage_id' => $validated['stage_id'] ?? $class->stage_id,
-            'academic_year_id' => $validated['academic_year_id'] ?? $class->academic_year_id,
-            'semester_id' => $validated['semester_id'] ?? $class->semester_id,
-            'term_id' => $validated['term_id'] ?? $class->term_id,
-            'shift_id' => $validated['shift_id'] ?? $class->shift_id,
+            'class_id' => $class->id ?? $enrollment?->class_id,
+            'faculty_id' => $validated['faculty_id'] ?? $major?->degree?->faculty_id ?? $enrollment?->faculty_id,
+            'department_id' => $validated['department_id'] ?? $class?->department_id ?? $enrollment?->department_id,
+            'degree_id' => $validated['degree_id'] ?? $major?->degree_id ?? $enrollment?->degree_id,
+            'major_id' => $validated['major_id'] ?? $class?->major_id ?? $enrollment?->major_id,
+            'promotion_id' => $validated['promotion_id'] ?? $enrollment?->promotion_id ?? $this->resolveCurrentPromotionId(),
+            'stage_id' => $validated['stage_id'] ?? $class?->stage_id ?? $enrollment?->stage_id,
+            'academic_year_id' => $validated['academic_year_id'] ?? $class?->academic_year_id ?? $enrollment?->academic_year_id,
+            'semester_id' => $validated['semester_id'] ?? $class?->semester_id ?? $enrollment?->semester_id,
+            'term_id' => $validated['term_id'] ?? $class?->term_id ?? $enrollment?->term_id,
+            'shift_id' => $validated['shift_id'] ?? $class?->shift_id ?? $enrollment?->shift_id,
             'status' => $validated['status'],
         ];
 
@@ -280,31 +284,30 @@ class StudentController extends Controller
                 'max:50',
                 Rule::unique('student_profiles', 'student_code')->ignore($student?->id),
             ],
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($userId),
+            ],
             'name_en' => ['required', 'string', 'max:255'],
             'name_kh' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', Rule::in(['Male', 'Female'])],
             'dob' => ['nullable', 'date'],
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($userId),
-            ],
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'password' => [$student ? 'nullable' : 'required', 'string', 'min:8'],
-            'class_id' => ['required', 'exists:classes,id'],
-            'faculty_id' => ['nullable', 'exists:faculties,id'],
-            'department_id' => ['nullable', 'exists:departments,id'],
+            'class_id' => ['nullable', 'exists:classes,id'],
+            'faculty_id' => ['required', 'exists:faculties,id'],
+            'department_id' => ['required', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
-            'major_id' => ['nullable', 'exists:majors,id'],
-            'promotion_id' => ['nullable', 'exists:promotions,id'],
-            'stage_id' => ['nullable', 'exists:stages,id'],
-            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
-            'semester_id' => ['nullable', 'exists:semesters,id'],
-            'term_id' => ['nullable', 'exists:terms,id'],
-            'shift_id' => ['nullable', 'exists:shifts,id'],
+            'major_id' => ['required', 'exists:majors,id'],
+            'promotion_id' => ['required', 'exists:promotions,id'],
+            'stage_id' => ['required', 'exists:stages,id'],
+            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'semester_id' => ['required', 'exists:semesters,id'],
+            'term_id' => ['required', 'exists:terms,id'],
+            'shift_id' => ['required', 'exists:shifts,id'],
             'status' => ['required', Rule::in(['Active', 'Inactive', 'Suspended'])],
         ]);
 
@@ -312,16 +315,16 @@ class StudentController extends Controller
 
         return [
             'student_id' => $validated['student_id'],
+            'username' => $validated['username'],
             'first_name' => $firstName,
             'last_name' => $lastName,
             'name_kh' => $validated['name_kh'] ?? null,
             'gender' => $validated['gender'],
             'dob' => $validated['dob'] ?? null,
-            'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? null,
             'password' => $validated['password'] ?? null,
-            'class_id' => $validated['class_id'],
+            'class_id' => $validated['class_id'] ?? null,
             'faculty_id' => $validated['faculty_id'] ?? null,
             'department_id' => $validated['department_id'] ?? null,
             'degree_id' => $validated['degree_id'] ?? null,
@@ -351,12 +354,12 @@ class StudentController extends Controller
         return [
             'id' => $student->id,
             'student_id' => $student->student_code,
+            'username' => $user->username,
             'name_en' => trim($user->first_name . ' ' . $user->last_name),
             'name_kh' => $user->name_kh,
             'gender' => $user->gender,
             'dob' => $user->dob?->toDateString(),
             'phone' => $user->phone,
-            'email' => $user->email,
             'address' => $user->address,
             'class_id' => $enrollment?->class_id,
             'class_name' => $enrollment?->classroom?->name,

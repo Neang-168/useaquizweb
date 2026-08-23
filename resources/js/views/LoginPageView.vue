@@ -19,20 +19,20 @@
         </Message>
 
         <form @submit.prevent="submitLogin" class="space-y-5">
-          <!-- Email Input -->
+          <!-- Username Input -->
           <div>
-            <label for="email" class="mb-1.5 block text-xs font-semibold text-surface-400 uppercase tracking-wider">
-              Username or email
+            <label for="username" class="mb-1.5 block text-xs font-semibold text-surface-400 uppercase tracking-wider">
+              Username
             </label>
-            <InputText 
-              id="email" 
-              v-model="form.email" 
-              type="email" 
-              placeholder="Enter your email"
-              class="w-full !bg-indigo-50 !text-surface-700 placeholder:!text-surface-400 !border-0 !py-2.5 !px-4 transition-all" 
-              :invalid="submitted && !form.email" />
-            <small v-if="submitted && !form.email" class="mt-1 block text-red-500">
-              Email is required.
+            <InputText
+              id="username"
+              v-model="form.username"
+              type="text"
+              placeholder="Enter your username"
+              class="w-full !bg-indigo-50 !text-surface-700 placeholder:!text-surface-400 !border-0 !py-2.5 !px-4 transition-all"
+              :invalid="submitted && !form.username" />
+            <small v-if="submitted && !form.username" class="mt-1 block text-red-500">
+              Username is required.
             </small>
           </div>
 
@@ -131,7 +131,7 @@ import Message from 'primevue/message'
 const router = useRouter()
 
 const form = ref({
-  email: '',
+  username: '',
   password: '',
 })
 
@@ -144,7 +144,7 @@ async function submitLogin() {
   submitted.value = true
   error.value = ''
 
-  if (!form.value.email || !form.value.password) {
+  if (!form.value.username || !form.value.password) {
     return
   }
 
@@ -158,7 +158,7 @@ async function submitLogin() {
         Accept: 'application/json',
       },
       body: JSON.stringify({
-        email: form.value.email,
+        username: form.value.username,
         password: form.value.password,
       }),
     })
@@ -166,7 +166,7 @@ async function submitLogin() {
     const data = await response.json()
 
     if (!response.ok) {
-      const errorMsg = data.errors?.email?.[0] || data.message || 'Invalid email or password.'
+      const errorMsg = data.errors?.username?.[0] || data.message || 'Invalid username or password.'
       throw new Error(errorMsg)
     }
 

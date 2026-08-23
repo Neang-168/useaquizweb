@@ -11,6 +11,8 @@ class Promotion extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
+        'name_kh',
         'year_start',
         'year_end',
         'status',

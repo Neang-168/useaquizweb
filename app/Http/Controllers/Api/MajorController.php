@@ -20,9 +20,15 @@ class MajorController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $majors = Major::query()
-            ->with('degree.faculty')
+            ->with('department.faculty', 'degree.faculty')
+            ->when($request->input('department_id'), fn ($query, $departmentId) => $query->where('department_id', $departmentId))
             ->when($request->input('degree_id'), fn ($query, $degreeId) => $query->where('degree_id', $degreeId))
-            ->when($request->input('faculty_id'), fn ($query, $facultyId) => $query->whereHas('degree', fn ($query) => $query->where('faculty_id', $facultyId)))
+            ->when($request->input('faculty_id'), function ($query, $facultyId) {
+                $query->where(function ($query) use ($facultyId) {
+                    $query->whereHas('department', fn ($query) => $query->where('faculty_id', $facultyId))
+                        ->orWhereHas('degree', fn ($query) => $query->where('faculty_id', $facultyId));
+                });
+            })
             ->when($request->input('q'), function ($query, $q) {
                 $query->where(function ($query) use ($q) {
                     $query->where('code', 'like', "%{$q}%")
@@ -45,7 +51,7 @@ class MajorController extends Controller
         $data = $this->validated($request);
 
         $major = Major::create($data);
-        $major->load('degree.faculty');
+        $major->load('department.faculty', 'degree.faculty');
 
         return response()->json([
             'message' => 'Major created successfully.',
@@ -58,7 +64,7 @@ class MajorController extends Controller
      */
     public function show(Major $major)
     {
-        $major->load('degree.faculty');
+        $major->load('department.faculty', 'degree.faculty');
 
         return response()->json([
             'major' => $this->transform($major),
@@ -73,7 +79,7 @@ class MajorController extends Controller
         $data = $this->validated($request, $major);
 
         $major->update($data);
-        $major->load('degree.faculty');
+        $major->load('department.faculty', 'degree.faculty');
 
         return response()->json([
             'message' => 'Major updated successfully.',
@@ -96,13 +102,14 @@ class MajorController extends Controller
     private function validated(Request $request, ?Major $major = null): array
     {
         $validated = $request->validate([
-            'degree_id' => ['required', 'exists:degrees,id'],
+            'department_id' => ['required', 'exists:departments,id'],
+            'degree_id' => ['nullable', 'exists:degrees,id'],
             'code' => [
                 'required',
                 'string',
                 'max:50',
                 Rule::unique('majors', 'code')
-                    ->where('degree_id', $request->input('degree_id'))
+                    ->where('department_id', $request->input('department_id'))
                     ->ignore($major?->id),
             ],
             'name_en' => ['required', 'string', 'max:255'],
@@ -112,7 +119,8 @@ class MajorController extends Controller
         ]);
 
         return [
-            'degree_id' => $validated['degree_id'],
+            'department_id' => $validated['department_id'],
+            'degree_id' => $validated['degree_id'] ?? null,
             'code' => $validated['code'],
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
@@ -123,12 +131,16 @@ class MajorController extends Controller
 
     private function transform(Major $major): array
     {
+        $faculty = $major->department?->faculty ?? $major->degree?->faculty;
+
         return [
             'id' => $major->id,
+            'department_id' => $major->department_id,
+            'department_name' => $major->department?->name,
             'degree_id' => $major->degree_id,
             'degree_title' => $major->degree?->name,
-            'faculty_id' => $major->degree?->faculty_id,
-            'faculty_name' => $major->degree?->faculty?->name,
+            'faculty_id' => $faculty?->id,
+            'faculty_name' => $faculty?->name,
             'code' => $major->code,
             'name_en' => $major->name,
             'name_kh' => $major->name_kh,

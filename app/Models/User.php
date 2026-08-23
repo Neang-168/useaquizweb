@@ -164,4 +164,21 @@ class User extends Authenticatable
     {
         return $this->status === true;
     }
+
+    /**
+     * Generate the next sequential username for a given role prefix
+     * (e.g. "STU00001", "STU00002", ...), based on the highest existing
+     * username with that prefix.
+     */
+    public static function generateUsername(string $prefix): string
+    {
+        $last = static::withTrashed()
+            ->where('username', 'like', "{$prefix}%")
+            ->orderByRaw('CAST(SUBSTRING(username, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('username');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+
+        return $prefix . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
+    }
 }

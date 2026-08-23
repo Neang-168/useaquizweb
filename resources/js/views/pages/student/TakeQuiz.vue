@@ -45,6 +45,12 @@
         </div>
       </div>
 
+      <!-- Tab-switch warning: shown briefly when the student returns to the tab -->
+      <div v-if="showTabSwitchWarning" class="bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl p-4 text-xs font-semibold flex items-center gap-2">
+        <i class="pi pi-exclamation-triangle"></i>
+        Leaving the quiz tab has been recorded ({{ tabSwitchCount }} time{{ tabSwitchCount === 1 ? '' : 's' }}). This is visible to your teacher.
+      </div>
+
       <!-- Progress + question navigator -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
         <div class="flex items-center justify-between text-xs">
@@ -73,7 +79,7 @@
       </div>
 
       <!-- Current question -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+      <div ref="questionAreaRef" class="quiz-question-area bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 select-none">
         <div class="flex items-start justify-between gap-3">
           <h3 class="text-sm font-bold text-slate-800 m-0">{{ currentIndex + 1 }}. {{ currentQuestion.title }}</h3>
           <span class="text-[11px] font-semibold text-slate-400 shrink-0">{{ currentQuestion.points }} pts</span>
@@ -213,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import Image from 'primevue/image'
 import Dialog from 'primevue/dialog'
@@ -233,7 +239,11 @@ const answers = reactive({})
 const currentIndex = ref(0)
 const timeLeft = ref(0)
 const showConfirm = ref(false)
+const questionAreaRef = ref(null)
+const tabSwitchCount = ref(0)
+const showTabSwitchWarning = ref(false)
 let timer = null
+let tabSwitchWarningTimeout = null
 
 // The server hands us an absolute deadline (started_at + duration), not a
 // countdown — clockOffsetMs corrects for the local clock being off from the
@@ -319,6 +329,65 @@ function beforeUnloadWarning(e) {
   e.returnValue = ''
 }
 
+// Blocks right-click/copy/cut on the question area only, so inputs/buttons stay usable.
+function blockContextMenu(e) {
+  e.preventDefault()
+}
+function blockCopyCut(e) {
+  e.preventDefault()
+}
+
+// Detection only (not prevention) — flags when the student leaves the tab/window
+// while the quiz is active, e.g. to look up an answer elsewhere. Recorded, not blocked,
+// to avoid penalizing legitimate alt-tabs. The count is incremented on leaving (that's
+// the actual event), but the warning banner only shows once they're back to see it.
+function handleVisibilityChange() {
+  if (!quiz.value || result.value) return
+  if (document.hidden) {
+    tabSwitchCount.value++
+  } else if (tabSwitchCount.value > 0) {
+    showTabSwitchWarning.value = true
+    clearTimeout(tabSwitchWarningTimeout)
+    tabSwitchWarningTimeout = setTimeout(() => (showTabSwitchWarning.value = false), 6000)
+  }
+}
+
+// Best-effort only: PrintScreen keydown suppression is unreliable across browsers/OS
+// and cannot actually prevent a screenshot — this just discourages the common shortcuts.
+function blockCheatShortcuts(e) {
+  const isPrintScreen = e.key === 'PrintScreen'
+  const isPrint = e.ctrlKey && e.key.toLowerCase() === 'p'
+  const isSave = e.ctrlKey && e.key.toLowerCase() === 's'
+  const isDevtools = e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')
+  if (isPrintScreen || isPrint || isSave || isDevtools) {
+    e.preventDefault()
+  }
+}
+
+function attachAntiCheatListeners() {
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  document.addEventListener('keydown', blockCheatShortcuts)
+  const el = questionAreaRef.value
+  if (el) {
+    el.addEventListener('contextmenu', blockContextMenu)
+    el.addEventListener('copy', blockCopyCut)
+    el.addEventListener('cut', blockCopyCut)
+  }
+}
+
+function detachAntiCheatListeners() {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('keydown', blockCheatShortcuts)
+  clearTimeout(tabSwitchWarningTimeout)
+  showTabSwitchWarning.value = false
+  const el = questionAreaRef.value
+  if (el) {
+    el.removeEventListener('contextmenu', blockContextMenu)
+    el.removeEventListener('copy', blockCopyCut)
+    el.removeEventListener('cut', blockCopyCut)
+  }
+}
+
 async function fetchQuiz() {
   loading.value = true
   loadError.value = ''
@@ -330,6 +399,8 @@ async function fetchQuiz() {
     startTimer(data.quiz.deadlineAt, data.quiz.serverNow)
     quizInProgress.value = true
     window.addEventListener('beforeunload', beforeUnloadWarning)
+    await nextTick()
+    attachAntiCheatListeners()
   } catch (error) {
     loadError.value = extractError(error)
   } finally {
@@ -343,6 +414,7 @@ async function submitQuiz() {
   clearInterval(timer)
 
   const payload = {
+    tabSwitchCount: tabSwitchCount.value,
     answers: quiz.value.questions.map((question) => {
       const answer = answers[question.id] || {}
       if (question.type === 'multiple_choice') {
@@ -371,6 +443,7 @@ async function submitQuiz() {
     submitting.value = false
     quizInProgress.value = false
     window.removeEventListener('beforeunload', beforeUnloadWarning)
+    detachAntiCheatListeners()
   }
 }
 
@@ -379,5 +452,6 @@ onUnmounted(() => {
   clearInterval(timer)
   quizInProgress.value = false
   window.removeEventListener('beforeunload', beforeUnloadWarning)
+  detachAntiCheatListeners()
 })
 </script>

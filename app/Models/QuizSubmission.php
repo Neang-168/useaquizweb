@@ -43,6 +43,7 @@ class QuizSubmission extends Model
         'started_at',
         'submitted_at',
         'status',
+        'tab_switch_count',
     ];
 
     protected $casts = [
@@ -53,6 +54,7 @@ class QuizSubmission extends Model
         'pass_mark' => 'integer',
         'started_at' => 'datetime',
         'submitted_at' => 'datetime',
+        'tab_switch_count' => 'integer',
     ];
 
     public function quiz(): BelongsTo

@@ -14,6 +14,7 @@ class Semester extends Model
     protected $fillable = [
         'academic_year_id',
         'name',
+        'name_kh',
         'order_no',
         'start_date',
         'end_date',

@@ -45,8 +45,15 @@
           </thead>
 
           <tbody class="divide-y divide-slate-100">
+            <tr v-if="loading">
+              <td colspan="4" class="py-16 text-center">
+                <i class="pi pi-spin pi-spinner text-2xl text-[#002060]"></i>
+                <p class="text-xs text-slate-400 mt-2">Loading permissions matrix...</p>
+              </td>
+            </tr>
+
             <!-- MODULE HEADERS & PERMISSIONS -->
-            <template v-for="(modulePermissions, module) in permissionsByModule" :key="module">
+            <template v-else v-for="(modulePermissions, module) in permissionsByModule" :key="module">
               
               <!-- Module Category Header -->
               <tr class="bg-[#F8F8F8]/60">
@@ -108,18 +115,19 @@ const roles = ref([])
 const permissions = ref([])
 const matrixState = ref({})
 const saving = ref(false)
+const loading = ref(false)
 
 const fetchRoles = async () => {
   const { data } = await api.get('/roles')
   roles.value = data
-  
-  for (const role of data) {
-    const res = await api.get(`/roles/${role.id}`)
+
+  const responses = await Promise.all(data.map(role => api.get(`/roles/${role.id}`)))
+  data.forEach((role, i) => {
     matrixState.value[role.name] = {
       id: role.id,
-      permission_ids: res.data.role.permissions.map(p => p.id)
+      permission_ids: responses[i].data.role.permissions.map(p => p.id)
     }
-  }
+  })
 }
 
 const fetchPermissions = async () => {
@@ -127,9 +135,13 @@ const fetchPermissions = async () => {
   permissions.value = data
 }
 
-onMounted(() => {
-  fetchRoles()
-  fetchPermissions()
+onMounted(async () => {
+  loading.value = true
+  try {
+    await Promise.all([fetchRoles(), fetchPermissions()])
+  } finally {
+    loading.value = false
+  }
 })
 
 const permissionsByModule = computed(() => {

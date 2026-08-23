@@ -92,6 +92,7 @@
         v-model:first="first"
         :rowsPerPageOptions="[10, 20, 50]"
         responsiveLayout="scroll"
+        :loading="loading"
         class="p-datatable-sm sessions-table"
         scrollable
         scrollDirection="both"
@@ -325,10 +326,16 @@ const studySessions = ref([])
 const faculties = ref([])
 const degrees = ref([])
 const majors = ref([])
+const loading = ref(false)
 
 const fetchSessions = async () => {
-  const { data } = await api.get('/study-sessions', { params: { per_page: 100 } })
-  studySessions.value = data.data
+  loading.value = true
+  try {
+    const { data } = await api.get('/study-sessions', { params: { per_page: 100 } })
+    studySessions.value = data.data
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchLookups = async () => {

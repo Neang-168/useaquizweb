@@ -113,7 +113,7 @@
       <DataTable :value="filteredStudents" v-model:filters="filters"
         :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'email', 'major']" dataKey="id"
         paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
-        scrollable scrollDirection="both" :tableStyle="showAllColumns ? 'min-width: 2200px' : 'min-width: 100%'"
+        scrollable scrollDirection="both" :loading="loading" :tableStyle="showAllColumns ? 'min-width: 2200px' : 'min-width: 100%'"
         class="p-datatable-sm students-table">
         <template #empty>
           <div class="text-center py-10 text-xs text-slate-400">
@@ -549,10 +549,16 @@ const stages = ref([])
 const semesters = ref([])
 const terms = ref([])
 const shifts = ref([])
+const loading = ref(false)
 
 const fetchStudents = async () => {
-  const { data } = await api.get('/students', { params: { per_page: 100 } })
-  students.value = data.data
+  loading.value = true
+  try {
+    const { data } = await api.get('/students', { params: { per_page: 100 } })
+    students.value = data.data
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchClasses = async () => {

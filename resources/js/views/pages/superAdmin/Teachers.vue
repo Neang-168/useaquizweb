@@ -73,7 +73,7 @@
       <DataTable :value="filteredTeachers" v-model:filters="filters" dataKey="id"
         paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]"
         scrollable scrollHeight="calc(100vh - 428px)" :scrollDirection="showAllColumns ? 'both' : 'vertical'"
-        responsiveLayout="scroll" :tableStyle="tableMinWidthStyle" class="p-datatable-sm teachers-table">
+        responsiveLayout="scroll" :loading="loading" :tableStyle="tableMinWidthStyle" class="p-datatable-sm teachers-table">
         <template #empty>
           <div class="text-center py-10 text-xs text-slate-400">
             No teachers found.
@@ -467,10 +467,16 @@ const degrees = ref([])
 const majors = ref([])
 const subjects = ref([])
 const classes = ref([])
+const loading = ref(false)
 
 const fetchTeachers = async () => {
-  const { data } = await api.get('/teachers', { params: { per_page: 100 } })
-  teachers.value = data.data
+  loading.value = true
+  try {
+    const { data } = await api.get('/teachers', { params: { per_page: 100 } })
+    teachers.value = data.data
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchLookups = async () => {

@@ -100,6 +100,7 @@
           scrollable scrollHeight="calc(100vh - 428px)"
           scrollDirection="both"
           tableStyle="min-width: 1500px"
+          :loading="loading"
           responsiveLayout="scroll"
           class="p-datatable-sm subjects-table"
         >
@@ -441,10 +442,16 @@ const majors = ref([])
 const academicYears = ref([])
 const classes = ref([])
 const teachers = ref([])
+const loading = ref(false)
 
 const fetchSubjects = async () => {
-  const { data } = await api.get('/subjects', { params: { per_page: 100 } })
-  subjects.value = data.data
+  loading.value = true
+  try {
+    const { data } = await api.get('/subjects', { params: { per_page: 100 } })
+    subjects.value = data.data
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchLookups = async () => {

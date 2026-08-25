@@ -33,7 +33,7 @@ class CourseController extends Controller
             ->get()
             ->unique(fn (TeacherSubject $a) => $a->subject_id.'-'.$a->class_id);
 
-        $quizzes = Quiz::where('status', 'Published')
+        $quizzes = Quiz::whereIn('status', ['Published', 'Closed'])
             ->whereIn('class_id', $classIds)
             ->get(['id', 'subject_id', 'class_id']);
 

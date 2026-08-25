@@ -28,7 +28,6 @@ import QuestionImportExport from '../views/pages/teacher/QuestionImportExport.vu
 import StudentLayout from '../views/StudentLayout.vue'
 import Mycourse from '../views/pages/student/Mycourse.vue'
 import MyExam from '../views/pages/student/MyExam.vue'
-import GradeHistory from '../views/pages/student/GradeHistory.vue'
 import Notification from '../views/pages/student/Notification.vue'
 
 
@@ -196,9 +195,9 @@ const routes = [
         component: MyExam,
       },
       {
-        path: 'gradeHistory',
-        name: 'student.gradeHistory',
-        component: GradeHistory,
+        path: 'quizzes/:quizId/history',
+        name: 'student.quizHistory',
+        component: () => import('../views/pages/student/QuizHistory.vue'),
       },
       {
         path: 'notification',
@@ -209,6 +208,12 @@ const routes = [
         path: 'take-quiz',
         name: 'student.takeQuiz',
         component: () => import('../views/pages/student/TakeQuiz.vue'),
+      },
+      {
+        path: 'my-profile',
+        alias: 'profile',
+        name: 'student.my-profile',
+        component: () => import('../views/pages/student/MyProfile.vue'),
       },
     ]
   },

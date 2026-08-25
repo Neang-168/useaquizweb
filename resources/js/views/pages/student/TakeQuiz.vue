@@ -24,7 +24,7 @@
         ({{ result.percentage }}%) — Pass mark: {{ result.passMark }}%
       </p>
       <div class="flex items-center justify-center gap-3 pt-2">
-        <router-link to="/student/gradeHistory" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all no-underline">
+        <router-link :to="{ name: 'student.quizHistory', params: { quizId } }" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all no-underline">
           View Exam History
         </router-link>
         <router-link to="/student/myexam" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all no-underline">

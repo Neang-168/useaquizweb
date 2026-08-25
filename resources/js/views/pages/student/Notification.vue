@@ -89,6 +89,16 @@
 
     <FeedbackDetailDialog :feedback="selectedFeedback" @close="selectedFeedback = null" />
 
+    <ConfirmDialog
+      v-model="showClearAllConfirm"
+      title="Clear all notifications?"
+      message="This will remove every notification and cannot be undone."
+      confirm-text="Clear All"
+      cancel-text="Cancel"
+      @confirm="confirmClearAll"
+      @cancel="showClearAllConfirm = false"
+    />
+
   </div>
 </template>
 
@@ -96,8 +106,10 @@
 import { ref, onMounted } from 'vue'
 import { notificationState, fetchNotifications, markRead, markAllRead, deleteNotification, clearAllNotifications } from '../../../store/notifications'
 import FeedbackDetailDialog from '../../../components/student/FeedbackDetailDialog.vue'
+import ConfirmDialog from '../../../components/ConfirmDialog.vue'
 
 const selectedFeedback = ref(null)
+const showClearAllConfirm = ref(false)
 
 onMounted(fetchNotifications)
 
@@ -107,9 +119,12 @@ function onItemClick(item) {
 }
 
 function onClearAll() {
-  if (confirm('Clear all notifications? This cannot be undone.')) {
-    clearAllNotifications()
-  }
+  showClearAllConfirm.value = true
+}
+
+function confirmClearAll() {
+  showClearAllConfirm.value = false
+  clearAllNotifications()
 }
 
 function openFeedback(item) {

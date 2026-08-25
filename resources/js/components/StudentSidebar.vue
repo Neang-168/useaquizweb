@@ -42,13 +42,6 @@
               <!-- <i class="pi pi-file-edit text-base"></i> -->
               <span>Quizzes & Exams</span>
             </router-link>
-
-            <router-link to="/student/gradeHistory"
-              class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-all flex items-center gap-2 no-underline"
-              active-class="!bg-blue-50 !text-blue-600">
-              <!-- <i class="pi pi-chart-line text-base"></i> -->
-              <span>Grades & History</span>
-            </router-link>
           </nav>
 
           <!-- While a quiz is in progress, navigation is locked so nothing pulls the student away mid-attempt -->
@@ -75,7 +68,7 @@
 
             <!-- Profile Dropdown Button -->
             <div class="relative flex items-center gap-3">
-              <router-link to="/student/role-profile" class="flex items-center gap-2.5 no-underline">
+              <router-link to="/student/my-profile" class="flex items-center gap-2.5 no-underline">
                 <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-xs">
                   {{ userInitial }}
                 </div>

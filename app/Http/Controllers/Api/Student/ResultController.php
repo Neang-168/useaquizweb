@@ -24,6 +24,7 @@ class ResultController extends Controller
             ->whereIn('status', ['submitted', 'graded'])
             ->when($request->input('class_id'), fn ($q, $id) => $q->whereHas('quiz', fn ($qq) => $qq->where('class_id', $id)))
             ->when($request->input('subject_id'), fn ($q, $id) => $q->whereHas('quiz', fn ($qq) => $qq->where('subject_id', $id)))
+            ->when($request->input('quiz_id'), fn ($q, $id) => $q->where('quiz_id', $id))
             ->with(['quiz.subject', 'quiz.classroom', 'quiz.questions'])
             ->orderByDesc('submitted_at')
             ->get();

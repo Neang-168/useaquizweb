@@ -77,70 +77,22 @@
           <div v-if="openQuizzes.length === 0" class="bg-white rounded-2xl border border-[#D8E7EC] p-8 text-center text-xs text-slate-400">
             No quizzes are open for this course right now.
           </div>
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div v-for="exam in openQuizzes" :key="exam.id" class="bg-white rounded-2xl border border-[#D8E7EC] hover:border-[#63C7DF] p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all">
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <span v-if="exam.status === 'in_progress'" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">Continue</span>
-                  <span v-else class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#002060] text-white">Open</span>
-                  <span v-if="exam.endAt" class="text-xs font-bold text-[#D71818] flex items-center gap-1 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
-                    <i class="pi pi-clock text-xs"></i> Due: {{ formatDateTime(exam.endAt) }}
-                  </span>
-                </div>
-                <h3 class="text-base font-bold text-[#002060] m-0 mt-2">{{ exam.title }}</h3>
-                <div class="flex items-center gap-4 text-xs text-slate-500 mt-3 bg-[#F8F8F8] p-2.5 rounded-xl border border-slate-100">
-                  <span class="flex items-center gap-1 font-medium"><i class="pi pi-clock text-[#E4AC40]"></i> {{ exam.duration }} min</span>
-                  <span class="flex items-center gap-1 font-medium"><i class="pi pi-list text-[#63C7DF]"></i> {{ exam.totalQuestions }} q's</span>
-                  <span class="flex items-center gap-1 font-medium"><i class="pi pi-percentage text-[#002060]"></i> {{ exam.totalPoints }} pts</span>
-                </div>
-              </div>
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-500">Attempts: <b class="text-[#002060]">{{ exam.attemptsUsed }}</b> / {{ exam.maxAttempts }}</span>
-                <button v-if="exam.isClosed && exam.status !== 'in_progress'" disabled type="button" title="This quiz's availability window has closed"
-                  class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
-                  <i class="pi pi-calendar-times text-xs"></i> Closed
-                </button>
-                <button v-else-if="exam.attemptsExhausted && exam.status !== 'in_progress'" disabled type="button" title="You have used all of your attempts for this quiz"
-                  class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
-                  <i class="pi pi-lock text-xs"></i> No Attempts Left
-                </button>
-                <router-link v-else :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
-                  <span>{{ exam.status === 'in_progress' ? 'Continue' : 'Start Exam' }}</span>
-                  <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>
-                </router-link>
-              </div>
-            </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            <QuizCard v-for="exam in openQuizzes" :key="exam.id" :exam="exam" :class-id="classId" :subject-id="subjectId" />
           </div>
         </div>
 
         <div v-if="upcomingQuizzes.length">
           <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Upcoming</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div v-for="exam in upcomingQuizzes" :key="exam.id" class="bg-white/80 rounded-2xl border border-[#D8E7EC] p-5 shadow-xs flex flex-col justify-between space-y-4">
-              <div>
-                <span class="text-xs font-semibold text-slate-600 flex items-center gap-1 bg-[#F8F8F8] px-2 py-0.5 rounded-md border border-slate-200 w-fit">
-                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ formatDateTime(exam.startAt) }}
-                </span>
-                <h3 class="text-base font-bold text-slate-700 m-0 mt-2">{{ exam.title }}</h3>
-                <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
-                  <span class="flex items-center gap-1"><i class="pi pi-clock text-slate-400"></i> {{ exam.duration }} min</span>
-                  <span class="flex items-center gap-1"><i class="pi pi-list text-slate-400"></i> {{ exam.totalQuestions }} questions</span>
-                </div>
-              </div>
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-xs text-[#E4AC40] font-bold flex items-center gap-1"><i class="pi pi-clock text-xs"></i> Not open yet</span>
-                <button disabled class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1">
-                  <i class="pi pi-lock text-xs"></i> Locked
-                </button>
-              </div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <QuizCard v-for="exam in upcomingQuizzes" :key="exam.id" :exam="exam" :class-id="classId" :subject-id="subjectId" />
           </div>
         </div>
       </div>
 
       <!-- ============ TAB: RESULTS ============ -->
       <div v-if="activeTab === 'results'" class="bg-white rounded-2xl border border-[#D8E7EC] overflow-hidden shadow-xs">
-        <div v-if="results.length === 0" class="p-12 text-center">
+        <div v-if="quizResults.length === 0" class="p-12 text-center">
           <div class="w-16 h-16 mx-auto rounded-full bg-[#D8E7EC]/40 flex items-center justify-center mb-3">
             <i class="pi pi-check-square text-3xl text-[#002060]"></i>
           </div>
@@ -151,24 +103,33 @@
           <thead>
             <tr class="bg-[#F8F8F8] border-b border-[#D8E7EC] text-xs font-bold text-[#002060] uppercase">
               <th class="p-4">Quiz</th>
-              <th class="p-4">Submitted On</th>
-              <th class="p-4">Score</th>
+              <th class="p-4">Attempts</th>
+              <th class="p-4">Best Score</th>
               <th class="p-4">Result</th>
+              <th class="p-4 text-right">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
-            <tr v-for="r in results" :key="r.id" class="hover:bg-[#D8E7EC]/20 transition-colors">
+            <tr v-for="qr in quizResults" :key="qr.quizId" class="hover:bg-[#D8E7EC]/20 transition-colors">
               <td class="p-4">
-                <p class="font-bold text-[#002060] m-0">{{ r.quizTitle }}</p>
-                <p class="text-[11px] text-slate-400 m-0 mt-0.5">Attempt {{ r.attemptNumber }}</p>
+                <p class="font-bold text-[#002060] m-0">{{ qr.quizTitle }}</p>
+                <p class="text-[11px] text-slate-400 m-0 mt-0.5">Last submitted {{ formatDateTime(qr.best.submittedAt) }}</p>
               </td>
-              <td class="p-4 text-slate-500">{{ formatDateTime(r.submittedAt) }}</td>
-              <td class="p-4 font-bold text-sm text-[#002060]">{{ r.score }} / {{ r.totalPoints }} ({{ r.percentage }}%)</td>
+              <td class="p-4 text-slate-500">{{ qr.attempts.length }}</td>
+              <td class="p-4 font-bold text-sm text-[#002060]">{{ qr.best.score }} / {{ qr.best.totalPoints }} ({{ qr.best.percentage }}%)</td>
               <td class="p-4">
                 <span :class="['px-3 py-1 rounded-full text-[10px] font-bold border',
-                  r.passed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-[#D71818] border-red-200']">
-                  {{ r.passed ? 'Passed' : 'Failed' }}
+                  qr.best.passed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-[#D71818] border-red-200']">
+                  {{ qr.best.passed ? 'Passed' : 'Failed' }}
                 </span>
+              </td>
+              <td class="p-4 text-right">
+                <router-link
+                  :to="{ name: 'student.quizHistory', params: { quizId: qr.quizId }, query: { classId, subjectId } }"
+                  class="text-[#002060] hover:text-[#001848] hover:underline font-bold no-underline inline-flex items-center gap-1">
+                  <span>View History</span>
+                  <i class="pi pi-arrow-right text-[10px] text-[#E4AC40]"></i>
+                </router-link>
               </td>
             </tr>
           </tbody>
@@ -184,6 +145,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api, { extractError } from '../../../api'
 import { formatDateTime } from '../../../utils/formatDateTime'
+import QuizCard from '../../../components/student/QuizCard.vue'
 
 const route = useRoute()
 const classId = computed(() => Number(route.params.classId))
@@ -198,9 +160,23 @@ const activeTab = ref('quizzes')
 const openQuizzes = computed(() => quizzes.value.filter(q => q.isOpen))
 const upcomingQuizzes = computed(() => quizzes.value.filter(q => q.isUpcoming))
 
+const quizResults = computed(() => {
+  const byQuiz = new Map()
+  for (const r of results.value) {
+    if (!byQuiz.has(r.quizId)) byQuiz.set(r.quizId, [])
+    byQuiz.get(r.quizId).push(r)
+  }
+  return Array.from(byQuiz.entries()).map(([quizId, attempts]) => ({
+    quizId,
+    quizTitle: attempts[0].quizTitle,
+    attempts,
+    best: [...attempts].sort((a, b) => b.score - a.score)[0],
+  }))
+})
+
 const tabs = computed(() => [
   { label: 'Quizzes', value: 'quizzes', count: openQuizzes.value.length + upcomingQuizzes.value.length },
-  { label: 'Results', value: 'results', count: results.value.length },
+  { label: 'Results', value: 'results', count: quizResults.value.length },
 ])
 
 async function loadWorkspace() {

@@ -99,42 +99,8 @@
         </div>
 
         <!-- LIST ACTIVE -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="exam in activeExams" :key="exam.id" class="bg-white rounded-2xl border border-[#D8E7EC] hover:border-[#63C7DF] p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#002060] text-white">
-                  {{ exam.subject }}
-                </span>
-                <span v-if="exam.endAt" class="text-xs font-bold text-[#D71818] flex items-center gap-1 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full">
-                  <i class="pi pi-clock text-xs"></i> Due: {{ formatDateTime(exam.endAt) }}
-                </span>
-              </div>
-              <h3 class="text-base font-bold text-[#002060] m-0 mt-2">{{ exam.title }}</h3>
-
-              <div class="flex items-center gap-4 text-xs text-slate-500 mt-3 bg-[#F8F8F8] p-2.5 rounded-xl border border-slate-100">
-                <span class="flex items-center gap-1 font-medium"><i class="pi pi-clock text-[#E4AC40]"></i> {{ exam.duration }} min</span>
-                <span class="flex items-center gap-1 font-medium"><i class="pi pi-list text-[#63C7DF]"></i> {{ exam.totalQuestions }} q's</span>
-                <span class="flex items-center gap-1 font-medium"><i class="pi pi-percentage text-[#002060]"></i> {{ exam.totalPoints }} pts</span>
-              </div>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-500">Attempts: <b class="text-[#002060]">{{ exam.attemptsUsed }}</b> / {{ exam.maxAttempts }}</span>
-              <button v-if="exam.isClosed" disabled type="button" title="This quiz's availability window has closed"
-                class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
-                <i class="pi pi-calendar-times text-xs"></i> Closed
-              </button>
-              <button v-else-if="exam.attemptsExhausted" disabled type="button" title="You have used all of your attempts for this quiz"
-                class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1.5">
-                <i class="pi pi-lock text-xs"></i> No Attempts Left
-              </button>
-              <router-link v-else :to="`/student/take-quiz?id=${exam.id}`" class="px-4 py-2 bg-[#002060] hover:bg-[#001848] text-white font-bold text-xs rounded-xl transition-all no-underline shadow-md shadow-[#002060]/20 flex items-center gap-1.5">
-                <span>Start Exam</span>
-                <i class="pi pi-arrow-right text-xs text-[#E4AC40]"></i>
-              </router-link>
-            </div>
-          </div>
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <QuizCard v-for="exam in activeExams" :key="exam.id" :exam="exam" show-subject />
         </div>
       </div>
 
@@ -151,34 +117,8 @@
         </div>
 
         <!-- LIST UPCOMING -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="exam in upcomingExams" :key="exam.id" class="bg-white/80 rounded-2xl border border-[#D8E7EC] p-5 shadow-xs flex flex-col justify-between space-y-4">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#D8E7EC]/60 text-[#002060]">
-                  {{ exam.subject }}
-                </span>
-                <span class="text-xs font-semibold text-slate-600 flex items-center gap-1 bg-[#F8F8F8] px-2 py-0.5 rounded-md border border-slate-200">
-                  <i class="pi pi-calendar text-xs text-[#E4AC40]"></i> Opens: {{ formatDateTime(exam.startAt) }}
-                </span>
-              </div>
-              <h3 class="text-base font-bold text-slate-700 m-0 mt-1">{{ exam.title }}</h3>
-
-              <div class="flex items-center gap-4 text-xs text-slate-500 mt-3">
-                <span class="flex items-center gap-1"><i class="pi pi-clock text-slate-400"></i> {{ exam.duration }} min</span>
-                <span class="flex items-center gap-1"><i class="pi pi-list text-slate-400"></i> {{ exam.totalQuestions }} questions</span>
-              </div>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span class="text-xs text-[#E4AC40] font-bold flex items-center gap-1">
-                <i class="pi pi-clock text-xs"></i> Not open yet
-              </span>
-              <button disabled class="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed border border-slate-200 flex items-center gap-1">
-                <i class="pi pi-lock text-xs"></i> Locked
-              </button>
-            </div>
-          </div>
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <QuizCard v-for="exam in upcomingExams" :key="exam.id" :exam="exam" show-subject />
         </div>
       </div>
 
@@ -220,7 +160,7 @@
                 </span>
               </td>
               <td class="p-4 text-right">
-                <router-link to="/student/gradeHistory" class="text-[#002060] hover:text-[#001848] hover:underline font-bold no-underline inline-flex items-center gap-1">
+                <router-link :to="{ name: 'student.quizHistory', params: { quizId: exam.quizId } }" class="text-[#002060] hover:text-[#001848] hover:underline font-bold no-underline inline-flex items-center gap-1">
                   <span>View Result</span>
                   <i class="pi pi-arrow-right text-[10px] text-[#E4AC40]"></i>
                 </router-link>
@@ -238,6 +178,7 @@
 import { ref, computed, onMounted } from 'vue'
 import api, { extractError } from '../../../api'
 import { formatDateTime } from '../../../utils/formatDateTime'
+import QuizCard from '../../../components/student/QuizCard.vue'
 
 const activeTab = ref('active')
 const selectedSubject = ref('all')
@@ -261,6 +202,7 @@ const activeExams = computed(() => applyFilters(quizzes.value.filter((q) => q.is
 const upcomingExams = computed(() => applyFilters(quizzes.value.filter((q) => q.isUpcoming)))
 const completedExams = computed(() => applyFilters(submissions.value.map((s) => ({
   id: s.id,
+  quizId: s.quizId,
   title: s.quizTitle,
   subject: s.subject,
   className: s.className,

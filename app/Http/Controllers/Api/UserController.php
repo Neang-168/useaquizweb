@@ -85,7 +85,59 @@ class UserController extends Controller
                 ->pluck('name')
                 ->values()
                 ->all() ?? [],
+
+            'studentProfile' => $user->role?->name === 'Student' ? $this->myStudentProfile($user) : null,
         ]);
+    }
+
+    /**
+     * Build the read-only academic info block for the "me" response: the
+     * student's profile record plus their latest enrollment, flattened to
+     * plain names so the frontend doesn't need to know the relation shapes.
+     */
+    private function myStudentProfile(User $user): ?array
+    {
+        $profile = $user->studentProfile()->with([
+            'enrollments' => fn ($query) => $query->latest('enrollment_date')->with(
+                'classroom',
+                'faculty',
+                'department',
+                'degree',
+                'major',
+                'promotion',
+                'stage',
+                'academicYear',
+                'semester',
+                'term',
+                'shift'
+            ),
+        ])->first();
+
+        if (! $profile) {
+            return null;
+        }
+
+        $enrollment = $profile->enrollments->first();
+
+        return [
+            'student_code' => $profile->student_code,
+            'admission_date' => $profile->admission_date?->format('Y-m-d'),
+            'enrollment' => $enrollment ? [
+                'class_name' => $enrollment->classroom?->name,
+                'major_name' => $enrollment->major?->name,
+                'faculty_name' => $enrollment->faculty?->name,
+                'degree_name' => $enrollment->degree?->name,
+                'department_name' => $enrollment->department?->name,
+                'academic_year_name' => $enrollment->academicYear?->name,
+                'semester_name' => $enrollment->semester?->name,
+                'term_name' => $enrollment->term?->name,
+                'shift_name' => $enrollment->shift?->name,
+                'stage_name' => $enrollment->stage?->name,
+                'promotion_name' => $enrollment->promotion?->name,
+                'enrollment_date' => $enrollment->enrollment_date?->format('Y-m-d'),
+                'status' => $enrollment->status,
+            ] : null,
+        ];
     }
 
     /**

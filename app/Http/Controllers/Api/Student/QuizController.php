@@ -42,12 +42,14 @@ class QuizController extends Controller
         // into active/upcoming tabs; window + status access control is
         // enforced separately in show()/submit().
         $quizzes = Quiz::query()
-            ->where('status', 'Published')
+            ->whereIn('status', ['Published', 'Closed'])
             ->whereIn('class_id', $classIds)
             ->when($request->input('class_id'), fn ($q, $id) => $q->where('class_id', $id))
             ->when($request->input('subject_id'), fn ($q, $id) => $q->where('subject_id', $id))
             ->with(['subject', 'classroom', 'questions'])
-            ->orderByDesc('created_at')
+            ->orderByRaw('CASE WHEN start_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('start_at')
+            ->orderBy('created_at')
             ->get();
 
         $submissions = QuizSubmission::whereIn('quiz_id', $quizzes->pluck('id'))
@@ -363,7 +365,7 @@ class QuizController extends Controller
         $attemptsUsed = $submissions->count();
         $now = now();
         $hasStarted = ! $quiz->start_at || $quiz->start_at->lte($now);
-        $hasEnded = $quiz->end_at && $quiz->end_at->lt($now);
+        $hasEnded = $quiz->status === 'Closed' || ($quiz->end_at && $quiz->end_at->lt($now));
 
         return [
             'id' => $quiz->id,

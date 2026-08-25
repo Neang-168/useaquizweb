@@ -142,13 +142,14 @@
           >
             <i class="pi pi-lock text-xs"></i> No Attempts Left
           </button>
-          <router-link
+          <button
             v-else
-            :to="`/student/take-quiz?id=${quiz.id}`"
-            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all no-underline text-center"
+            type="button"
+            @click="startQuiz(quiz)"
+            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all border-0 cursor-pointer text-center"
           >
             Start Exam
-          </router-link>
+          </button>
         </div>
       </div>
     </div>
@@ -227,14 +228,44 @@
 
     </div> -->
 
+    <ConfirmDialog
+      v-model="showStartConfirm"
+      title="Start this quiz?"
+      :message="pendingQuiz ? `Duration: ${pendingQuiz.duration} minutes, ${pendingQuiz.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.` : ''"
+      confirm-text="Start Exam"
+      cancel-text="Cancel"
+      @confirm="confirmStartQuiz"
+      @cancel="showStartConfirm = false"
+    />
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api, { extractError } from '../../../api'
 import StudentCalendar from '../../../components/student/StudentCalendar.vue'
+import ConfirmDialog from '../../../components/ConfirmDialog.vue'
 import { formatDateTime as formatDate } from '../../../utils/formatDateTime'
+
+const router = useRouter()
+const pendingQuiz = ref(null)
+const showStartConfirm = ref(false)
+
+function startQuiz(quiz) {
+  pendingQuiz.value = quiz
+  showStartConfirm.value = true
+}
+
+function confirmStartQuiz() {
+  showStartConfirm.value = false
+  const quiz = pendingQuiz.value
+  pendingQuiz.value = null
+  if (quiz) {
+    router.push(`/student/take-quiz?id=${quiz.id}`)
+  }
+}
 
 const authUser = computed(() => {
   try {

@@ -294,15 +294,15 @@
         <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
-              <Button icon="pi pi-book"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
-                title="Subjects Taught" @click="openSubjectsDialog(data)" />
+              <Button 
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#6c09c9] hover:!bg-[#6c09c9] hover:!text-white !border !border-[#6c09c9] shadow-xs"
+                title="Subjects Taught" @click="openSubjectsDialog(data)" ><i class="fa-solid fa-sitemap"></i></Button>
               <Button icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-800 !border !border-slate-100 shadow-xs"
-                title="Edit Class" @click="editClass(data)" />
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#e4ac14] hover:!bg-[#eec64f] hover:!text-white  !border !border-[#e4ac14] shadow-xs"
+                title="Edit Class" @click="editClass(data)" ><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 shadow-xs"
-                title="Delete Class" @click="confirmDeleteClass(data)" />
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#d71818] hover:!bg-[#d71818] hover:!text-white !border !border-[#d71818] shadow-xs"
+                title="Delete Class" @click="confirmDeleteClass(data)" ><i class="fa-solid fa-trash"></i></Button>
             </div>
           </template>
         </Column>
@@ -539,7 +539,7 @@
             class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold"
             @click="classDialog = false" />
           <Button label="Save Class" icon="pi pi-check"
-            class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
+            class="!bg-[#002060] hover:!bg-blue-900 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
             @click="saveClass" />
         </div>
       </template>

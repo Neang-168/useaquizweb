@@ -9,14 +9,14 @@
           Subjects Management
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
-          Manage  all the subject here.
+          Manage all the subject here.
         </p>
       </div>
 
       <Button 
         label="Add New Subject" 
         icon="pi pi-plus" 
-        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm"
+        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
         @click="openNewDialog"
       />
     </div>
@@ -86,6 +86,14 @@
               class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
             />
           </div>
+          <!-- ======= TOGGLE MORE / FEWER COLUMNS BUTTON ======= -->
+          <Button
+            :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'"
+            :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
+            size="small"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1.5 whitespace-nowrap cursor-pointer"
+            @click="showAllColumns = !showAllColumns"
+          />
         </div>
       </div>
 
@@ -99,7 +107,7 @@
           :rowsPerPageOptions="[10, 20, 50]"
           scrollable scrollHeight="calc(100vh - 428px)"
           scrollDirection="both"
-          tableStyle="min-width: 1500px"
+          :tableStyle="showAllColumns ? 'min-width: 1500px' : 'min-width: 100%'"
           :loading="loading"
           responsiveLayout="scroll"
           class="p-datatable-sm subjects-table"
@@ -118,57 +126,57 @@
           </span>
         </template>
 
-        <!-- Subject Code -->
+        <!-- Subject Code (Always Visible) -->
         <Column field="code" header="CODE" sortable style="padding-left: 1.25rem">
           <template #body="{ data }">
             <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.code }}</span>
           </template>
         </Column>
 
-        <!-- Subject Name (English) -->
+        <!-- Subject Name English (Always Visible) -->
         <Column field="name_en" header="SUBJECT NAME" sortable>
           <template #body="{ data }">
             <span class="font-semibold text-slate-800 text-sm">{{ data.name_en }}</span>
           </template>
         </Column>
 
-        <!-- Subject Name (Khmer) -->
-        <Column field="name_kh" header="SUBJECT NAME (KH)">
+        <!-- Subject Name Khmer (Toggleable) -->
+        <Column v-if="showAllColumns" field="name_kh" header="SUBJECT NAME (KH)">
           <template #body="{ data }">
             <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer">{{ data.name_kh }}</span>
             <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
 
-        <!-- Faculty -->
+        <!-- Faculty (Always Visible) -->
         <Column field="faculty_name" header="FACULTY" sortable>
           <template #body="{ data }">
             <span class="text-slate-600 text-sm">{{ data.faculty_name }}</span>
           </template>
         </Column>
 
-        <!-- Department -->
-        <Column field="department_name" header="DEPARTMENT" sortable>
+        <!-- Department (Toggleable) -->
+        <Column v-if="showAllColumns" field="department_name" header="DEPARTMENT" sortable>
           <template #body="{ data }">
             <span class="text-slate-600 text-sm">{{ data.department_name || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Major -->
-        <Column field="major_name" header="MAJOR" sortable>
+        <!-- Major (Toggleable) -->
+        <Column v-if="showAllColumns" field="major_name" header="MAJOR" sortable>
           <template #body="{ data }">
             <span class="text-slate-600 text-sm">{{ data.major_name || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Academic Year -->
-        <Column field="academic_year_name" header="ACADEMIC YEAR" sortable>
+        <!-- Academic Year (Toggleable) -->
+        <Column v-if="showAllColumns" field="academic_year_name" header="ACADEMIC YEAR" sortable>
           <template #body="{ data }">
             <span class="text-slate-600 text-sm">{{ data.academic_year_name || '—' }}</span>
           </template>
         </Column>
 
-        <!-- Credits -->
+        <!-- Credits (Always Visible) -->
         <Column field="credits" header="CREDITS" sortable>
           <template #body="{ data }">
             <span class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
@@ -177,7 +185,7 @@
           </template>
         </Column>
 
-        <!-- Status -->
+        <!-- Status (Always Visible) -->
         <Column field="status" header="STATUS" sortable>
           <template #body="{ data }">
             <span
@@ -189,28 +197,24 @@
           </template>
         </Column>
 
-        <!-- Actions -->
+        <!-- Actions (Always Visible) -->
         <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
-              <!-- <Button
-                icon="pi pi-sitemap"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
-                title="Classes Teaching This Subject"
-                @click="openClassesDialog(data)"
-              /> -->
               <Button
-                icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-slate-600 !border-slate-100 shadow-xs"
                 title="Edit Subject"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-[#e4ac14] hover:!bg-[#eec64f] !text-white !border-slate-100 shadow-xs cursor-pointer"
                 @click="editSubject(data)"
-              />
+              >
+              <i class="fa-solid fa-pen-to-square"></i>
+              </Button>
               <Button
-                icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 hover:!bg-rose-100 !text-rose-600 !border-rose-100 shadow-xs"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-[#d71818] hover:!bg-rose-500 !text-white !border-rose-100 shadow-xs cursor-pointer"
                 title="Delete Subject"
                 @click="confirmDeleteSubject(data)"
-              />
+              >
+              <i class="fa-solid fa-trash"></i>
+              </Button>
             </div>
           </template>
         </Column>
@@ -341,82 +345,12 @@
 
       <template #footer>
         <div class="flex justify-end gap-2 pt-3">
-          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="subjectDialog = false" />
-          <Button label="Save Subject" icon="pi pi-check" class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold" @click="saveSubject" />
+          <Button label="Cancel" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer" @click="subjectDialog = false" />
+          <Button 
+              label="Save Subject" icon="pi pi-check" class="!bg-[#002060] hover:!bg-blue-900 !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer" @click="saveSubject" />
         </div>
       </template>
     </Dialog>
-
-    <!-- ======= CLASSES TEACHING THIS SUBJECT DIALOG (Class + Teacher per Subject) ======= -->
-    <!-- <Dialog
-      v-model:visible="classesDialog"
-      :header="assignmentSubject ? `Classes - ${assignmentSubject.name_en}` : 'Classes'"
-      :modal="true"
-      class="w-full max-w-2xl"
-    >
-      <div class="space-y-4 pt-2">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class</label>
-            <Dropdown
-              v-model="classAssignForm.class_id"
-              :options="classOptionsForSubject"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Select Class"
-              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teacher</label>
-            <Dropdown
-              v-model="classAssignForm.teacher_profile_id"
-              :options="teacherOptionsForSubject"
-              optionLabel="name_en"
-              optionValue="id"
-              placeholder="Select Teacher"
-              class="w-full !bg-white !border-slate-200 !rounded-xl text-sm"
-            />
-          </div>
-          <Button
-            label="Add Class"
-            icon="pi pi-plus"
-            class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !text-xs !font-semibold"
-            @click="addClassToSubject"
-          />
-        </div>
-        <p class="text-[11px] text-slate-400 -mt-2">
-          Only classes and teachers within this subject's faculty are shown.
-        </p>
-
-        <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
-          <div
-            v-for="assignment in subjectClassAssignments"
-            :key="assignment.id"
-            class="flex items-center justify-between px-4 py-2.5"
-          >
-            <div>
-              <span class="text-sm font-semibold text-slate-800">{{ assignment.class_name }}</span>
-              <span class="text-xs text-slate-400 ml-2">taught by {{ assignment.teacher_name }}</span>
-            </div>
-            <Button
-              icon="pi pi-trash"
-              class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
-              @click="removeClassFromSubject(assignment)"
-            />
-          </div>
-          <div v-if="subjectClassAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
-            No classes teach this subject yet.
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end pt-3">
-          <Button label="Close" icon="pi pi-times" class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold" @click="classesDialog = false" />
-        </div>
-      </template>
-    </Dialog> -->
 
   </div>
 </template>
@@ -443,6 +377,9 @@ const academicYears = ref([])
 const classes = ref([])
 const teachers = ref([])
 const loading = ref(false)
+
+//Show Button More and less
+const showAllColumns = ref(false);
 
 const fetchSubjects = async () => {
   loading.value = true

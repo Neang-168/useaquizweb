@@ -42,9 +42,7 @@
               <label for="password" class="text-xs font-semibold text-surface-400 uppercase tracking-wider">
                 Password
               </label>
-              <a href="#" class="text-xs font-semibold text-indigo-600 hover:underline">
-                Forgot password ?
-              </a>
+              
             </div>
 
             <Password 
@@ -76,10 +74,11 @@
             :loading="loading" />
         </form>
 
-        <div class="mt-8 text-center text-xs text-surface-400">
+        <!--TODO: Command Sign Up-->
+        <!-- <div class="mt-8 text-center text-xs text-surface-400">
           Don't have an account ?
           <a href="#" class="font-bold text-indigo-600 hover:underline ml-1">Sign up</a>
-        </div>
+        </div> -->
       </div>
 
       <!-- Right Section: Logo & Branding Place -->
@@ -95,7 +94,7 @@
           <!-- Title & Description -->
           <div>
             <h2 class="text-lg sm:text-xl font-bold text-surface-800">
-              University Quiz Management System
+              University Of South-East Asia
             </h2>
             <p class="mt-2 text-xs sm:text-sm text-surface-500 leading-relaxed max-w-xs mx-auto">
               Welcome back! Please log in with your credentials to manage quizzes, view reports, and track system activities.
@@ -104,11 +103,11 @@
         </div>
 
         <!-- Pagination / Indicator Line Mock -->
-        <div class="flex gap-2 items-center justify-center pt-3">
+        <!-- <div class="flex gap-2 items-center justify-center pt-3">
           <span class="w-8 h-1 bg-indigo-600 rounded-full"></span>
           <span class="w-8 h-1 bg-indigo-600/40 rounded-full"></span>
           <span class="w-8 h-1 bg-indigo-600/40 rounded-full"></span>
-        </div>
+        </div> -->
       </div>
 
     </div>

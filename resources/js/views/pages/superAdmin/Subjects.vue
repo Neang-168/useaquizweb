@@ -203,17 +203,17 @@
             <div class="flex items-center justify-end gap-1.5">
               <Button
                 title="Edit Subject"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-[#e4ac14] hover:!bg-[#eec64f] !text-white !border-slate-100 shadow-xs cursor-pointer"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border-slate-100 shadow-xs  cursor-pointer"
                 @click="editSubject(data)"
               >
-              <i class="fa-solid fa-pen-to-square"></i>
+              <i class="fa-solid fa-pen-nib"></i>
               </Button>
               <Button
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-[#d71818] hover:!bg-rose-500 !text-white !border-rose-100 shadow-xs cursor-pointer"
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border-slate-100 shadow-xs cursor-pointer"
                 title="Delete Subject"
                 @click="confirmDeleteSubject(data)"
               >
-              <i class="fa-solid fa-trash"></i>
+              <i class="fa-solid fa-trash-can"></i>
               </Button>
             </div>
           </template>

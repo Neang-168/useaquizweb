@@ -197,11 +197,11 @@
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
                 title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
               <Button icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-800 !border-0 shadow-xs"
-                title="Edit Teacher" @click="editTeacher(data)" />
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border-slate-100  !border-0 shadow-xs"
+                title="Edit Teacher" @click="editTeacher(data)" ><i class="fa-solid fa-pen-nib"></i></Button>
               <Button icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border-0 shadow-xs"
-                title="Delete Teacher" @click="confirmDeleteTeacher(data)" />
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border-slate-100  !border-0 shadow-xs"
+                title="Delete Teacher" @click="confirmDeleteTeacher(data)" ><i class="fa-solid fa-trash-can"></i></Button>
             </div>
           </template>
         </Column>
@@ -210,11 +210,11 @@
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="teacherDialog" :header="isEdit ? 'Edit Teacher Information' : 'Add New Teacher'"
-      :modal="true" class="w-full max-w-3xl">
+      :modal="true" class="w-full max-w-3xl !text-[#002060]">
       <div class="space-y-5 pt-2">
         <!-- ======= SECTION: PERSONAL INFORMATION ======= -->
         <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 border-b border-slate-200">
-          <i class="pi pi-user text-blue-600 text-sm"></i>
+          <i class="pi pi-user text-[#63c7df] text-sm"></i>
           <span>Personal Information</span>
         </div>
 
@@ -299,7 +299,7 @@
 
         <!-- ======= SECTION: ACADEMIC INFORMATION ======= -->
         <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 pt-2 border-b border-slate-200">
-          <i class="pi pi-graduation-cap text-emerald-600 text-sm"></i>
+          <i class="pi pi-graduation-cap text-[#e4ac14] text-sm"></i>
           <span>Academic Information</span>
         </div>
 
@@ -353,7 +353,7 @@
             class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold"
             @click="teacherDialog = false" />
           <Button label="Save Teacher" icon="pi pi-check"
-            class="!bg-emerald-600 hover:!bg-emerald-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
+            class="!bg-[#002060] hover:!bg-blue-900 !text-white !border-0 !rounded-xl !text-xs !font-semibold"
             @click="saveTeacher" />
         </div>
       </template>

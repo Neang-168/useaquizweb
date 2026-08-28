@@ -142,8 +142,7 @@
 
       <DataTable :value="filteredClasses" dataKey="id" paginator :rows="rows" v-model:first="first"
         :rowsPerPageOptions="[10, 20, 50]" scrollable scrollHeight="calc(100vh - 428px)"
-        :scrollDirection="showAllColumns ? 'both' : 'vertical'"
-        :tableStyle="tableMinWidthStyle" :loading="loading"
+        :scrollDirection="showAllColumns ? 'both' : 'vertical'" :tableStyle="tableMinWidthStyle" :loading="loading"
         responsiveLayout="scroll" class="p-datatable-sm classes-table">
         <template #empty>
           <div class="text-center py-10 text-xs text-slate-400">
@@ -176,7 +175,8 @@
         <!-- Class Name (Khmer) - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="name_kh" header="CLASS NAME (KH)">
           <template #body="{ data }">
-            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer whitespace-nowrap">{{ data.name_kh }}</span>
+            <span v-if="data.name_kh" class="text-slate-600 text-sm font-khmer whitespace-nowrap">{{ data.name_kh
+              }}</span>
             <span v-else class="text-slate-400 text-sm">—</span>
           </template>
         </Column>
@@ -294,15 +294,15 @@
         <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
-              <Button 
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#6c09c9] hover:!bg-[#6c09c9] hover:!text-white !border !border-[#6c09c9] shadow-xs"
-                title="Subjects Taught" @click="openSubjectsDialog(data)" ><i class="fa-solid fa-sitemap"></i></Button>
+              <Button
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#6c09c9] !border !border-slate-100 shadow-xs"
+                title="Subjects Taught" @click="openSubjectsDialog(data)"><i class="fa-solid fa-sitemap"></i></Button>
               <Button icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#e4ac14] hover:!bg-[#eec64f] hover:!text-white  !border !border-[#e4ac14] shadow-xs"
-                title="Edit Class" @click="editClass(data)" ><i class="fa-solid fa-pen-to-square"></i></Button>
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14]  !border !border-slate-100 shadow-xs"
+                title="Edit Class" @click="editClass(data)"><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-white !text-[#d71818] hover:!bg-[#d71818] hover:!text-white !border !border-[#d71818] shadow-xs"
-                title="Delete Class" @click="confirmDeleteClass(data)" ><i class="fa-solid fa-trash"></i></Button>
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border !border-slate-100 shadow-xs"
+                title="Delete Class" @click="confirmDeleteClass(data)"><i class="fa-solid fa-trash-can"></i></Button>
             </div>
           </template>
         </Column>
@@ -363,7 +363,7 @@
             <div class="mb-3">
               <h3 class="font-bold text-[#002060] text-sm line-clamp-1 m-0" :title="cls.name">{{ cls.name }}</h3>
               <p v-if="cls.name_kh" class="text-[11px] text-slate-500 font-khmer m-0 mt-0.5 line-clamp-1">{{ cls.name_kh
-                }}
+              }}
               </p>
               <p class="text-[11px] text-slate-400 m-0 mt-0.5 line-clamp-1">{{ cls.department || 'No Department' }}</p>
             </div>
@@ -414,15 +414,18 @@
 
           <!-- Bottom Action Buttons -->
           <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
-            <Button label="Subjects" icon="pi pi-book"
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 !rounded-lg"
-              @click="openSubjectsDialog(cls)" />
-            <Button label="Edit" icon="pi pi-pencil"
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-blue-50 hover:!text-blue-600 !text-slate-600 !border-slate-200 !rounded-lg"
-              @click="editClass(cls)" />
-            <Button label="Delete" icon="pi pi-trash"
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-rose-50/60 hover:!bg-rose-100 !text-rose-600 !border-rose-100 !rounded-lg"
-              @click="confirmDeleteClass(cls)" />
+            <Button
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
+              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Assign</Button>
+            <Button
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-amber-100/90 !text-[#e4ac14] !border-slate-200 hover:!border-white !rounded-lg"
+              @click="editClass(cls)"><i class="fa-solid fa-pen-nib"></i>Edit</Button>
+            <Button
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-100 hover:!bg-rose-100 !text-[#d71818] !border-slate-200 hover:!border-white !rounded-lg"
+              @click="confirmDeleteClass(cls)">
+              <i class="fa-solid fa-trash-can"></i>
+              Delete
+            </Button>
           </div>
         </div>
       </div>
@@ -545,11 +548,12 @@
       </template>
     </Dialog>
 
-    <!-- ======= SUBJECTS TAUGHT DIALOG (Subject + Teacher per Class) ======= -->
+    <!-- ======= TODO:  SUBJECTS TAUGHT DIALOG (Subject + Teacher per Class) ======= -->
     <Dialog v-model:visible="subjectsDialog"
       :header="assignmentClass ? `Subjects Taught - ${assignmentClass.name}` : 'Subjects Taught'" :modal="true"
-      class="w-full max-w-2xl">
+      class="w-full max-w-2xl !text-[#002060]">
       <div class="space-y-4 pt-2">
+        <!-- Form Assign Subject & Teacher -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-xl border border-slate-200">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject</label>
@@ -563,37 +567,55 @@
               optionLabel="name_en" optionValue="id" placeholder="Select Teacher"
               class="w-full !bg-white !border-slate-200 !rounded-xl text-sm" />
           </div>
-          <Button label="Add Subject" icon="pi pi-plus"
-            class="!bg-blue-600 hover:!bg-blue-700 !border-0 !rounded-xl !text-xs !font-semibold"
-            @click="addSubjectToClass" />
+          <Button 
+            class= "h-10  !bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !text-sm !font-semibold cursor-pointer"
+            @click="addSubjectToClass" ><i class="fa-solid fa-sitemap"></i>Assign to Class</Button>
         </div>
         <p class="text-[11px] text-slate-400 -mt-2">
           Only subjects and teachers within this class's faculty are shown.
         </p>
 
+        <!-- ======= SEARCH INPUT FOR FILTERING ASSIGNMENTS ======= -->
+        <div class="flex items-center justify-between gap-3 pt-1">
+          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Assigned List ({{ filteredClassSubjectAssignments.length }})
+          </span>
+          <div class="relative w-full sm:w-64">
+            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
+            <InputText v-model="assignmentSearchQuery" placeholder="Search subject or teacher..."
+              class="w-full !pl-8 !pr-3 !py-1.5 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
+          </div>
+        </div>
+
+        <!-- Assigned List -->
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-72 overflow-y-auto">
-          <div v-for="assignment in classSubjectAssignments" :key="assignment.id"
+          <div v-for="assignment in filteredClassSubjectAssignments" :key="assignment.id"
             class="flex items-center justify-between px-4 py-2.5">
             <div>
-              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{{
-                assignment.subject_code }}</span>
-              <span class="text-sm font-semibold text-slate-800">{{ assignment.subject_name }}</span>
-              <span class="text-xs text-slate-400 ml-2">taught by {{ assignment.teacher_name }}</span>
+              <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">
+                {{ assignment.subject_code }}
+              </span>
+              <span class="text-sm font-semibold text-[#002060]">{{ assignment.subject_name }}</span>
+              <span class="text-sm text-slate-800 ml-1">taught by</span>
+              <span class="text-sm font-semibold text-[#002060] ml-2">{{ assignment.teacher_name }}</span>
             </div>
-            <Button icon="pi pi-trash"
-              class="!p-1.5 !w-7 !h-7 !rounded-lg !text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !border-0"
-              @click="removeSubjectFromClass(assignment)" />
+            <Button 
+              class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-slate-100 !text-[#d71818] hover:!text-rose-600 hover:!bg-rose-50 !border-0 cursor-pointer"
+              @click="removeSubjectFromClass(assignment)" ><i class="fa-solid fa-trash-can"></i></Button>
           </div>
-          <div v-if="classSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
-            No subjects assigned to this class yet.
-          </div>
+
+          <!-- Empty State -->
+          <!-- Empty State -->
+            <div v-if="filteredClassSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
+              {{ assignmentSearchQuery ? 'No matching subjects or teachers found.' : 'No subjects assigned to this class yet.' }}
+            </div>
         </div>
       </div>
 
       <template #footer>
         <div class="flex justify-end pt-3">
           <Button label="Close" icon="pi pi-times"
-            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
             @click="subjectsDialog = false" />
         </div>
       </template>
@@ -613,6 +635,21 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+
+const assignmentSearchQuery = ref('');
+const filteredClassSubjectAssignments = computed(() => {
+  if (!assignmentSearchQuery.value.trim()) {
+    return classSubjectAssignments.value;
+  }
+  const query = assignmentSearchQuery.value.toLowerCase().trim();
+  return classSubjectAssignments.value.filter((item) => {
+    return (
+      item.subject_name?.toLowerCase().includes(query) ||
+      item.subject_code?.toLowerCase().includes(query) ||
+      item.teacher_name?.toLowerCase().includes(query)
+    );
+  });
+});
 
 // View Mode State: 'grid' or 'list'
 const viewMode = ref('grid')

@@ -244,17 +244,17 @@
               <Button
                 icon="pi pi-pencil"
                 size="small"
-                class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-600 !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
+                class="!bg-slate-100  !border-slate-100 !text-[#e4ac14] !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
                 title="Edit User"
                 @click="editUser(data)"
-              />
+              ><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button
                 icon="pi pi-trash"
                 size="small"
-                class="!bg-rose-50 hover:!bg-rose-100 !border-rose-50 !text-rose-600 !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
+                class="!bg-slate-100  !border-slate-100 !text-[#d71818] !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
                 title="Delete User"
                 @click="confirmDeleteUser(data)"
-              />
+              ><i class="fa-solid fa-trash-can"></i></Button>
             </div>
           </template>
         </Column>

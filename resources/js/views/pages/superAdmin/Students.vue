@@ -14,9 +14,18 @@
         </p>
       </div>
 
-      <Button label="Add New Student" icon="pi pi-plus"
-        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
-        @click="openNewDialog" />
+      <!-- ======= HEADER ACTION BUTTONS ======= -->
+      <div class="flex items-center gap-2">
+        <!-- New Bulk/Import Assign Button -->
+        <Button label="Assign Class" icon="pi pi-users"
+          class="!bg-[#e4ac14] hover:!bg-[#cb980e] !text-white !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+          :disabled="selectedStudents.length === 0"
+          @click="openBulkAssignDialog" />
+
+        <Button label="Add New Student" icon="pi pi-plus"
+          class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+          @click="openNewDialog" />
+      </div>
     </div>
 
     <!-- ======= STATS CARDS (COMMENTED OUT) ======= -->
@@ -62,7 +71,12 @@
         
         <!-- Header Row: Title, Search, Columns Toggle -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 class="text-base font-bold text-slate-800 m-0">Students List</h3>
+          <div class="flex items-center gap-3">
+            <h3 class="text-base font-bold text-[#002060] m-0">Students List</h3>
+            <span v-if="selectedStudents.length > 0" class="text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold px-2.5 py-0.5 rounded-full">
+              Selected: {{ selectedStudents.length }}
+            </span>
+          </div>
           
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div class="relative w-full sm:w-64">
@@ -110,7 +124,7 @@
       </div>
 
       <!-- Data Table Content -->
-      <DataTable :value="filteredStudents" v-model:filters="filters"
+      <DataTable :value="filteredStudents" v-model:filters="filters" v-model:selection="selectedStudents"
         :globalFilterFields="['student_id', 'name_en', 'name_kh', 'class_name', 'phone', 'username', 'major']" dataKey="id"
         paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
         scrollable scrollDirection="both" :loading="loading" :tableStyle="showAllColumns ? 'min-width: 2200px' : 'min-width: 100%'"
@@ -129,8 +143,11 @@
           </span>
         </template>
 
+        <!-- Selection Checkbox Column (Multi-select) -->
+        <Column selectionMode="multiple" headerStyle="width: 3rem" style="padding-left: 1rem"></Column>
+
         <!-- Student ID -->
-        <Column field="student_id" header="STUDENT ID" sortable style="padding-left: 1.25rem">
+        <Column field="student_id" header="STUDENT ID" sortable style="padding-left: 1rem">
           <template #body="{ data }">
             <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.student_id }}</span>
           </template>
@@ -167,7 +184,7 @@
         <!-- Class -->
         <Column field="class_name" header="CLASS" sortable>
           <template #body="{ data }">
-            <span class="text-slate-700 text-sm font-semibold">{{ data.class_name }}</span>
+            <span class="text-slate-700 text-sm font-semibold">{{ data.class_name || 'Unassigned' }}</span>
           </template>
         </Column>
 
@@ -274,14 +291,14 @@
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <Button icon="pi pi-sitemap"
-                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs cursor-pointer text-xs"
-                title="Assign Class" @click="openAssignDialog(data)" />
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#6c09c9] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+                title="Assign Class" @click="openAssignDialog(data)" ><i class="fa-solid fa-sitemap"></i></Button>
               <Button icon="pi pi-pencil"
-                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-slate-600 hover:!bg-slate-200 hover:!text-slate-700 !border !border-slate-100 shadow-xs cursor-pointer text-xs"
-                title="Edit Student" @click="editStudent(data)" />
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+                title="Edit Student" @click="editStudent(data)" ><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button icon="pi pi-trash"
-                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-rose-50 !text-rose-600 hover:!bg-rose-100 hover:!text-rose-700 !border !border-rose-100 shadow-xs cursor-pointer text-xs"
-                title="Delete Student" @click="confirmDeleteStudent(data)" />
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+                title="Delete Student" @click="confirmDeleteStudent(data)" ><i class="fa-solid fa-trash-can"></i></Button>
             </div>
           </template>
         </Column>
@@ -290,11 +307,11 @@
 
     <!-- ======= ADD / EDIT DIALOG ======= -->
     <Dialog v-model:visible="studentDialog" :header="isEdit ? 'Edit Student Information' : 'Add New Student'"
-      :modal="true" class="w-full max-w-3xl">
+      :modal="true" class="w-full max-w-3xl !text-[#002060]">
       <div class="space-y-5 pt-2">
         <!-- ======= SECTION: PERSONAL INFORMATION ======= -->
         <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 border-b border-slate-200">
-          <i class="pi pi-user text-blue-600 text-sm"></i>
+          <i class="pi pi-user text-[#63c7df] text-sm"></i>
           <span>Personal Information</span>
         </div>
 
@@ -374,7 +391,7 @@
 
         <!-- ======= SECTION: ACADEMIC INFORMATION ======= -->
         <div class="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider pb-2 pt-2 border-b border-slate-200">
-          <i class="pi pi-graduation-cap text-emerald-600 text-sm"></i>
+          <i class="pi pi-graduation-cap text-[#e4ac14] text-sm"></i>
           <span>Academic Information</span>
         </div>
 
@@ -446,13 +463,13 @@
             class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
             @click="studentDialog = false" />
           <Button label="Save Student" icon="pi pi-check"
-            class="!bg-blue-600 hover:!bg-blue-700 !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            class="!bg-[#002060] hover:!bg-blue-900 !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
             @click="saveStudent" />
         </div>
       </template>
     </Dialog>
 
-    <!-- ======= ASSIGN CLASS DIALOG ======= -->
+    <!-- ======= SINGLE ASSIGN CLASS DIALOG ======= -->
     <Dialog v-model:visible="assignDialog" header="Assign Class" :modal="true" class="w-full max-w-md">
       <div class="space-y-4 pt-2">
         <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
@@ -501,6 +518,53 @@
       </template>
     </Dialog>
 
+    <!-- ======= BULK / IMPORT ASSIGN CLASS DIALOG (NEW) ======= -->
+    <Dialog v-model:visible="bulkAssignDialog" header="Import Students to Class" :modal="true" class="w-full max-w-md !text-[#002060]">
+      <div class="space-y-4 pt-2">
+        <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+            <i class="pi pi-users text-sm"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-indigo-950 m-0">
+              Assigning <span class="font-bold text-[#e4ac14]">{{ selectedStudents.length }}</span> student(s)
+            </p>
+            <p class="text-[11px] text-[#002060] m-0">All selected students will be moved into the target class.</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Target Class *</label>
+          <Dropdown v-model="bulkTargetClassId" :options="classes" optionLabel="name" optionValue="id"
+            placeholder="Select Class to Import" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+        </div>
+
+        <div v-if="bulkTargetClassId">
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subjects included</label>
+          <div class="flex flex-wrap gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 min-h-[2.5rem]">
+            <span v-for="subject in bulkClassSubjects" :key="subject"
+              class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+              {{ subject }}
+            </span>
+            <span v-if="bulkClassSubjects.length === 0" class="text-[11px] text-slate-400">
+              No subjects assigned to this class yet.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2 pt-3">
+          <Button label="Cancel" icon="pi pi-times"
+            class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="bulkAssignDialog = false" />
+          <Button label="Import Students" icon="pi pi-check" :loading="bulkAssignLoading"
+            class="!bg-[#e4ac14] hover:!bg-[#cb980e] !text-white !border-0 !rounded-xl !text-xs !font-semibold cursor-pointer"
+            @click="saveBulkAssign" />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -545,6 +609,9 @@ const semesters = ref([])
 const terms = ref([])
 const shifts = ref([])
 const loading = ref(false)
+
+// Multi-select state
+const selectedStudents = ref([])
 
 const fetchStudents = async () => {
   loading.value = true
@@ -847,54 +914,106 @@ const saveAssign = async () => {
     alert(extractError(error))
   }
 }
-</script>
 
+// ======= BULK / IMPORT ASSIGN CLASS (NEW FEATURE) =======
+const bulkAssignDialog = ref(false)
+const bulkTargetClassId = ref(null)
+const bulkClassSubjects = ref([])
+const bulkAssignLoading = ref(false)
+
+const openBulkAssignDialog = () => {
+  if (selectedStudents.value.length === 0) return
+  bulkTargetClassId.value = null
+  bulkClassSubjects.value = []
+  bulkAssignDialog.value = true
+}
+
+const fetchBulkClassSubjects = async (classId) => {
+  try {
+    const { data } = await api.get('/teacher-assignments', { params: { class_id: classId } })
+    bulkClassSubjects.value = [...new Set(data.data.map((a) => a.subject_name).filter(Boolean))]
+  } catch (error) {
+    bulkClassSubjects.value = []
+  }
+}
+
+watch(bulkTargetClassId, (classId) => {
+  if (bulkAssignDialog.value && classId) fetchBulkClassSubjects(classId)
+})
+
+const saveBulkAssign = async () => {
+  if (!bulkTargetClassId.value) {
+    alert('Please select a target class to import students into.')
+    return
+  }
+
+  bulkAssignLoading.value = true
+  try {
+    // Loops through all selected items and sends assignment patch requests
+    const promises = selectedStudents.value.map((student) =>
+      api.patch(`/students/${student.id}/assign`, {
+        class_id: bulkTargetClassId.value,
+        promotion_id: student.promotion_id,
+        status: student.status || 'Active',
+      })
+    )
+
+    await Promise.all(promises)
+
+    bulkAssignDialog.value = false
+    selectedStudents.value = [] // Reset selection
+    await fetchStudents()
+    alert('Selected students imported/assigned successfully!')
+  } catch (error) {
+    alert(extractError(error))
+  } finally {
+    bulkAssignLoading.value = false
+  }
+}
+</script>
 <style scoped>
-/* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
 .students-table :deep(.p-datatable-thead > tr > th) {
   font-size: 13px;
+  white-space: nowrap !important;
 }
 
 .students-table :deep(.p-datatable-tbody > tr > td) {
   font-size: 14px;
+  white-space: nowrap !important;
 }
 
-/*Filter */
-
+/* Dropdown Filters Styling */
 :deep(.custom-filter-dropdown) {
-  background-color: #f8fafc !important; /* slate-50 */
-  border: 1px solid #e2e8f0 !important;   /* slate-200 */
-  border-radius: 0.75rem !important;      /* rounded-xl */
-  font-size: 0.75rem !important;          /* text-xs */
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.75rem !important;
   transition: all 0.2s ease;
   height: 38px;
   display: flex;
   align-items: center;
 }
 
-/* Hover & Focus Effect */
 :deep(.custom-filter-dropdown:hover) {
-  border-color: #cbd5e1 !important;      /* slate-300 */
+  border-color: #cbd5e1 !important;
   background-color: #ffffff !important;
 }
 
 :deep(.custom-filter-dropdown.p-focus) {
-  border-color: #3b82f6 !important;      /* blue-500 */
+  border-color: #3b82f6 !important;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
   background-color: #ffffff !important;
 }
 
-/* Label & Inner Padding adjustment */
 :deep(.custom-filter-dropdown .p-dropdown-label) {
   font-size: 0.75rem !important;
   padding: 0.4rem 0.75rem !important;
-  color: #334155 !important;             /* slate-700 */
+  color: #334155 !important;
 }
 
-/* Clear & Trigger Icons */
 :deep(.custom-filter-dropdown .p-dropdown-trigger),
 :deep(.custom-filter-dropdown .p-dropdown-clear-icon) {
-  color: #94a3b8 !important;             /* slate-400 */
+  color: #94a3b8 !important;
   width: 2rem !important;
 }
 </style>

@@ -295,6 +295,9 @@
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <Button
+                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#63c7df] !border !border-slate-100 shadow-xs"
+                title="Subjects Taught" @click="openSubjectsDialog(data)"><i class="fa-solid fa-gear"></i></Button>
+              <Button
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#6c09c9] !border !border-slate-100 shadow-xs"
                 title="Subjects Taught" @click="openSubjectsDialog(data)"><i class="fa-solid fa-sitemap"></i></Button>
               <Button icon="pi pi-pencil"
@@ -415,9 +418,8 @@
           <!-- Bottom Action Buttons -->
           <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
             <Button
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
-              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Manege </Button>
-            
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-[#63c7df] !border-indigo-100 hover:!border-white !rounded-lg"
+              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-gear"></i>Manege </Button>
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
               @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Assign</Button>

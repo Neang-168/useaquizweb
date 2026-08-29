@@ -226,7 +226,7 @@
       v-model:visible="subjectDialog"
       :header="isEdit ? 'Edit Subject' : 'Create New Subject'"
       :modal="true"
-      class="w-full max-w-3xl"
+      class="w-full max-w-3xl !text-[#002060]"
     >
       <div class="space-y-4 pt-2">
         <!-- Subject Code / Name / Name (Khmer) -->

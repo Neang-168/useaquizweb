@@ -416,6 +416,10 @@
           <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
+              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Manege </Button>
+            
+            <Button
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
               @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Assign</Button>
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-amber-100/90 !text-[#e4ac14] !border-slate-200 hover:!border-white !rounded-lg"

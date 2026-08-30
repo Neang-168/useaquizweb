@@ -294,18 +294,33 @@
         <Column header="ACTIONS" class="!text-right" style="padding-right: 1.25rem">
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
+              <!-- Manage Class (Router Link) -->
+              <router-link to="/admin/class-management"
+                class="!w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-[#63c7df] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
+                title="Manage Class">
+                <i class="fa-solid fa-gear text-xs"></i>
+              </router-link>
+
+              <!-- Assign / Subjects Taught -->
               <Button
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#63c7df] !border !border-slate-100 shadow-xs"
-                title="Subjects Taught" @click="openSubjectsDialog(data)"><i class="fa-solid fa-gear"></i></Button>
+                class="!p-0 !w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-[#6c09c9] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
+                title="Subjects Taught" @click="openSubjectsDialog(data)">
+                <i class="fa-solid fa-sitemap text-xs"></i>
+              </Button>
+
+              <!-- Edit Class -->
               <Button
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#6c09c9] !border !border-slate-100 shadow-xs"
-                title="Subjects Taught" @click="openSubjectsDialog(data)"><i class="fa-solid fa-sitemap"></i></Button>
-              <Button icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14]  !border !border-slate-100 shadow-xs"
-                title="Edit Class" @click="editClass(data)"><i class="fa-solid fa-pen-to-square"></i></Button>
-              <Button icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border !border-slate-100 shadow-xs"
-                title="Delete Class" @click="confirmDeleteClass(data)"><i class="fa-solid fa-trash-can"></i></Button>
+                class="!p-0 !w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-[#e4ac14] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
+                title="Edit Class" @click="editClass(data)">
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+              </Button>
+
+              <!-- Delete Class -->
+              <Button
+                class="!p-0 !w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-rose-100 !text-[#d71818] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
+                title="Delete Class" @click="confirmDeleteClass(data)">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </Button>
             </div>
           </template>
         </Column>
@@ -343,6 +358,7 @@
         No classes found.
       </div>
 
+      <!--TODO: Class Card-->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div v-for="cls in filteredClasses" :key="cls.id"
           class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:border-[#63c7df] hover:shadow-md transition-all duration-200 flex flex-col justify-between relative group">
@@ -415,22 +431,33 @@
             </div>
           </div>
 
-          <!-- Bottom Action Buttons -->
-          <div class="flex items-center justify-end gap-1.5 pt-3 mt-3 border-t border-slate-100">
+          <!-- Bottom Action Buttons (Fixed Alignment & Equal Sizing) -->
+          <div class="flex items-center justify-between gap-1.5 pt-3 mt-3 border-t border-slate-100">
+            <router-link to="/admin/class-management"
+              class="inline-flex items-center justify-center gap-1 !py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-[#63c7df] !border !border-indigo-100 hover:!border-indigo-200 !rounded-lg transition-all">
+              <i class="fa-solid fa-gear"></i>
+              <span>Manage</span>
+            </router-link>
+
             <Button
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-[#63c7df] !border-indigo-100 hover:!border-white !rounded-lg"
-              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-gear"></i>Manege </Button>
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
+              @click="openSubjectsDialog(cls)">
+              <i class="fa-solid fa-sitemap"></i>
+              <span>Assign</span>
+            </Button>
+
             <Button
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg"
-              @click="openSubjectsDialog(cls)"><i class="fa-solid fa-sitemap"></i>Assign</Button>
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-amber-100/90 !text-[#e4ac14] !border-slate-200 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
+              @click="editClass(cls)">
+              <i class="fa-solid fa-pen-nib"></i>
+              <span>Edit</span>
+            </Button>
+
             <Button
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-amber-100/90 !text-[#e4ac14] !border-slate-200 hover:!border-white !rounded-lg"
-              @click="editClass(cls)"><i class="fa-solid fa-pen-nib"></i>Edit</Button>
-            <Button
-              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-100 hover:!bg-rose-100 !text-[#d71818] !border-slate-200 hover:!border-white !rounded-lg"
+              class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-100 hover:!bg-rose-100 !text-[#d71818] !border-slate-200 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
               @click="confirmDeleteClass(cls)">
               <i class="fa-solid fa-trash-can"></i>
-              Delete
+              <span>Delete</span>
             </Button>
           </div>
         </div>
@@ -573,9 +600,9 @@
               optionLabel="name_en" optionValue="id" placeholder="Select Teacher"
               class="w-full !bg-white !border-slate-200 !rounded-xl text-sm" />
           </div>
-          <Button 
-            class= "h-10  !bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !text-sm !font-semibold cursor-pointer"
-            @click="addSubjectToClass" ><i class="fa-solid fa-sitemap"></i>Assign to Class</Button>
+          <Button
+            class="h-10  !bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !text-sm !font-semibold cursor-pointer"
+            @click="addSubjectToClass"><i class="fa-solid fa-sitemap"></i>Assign to Class</Button>
         </div>
         <p class="text-[11px] text-slate-400 -mt-2">
           Only subjects and teachers within this class's faculty are shown.
@@ -605,16 +632,16 @@
               <span class="text-sm text-slate-800 ml-1">taught by</span>
               <span class="text-sm font-semibold text-[#002060] ml-2">{{ assignment.teacher_name }}</span>
             </div>
-            <Button 
+            <Button
               class="!p-1.5 !w-7 !h-7 !rounded-lg !bg-slate-100 !text-[#d71818] hover:!text-rose-600 hover:!bg-rose-50 !border-0 cursor-pointer"
-              @click="removeSubjectFromClass(assignment)" ><i class="fa-solid fa-trash-can"></i></Button>
+              @click="removeSubjectFromClass(assignment)"><i class="fa-solid fa-trash-can"></i></Button>
           </div>
 
           <!-- Empty State -->
           <!-- Empty State -->
-            <div v-if="filteredClassSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
-              {{ assignmentSearchQuery ? 'No matching subjects or teachers found.' : 'No subjects assigned to this class yet.' }}
-            </div>
+          <div v-if="filteredClassSubjectAssignments.length === 0" class="px-4 py-6 text-center text-xs text-slate-400">
+            {{ assignmentSearchQuery ? 'No matching subjects or teachers found.' : 'No subjects assigned to this classyet.'}}
+          </div>
         </div>
       </div>
 

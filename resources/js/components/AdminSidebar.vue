@@ -197,10 +197,14 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import LogoUsea from '../images/usea_logo.png'
 import { authUser, clearAuthUser } from '../store/authUser'
 
 const router = useRouter()
+const confirm = useConfirm()
+const toast = useToast()
 
 // Profile dropdown (User Profile / Logout)
 const profileMenuOpen = ref(false)
@@ -227,9 +231,20 @@ const userInitial = computed(() => {
 })
 
 const handleLogout = () => {
-  localStorage.removeItem('auth_token')
-  clearAuthUser()
-  router.push('/login')
+  confirm.require({
+    header: 'Log out',
+    message: 'Are you sure you want to log out?',
+    icon: 'pi pi-sign-out',
+    acceptLabel: 'Log out',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: () => {
+      localStorage.removeItem('auth_token')
+      clearAuthUser()
+      toast.add({ severity: 'success', summary: 'Logged out', detail: 'You have been logged out successfully.', life: 3000 })
+      router.push('/login')
+    },
+  })
 }
 </script>
 

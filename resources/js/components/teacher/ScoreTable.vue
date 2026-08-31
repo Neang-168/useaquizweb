@@ -188,8 +188,11 @@ import Button from 'primevue/button'
 import SplitButton from 'primevue/splitbutton'
 import InputText from 'primevue/inputtext'
 import Chart from 'primevue/chart'
-import api, { extractError } from '../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../api'
 import { downloadCsv, downloadXlsx } from '../../utils/exportTable'
+
+const toast = useToast()
 
 const props = defineProps({
   quizId: { type: [Number, String], default: null },
@@ -217,7 +220,7 @@ const fetchScores = async () => {
     students.value = data.data
     totalPoints.value = data.totalPoints ?? 0
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load scores', ...toastFromError(error) })
   } finally {
     loading.value = false
   }

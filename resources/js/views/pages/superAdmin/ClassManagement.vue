@@ -189,6 +189,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Dialog from 'primevue/dialog'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 
 // Data សម្រាប់ថ្នាក់តែមួយគត់ (Single Class Object)
 const classData = ref({
@@ -241,11 +244,11 @@ const filteredStudents = computed(() => {
 
 // Actions
 const openSubjectsDialog = () => {
-  alert(`បើក Manage Settings សម្រាប់ថ្នាក់ ${classData.value.code}`)
+  toast.add({ severity: 'info', summary: 'Class settings', detail: `Opening Manage Settings for class ${classData.value.code}.`, life: 3000 })
 }
 
 const handleExport = () => {
-  alert(`ទាញយក CSV សម្រាប់ Quiz ID: ${selectedQuizId.value}`)
+  toast.add({ severity: 'success', summary: 'Quiz results exported', detail: `CSV export started for Quiz ID: ${selectedQuizId.value}.`, life: 3000 })
   showExportModal.value = false
 }
 

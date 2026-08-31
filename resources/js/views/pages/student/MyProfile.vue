@@ -262,8 +262,6 @@
         </div>
       </div>
     </Teleport>
-
-    <Toast />
   </div>
 </template>
 
@@ -274,7 +272,6 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Dropdown from 'primevue/dropdown'
 import Password from 'primevue/password'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import api, { extractError } from '../../../api'
 import { setAuthUser } from '../../../store/authUser'

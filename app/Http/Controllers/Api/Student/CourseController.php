@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizSubmission;
-use App\Models\StudentEnrollment;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
 
@@ -23,10 +22,7 @@ class CourseController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $classIds = StudentEnrollment::where('student_profile_id', $student->id)
-            ->where('status', 'Active')
-            ->pluck('class_id')
-            ->unique();
+        $classIds = $student->classes()->wherePivot('status', 'Active')->pluck('classes.id');
 
         $assignments = TeacherSubject::whereIn('class_id', $classIds)
             ->with(['subject', 'classroom.major', 'classroom.shift', 'classroom.academicYear', 'teacherProfile.user'])

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Feedback;
 use App\Models\Quiz;
 use App\Models\QuizSubmission;
-use App\Models\StudentEnrollment;
+use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -32,14 +32,11 @@ class DashboardController extends Controller
 
         Quiz::autoCloseExpired();
 
-        $classIds = StudentEnrollment::where('student_profile_id', $student->id)
-            ->where('status', 'Active')
-            ->pluck('class_id')
-            ->unique();
+        $classIds = $student->classes()->wherePivot('status', 'Active')->pluck('classes.id');
 
-        $enrolledSubjectsCount = StudentEnrollment::where('student_profile_id', $student->id)
-            ->where('status', 'Active')
-            ->count();
+        $enrolledSubjectsCount = TeacherSubject::whereIn('class_id', $classIds)
+            ->distinct('subject_id')
+            ->count('subject_id');
 
         $now = now();
 

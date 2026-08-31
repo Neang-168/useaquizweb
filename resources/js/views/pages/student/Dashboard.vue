@@ -228,43 +228,31 @@
 
     </div> -->
 
-    <ConfirmDialog
-      v-model="showStartConfirm"
-      title="Start this quiz?"
-      :message="pendingQuiz ? `Duration: ${pendingQuiz.duration} minutes, ${pendingQuiz.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.` : ''"
-      confirm-text="Start Exam"
-      cancel-text="Cancel"
-      @confirm="confirmStartQuiz"
-      @cancel="showStartConfirm = false"
-    />
-
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api, { extractError } from '../../../api'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 import StudentCalendar from '../../../components/student/StudentCalendar.vue'
-import ConfirmDialog from '../../../components/ConfirmDialog.vue'
 import { formatDateTime as formatDate } from '../../../utils/formatDateTime'
 
 const router = useRouter()
-const pendingQuiz = ref(null)
-const showStartConfirm = ref(false)
+const confirm = useConfirm()
+const toast = useToast()
 
 function startQuiz(quiz) {
-  pendingQuiz.value = quiz
-  showStartConfirm.value = true
-}
-
-function confirmStartQuiz() {
-  showStartConfirm.value = false
-  const quiz = pendingQuiz.value
-  pendingQuiz.value = null
-  if (quiz) {
-    router.push(`/student/take-quiz?id=${quiz.id}`)
-  }
+  confirm.require({
+    header: 'Start this quiz?',
+    message: `Duration: ${quiz.duration} minutes, ${quiz.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Start Exam',
+    rejectLabel: 'Cancel',
+    accept: () => router.push(`/student/take-quiz?id=${quiz.id}`),
+  })
 }
 
 const authUser = computed(() => {
@@ -300,7 +288,7 @@ async function fetchDashboard() {
     stats.value = dashboardRes.data
     myClasses.value = coursesRes.data.data
   } catch (error) {
-    console.error(extractError(error))
+    toast.add({ summary: 'Failed to load dashboard', ...toastFromError(error) })
   }
 }
 

@@ -597,7 +597,9 @@ import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Image from 'primevue/image'
 import SplitButton from 'primevue/splitbutton'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
+import api, { toastFromError } from '../../../api'
 import ScoreTable from '../../../components/teacher/ScoreTable.vue'
 import FeedbackTable from '../../../components/teacher/FeedbackTable.vue'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
@@ -605,6 +607,8 @@ import { downloadCsv, downloadXlsx } from '../../../utils/exportTable'
 import { formatDateTime } from '../../../utils/formatDateTime'
 
 const route = useRoute()
+const toast = useToast()
+const confirm = useConfirm()
 const assignmentId = computed(() => Number(route.params.assignmentId))
 
 const tabs = [
@@ -652,7 +656,7 @@ async function loadWorkspace() {
     await fetchClassInfo()
     await Promise.all([fetchQuizzes(), fetchPickerQuestions()])
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load class workspace', ...toastFromError(error) })
   }
 }
 
@@ -833,7 +837,7 @@ async function openQuizModal(quiz = null) {
         selectedQuestionIds: full.questions.map(q => q.id),
       }
     } catch (error) {
-      alert(extractError(error))
+      toast.add({ summary: 'Failed to load quiz details', ...toastFromError(error) })
       return
     }
   } else {
@@ -850,7 +854,7 @@ function closeQuizModal() {
 
 async function saveQuiz() {
   if (!builderForm.value.title.trim()) {
-    alert('Please enter a title for the quiz.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please enter a title for the quiz.', life: 4000 })
     return
   }
 
@@ -873,44 +877,76 @@ async function saveQuiz() {
   try {
     if (editingQuizId.value) {
       await api.put(`/teacher/quizzes/${editingQuizId.value}`, payload)
+      toast.add({ severity: 'success', summary: 'Quiz updated', detail: `"${payload.title}" was updated.`, life: 3000 })
     } else {
       await api.post('/teacher/quizzes', payload)
+      toast.add({ severity: 'success', summary: 'Quiz created', detail: `"${payload.title}" was created.`, life: 3000 })
     }
     closeQuizModal()
     await fetchQuizzes()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to save quiz', ...toastFromError(error) })
   }
 }
 
-async function deleteQuiz(id) {
-  if (confirm('Are you sure you want to delete this quiz?')) {
-    try {
-      await api.delete(`/teacher/quizzes/${id}`)
-      await fetchQuizzes()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+function deleteQuiz(id) {
+  confirm.require({
+    header: 'Delete quiz',
+    message: 'Are you sure you want to delete this quiz?',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teacher/quizzes/${id}`)
+        toast.add({ severity: 'success', summary: 'Quiz deleted', detail: 'The quiz was deleted.', life: 3000 })
+        await fetchQuizzes()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete quiz', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
-async function publishQuiz(quiz) {
-  try {
-    await api.post(`/teacher/quizzes/${quiz.id}/publish`)
-    await fetchQuizzes()
-  } catch (error) {
-    alert(extractError(error))
-  }
+function publishQuiz(quiz) {
+  confirm.require({
+    header: 'Publish quiz',
+    message: `Publish "${quiz.title}"? Students will be able to see and take it immediately.`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Publish',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.post(`/teacher/quizzes/${quiz.id}/publish`)
+        toast.add({ severity: 'success', summary: 'Quiz published', detail: `"${quiz.title}" is now live for students.`, life: 3000 })
+        await fetchQuizzes()
+      } catch (error) {
+        toast.add({ summary: 'Failed to publish quiz', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
-async function closeQuiz(quiz) {
-  if (!confirm('Close this quiz? Students will no longer be able to take it.')) return
-  try {
-    await api.post(`/teacher/quizzes/${quiz.id}/close`)
-    await fetchQuizzes()
-  } catch (error) {
-    alert(extractError(error))
-  }
+function closeQuiz(quiz) {
+  confirm.require({
+    header: 'Close quiz',
+    message: 'Close this quiz? Students will no longer be able to take it.',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Close Quiz',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.post(`/teacher/quizzes/${quiz.id}/close`)
+        toast.add({ severity: 'success', summary: 'Quiz closed', detail: `"${quiz.title}" is now closed to students.`, life: 3000 })
+        await fetchQuizzes()
+      } catch (error) {
+        toast.add({ summary: 'Failed to close quiz', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 /* ===== Inline "create new question" from the builder ===== */
@@ -935,7 +971,7 @@ async function openPreview(quiz) {
     previewQuiz.value = data.quiz
     showPreviewModal.value = true
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load quiz preview', ...toastFromError(error) })
   }
 }
 

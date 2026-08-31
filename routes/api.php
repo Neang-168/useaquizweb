@@ -97,6 +97,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::apiResource('departments', DepartmentController::class)->parameters(['departments' => 'department']);
         Route::apiResource('degrees', DegreeController::class)->parameters(['degrees' => 'degree']);
         Route::apiResource('majors', MajorController::class)->parameters(['majors' => 'major']);
+        Route::get('/subjects/next-code', [SubjectController::class, 'nextCode']);
         Route::apiResource('subjects', SubjectController::class)->parameters(['subjects' => 'subject']);
         Route::apiResource('study-sessions', StudySessionController::class)->parameters(['study-sessions' => 'studySession']);
 

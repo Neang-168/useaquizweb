@@ -58,8 +58,6 @@
         <Button label="Create user" icon="pi pi-check" :loading="submitting" @click="submitUser" />
       </template>
     </Dialog>
-
-    <Toast />
   </div>
 </template>
 
@@ -69,7 +67,6 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import api, { extractError } from '../api'
 

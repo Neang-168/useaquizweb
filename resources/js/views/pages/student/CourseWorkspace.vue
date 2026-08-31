@@ -143,11 +143,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 import { formatDateTime } from '../../../utils/formatDateTime'
 import QuizCard from '../../../components/student/QuizCard.vue'
 
 const route = useRoute()
+const toast = useToast()
 const classId = computed(() => Number(route.params.classId))
 const subjectId = computed(() => Number(route.params.subjectId))
 
@@ -192,7 +194,7 @@ async function loadWorkspace() {
     quizzes.value = quizzesRes.data.data
     results.value = resultsRes.data.data
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load course', ...toastFromError(error) })
   } finally {
     loading.value = false
   }

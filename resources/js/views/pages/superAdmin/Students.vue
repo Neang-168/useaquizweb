@@ -101,7 +101,8 @@
         <!-- Filter Row (Integrated Filters Inside Table Container) -->
         <div class="flex flex-wrap items-center gap-2.5 pt-1">
           <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-            placeholder="All Faculties" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+            placeholder="All Faculties" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown"
+            @change="majorFilter = null" />
 
           <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
             placeholder="All Majors" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
@@ -400,12 +401,14 @@
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
             <Dropdown v-model="studentForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
-              placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              placeholder="Select Faculty" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="studentForm.department_id = null; studentForm.major_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department *</label>
-            <Dropdown v-model="studentForm.department_id" :options="departments" optionLabel="name_en" optionValue="id"
-              placeholder="Select Department" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <Dropdown v-model="studentForm.department_id" :options="departmentOptions" optionLabel="name_en" optionValue="id"
+              placeholder="Select Department" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="studentForm.major_id = null" />
           </div>
         </div>
 
@@ -413,8 +416,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major *</label>
-            <Dropdown v-model="studentForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
-              placeholder="Select Major" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <Dropdown v-model="studentForm.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en" optionValue="id"
+              placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              :disabled="!studentForm.department_id" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion *</label>
@@ -484,12 +488,13 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
-          <Dropdown v-model="assignForm.class_id" :options="classes" optionLabel="name" optionValue="id"
-            placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Classes *</label>
+          <MultiSelect v-model="assignForm.class_ids" :options="classes" optionLabel="name" optionValue="id"
+            display="chip" placeholder="Select one or more classes"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
 
-        <div v-if="assignForm.class_id">
+        <div v-if="assignForm.class_ids.length > 0">
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subjects</label>
           <div class="flex flex-wrap gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 min-h-[2.5rem]">
             <span v-for="subject in assignClassSubjects" :key="subject"
@@ -497,11 +502,11 @@
               {{ subject }}
             </span>
             <span v-if="assignClassSubjects.length === 0" class="text-[11px] text-slate-400">
-              No subjects assigned to this class yet.
+              No subjects assigned to these classes yet.
             </span>
           </div>
           <p class="text-[10px] text-slate-400 mt-1">
-            Subjects follow the class automatically. Assign teachers to subjects for this class on the Teachers page.
+            Subjects follow the class automatically. Assign teachers to subjects for a class on the Teachers page.
           </p>
         </div>
       </div>
@@ -529,17 +534,18 @@
             <p class="text-xs font-semibold text-indigo-950 m-0">
               Assigning <span class="font-bold text-[#e4ac14]">{{ selectedStudents.length }}</span> student(s)
             </p>
-            <p class="text-[11px] text-[#002060] m-0">All selected students will be moved into the target class.</p>
+            <p class="text-[11px] text-[#002060] m-0">The target class will be added to each selected student's existing classes.</p>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Target Class *</label>
-          <Dropdown v-model="bulkTargetClassId" :options="classes" optionLabel="name" optionValue="id"
-            placeholder="Select Class to Import" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Target Classes *</label>
+          <MultiSelect v-model="bulkTargetClassIds" :options="classes" optionLabel="name" optionValue="id"
+            display="chip" placeholder="Select one or more classes to import into"
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
         </div>
 
-        <div v-if="bulkTargetClassId">
+        <div v-if="bulkTargetClassIds.length > 0">
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subjects included</label>
           <div class="flex flex-wrap gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 min-h-[2.5rem]">
             <span v-for="subject in bulkClassSubjects" :key="subject"
@@ -547,7 +553,7 @@
               {{ subject }}
             </span>
             <span v-if="bulkClassSubjects.length === 0" class="text-[11px] text-slate-400">
-              No subjects assigned to this class yet.
+              No subjects assigned to these classes yet.
             </span>
           </div>
         </div>
@@ -570,7 +576,9 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -579,6 +587,7 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+import MultiSelect from 'primevue/multiselect'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Password from 'primevue/password'
@@ -594,6 +603,9 @@ const formatDateForApi = (date) => {
   const dd = String(d.getDate()).padStart(2, '0')
   return `${yyyy}-${mm}-${dd}`
 }
+
+const toast = useToast()
+const confirm = useConfirm()
 
 const showAllColumns = ref(false);
 
@@ -675,17 +687,20 @@ const classFilter = ref(null)
 const promotionFilter = ref(null)
 const statusFilter = ref(null)
 
+const classFacultyId = (classId) => classes.value.find((c) => c.id === classId)?.faculty_id
+
 // Majors don't have their own fetch on this page; build the option list
-// from whatever majors already appear among enrolled students.
+// from whatever majors already appear among enrolled students, narrowed to
+// the selected Faculty (via each student's class) same as the table filter.
 const majorOptions = computed(() => {
   const seen = new Map()
-  students.value.forEach((s) => {
-    if (s.major_id && !seen.has(s.major_id)) seen.set(s.major_id, s.major)
-  })
+  students.value
+    .filter((s) => !facultyFilter.value || (s.class_ids || []).some((id) => classFacultyId(id) === facultyFilter.value))
+    .forEach((s) => {
+      if (s.major_id && !seen.has(s.major_id)) seen.set(s.major_id, s.major)
+    })
   return Array.from(seen, ([id, name]) => ({ id, name }))
 })
-
-const classFacultyId = (classId) => classes.value.find((c) => c.id === classId)?.faculty_id
 
 const hasActiveFilters = computed(() =>
   !!(facultyFilter.value || majorFilter.value || classFilter.value || promotionFilter.value || statusFilter.value)
@@ -700,9 +715,10 @@ const clearFilters = () => {
 }
 
 const filteredStudents = computed(() => students.value.filter((s) => {
-  if (facultyFilter.value && classFacultyId(s.class_id) !== facultyFilter.value) return false
+  const classIds = s.class_ids || []
+  if (facultyFilter.value && !classIds.some((id) => classFacultyId(id) === facultyFilter.value)) return false
   if (majorFilter.value && s.major_id !== majorFilter.value) return false
-  if (classFilter.value && s.class_id !== classFilter.value) return false
+  if (classFilter.value && !classIds.includes(classFilter.value)) return false
   if (promotionFilter.value && s.promotion_id !== promotionFilter.value) return false
   if (statusFilter.value && s.status !== statusFilter.value) return false
   return true
@@ -739,6 +755,18 @@ const studentForm = ref({
   username: '',
   status: 'Active',
   avatar: ''
+})
+
+// Department options are scoped to whichever faculty is currently selected
+// in the form, since a department belongs to exactly one faculty.
+const departmentOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === studentForm.value.faculty_id)
+)
+
+// Major options narrow down by the selected Department.
+const majorsForSelectedDepartment = computed(() => {
+  if (!studentForm.value.department_id) return []
+  return majors.value.filter(m => m.department_id === studentForm.value.department_id)
 })
 
 // Computed Properties
@@ -796,21 +824,21 @@ const editStudent = (data) => {
 
 const saveStudent = async () => {
   if (!studentForm.value.student_id || !studentForm.value.name_en || !studentForm.value.phone || !studentForm.value.username) {
-    alert('Student ID, name (English), phone, and username are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Student ID, name (English), phone, and username are required.', life: 4000 })
     return
   }
   if (!studentForm.value.faculty_id || !studentForm.value.department_id || !studentForm.value.major_id ||
     !studentForm.value.promotion_id || !studentForm.value.academic_year_id || !studentForm.value.stage_id ||
     !studentForm.value.semester_id || !studentForm.value.term_id || !studentForm.value.shift_id) {
-    alert('Faculty, Department, Major, Promotion, Academic Year, Stage, Semester, Term, and Shift are all required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Faculty, Department, Major, Promotion, Academic Year, Stage, Semester, Term, and Shift are all required.', life: 4000 })
     return
   }
   if (!isEdit.value && (!studentForm.value.password || studentForm.value.password.length < 8)) {
-    alert('Password is required and must be at least 8 characters.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Password is required and must be at least 8 characters.', life: 4000 })
     return
   }
   if (isEdit.value && studentForm.value.password && studentForm.value.password.length < 8) {
-    alert('Password must be at least 8 characters.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Password must be at least 8 characters.', life: 4000 })
     return
   }
 
@@ -841,31 +869,42 @@ const saveStudent = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/students/${studentForm.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'Student updated', detail: `${studentForm.value.name_en} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/students', payload)
+      toast.add({ severity: 'success', summary: 'Student created', detail: `${studentForm.value.name_en} was created successfully.`, life: 3000 })
     }
 
     studentDialog.value = false
     await fetchStudents()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update student' : 'Failed to create student', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteStudent = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    try {
-      await api.delete(`/students/${data.id}`)
-      await fetchStudents()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteStudent = (data) => {
+  confirm.require({
+    header: 'Delete student',
+    message: `Are you sure you want to delete ${data.name_en}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/students/${data.id}`)
+        toast.add({ severity: 'success', summary: 'Student deleted', detail: `${data.name_en} was deleted.`, life: 3000 })
+        await fetchStudents()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete student', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 // ======= Assign Class (quick action, separate from full Edit) =======
 const assignDialog = ref(false)
-const assignForm = ref({ id: null, name_en: '', student_id: '', class_id: null, promotion_id: null, status: 'Active' })
+const assignForm = ref({ id: null, name_en: '', student_id: '', class_ids: [], promotion_id: null, status: 'Active' })
 const assignClassSubjects = ref([])
 
 const openAssignDialog = (data) => {
@@ -873,99 +912,110 @@ const openAssignDialog = (data) => {
     id: data.id,
     name_en: data.name_en,
     student_id: data.student_id,
-    class_id: data.class_id,
+    class_ids: [...(data.class_ids || [])],
     promotion_id: data.promotion_id,
     status: data.status,
   }
   assignClassSubjects.value = []
   assignDialog.value = true
-  if (data.class_id) fetchClassSubjects(data.class_id)
+  if (assignForm.value.class_ids.length > 0) fetchClassSubjects(assignForm.value.class_ids)
 }
 
-const fetchClassSubjects = async (classId) => {
+const fetchClassSubjects = async (classIds) => {
   try {
-    const { data } = await api.get('/teacher-assignments', { params: { class_id: classId } })
-    assignClassSubjects.value = [...new Set(data.data.map((a) => a.subject_name).filter(Boolean))]
+    const results = await Promise.all(
+      classIds.map((classId) => api.get('/teacher-assignments', { params: { class_id: classId } }))
+    )
+    const names = results.flatMap(({ data }) => data.data.map((a) => a.subject_name)).filter(Boolean)
+    assignClassSubjects.value = [...new Set(names)]
   } catch (error) {
     assignClassSubjects.value = []
   }
 }
 
-watch(() => assignForm.value.class_id, (classId) => {
-  if (assignDialog.value && classId) fetchClassSubjects(classId)
-})
+watch(() => assignForm.value.class_ids, (classIds) => {
+  if (assignDialog.value) fetchClassSubjects(classIds || [])
+}, { deep: true })
 
 const saveAssign = async () => {
-  if (!assignForm.value.class_id) {
-    alert('Please select a class.')
+  if (assignForm.value.class_ids.length === 0) {
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please select at least one class.', life: 4000 })
     return
   }
 
   try {
     await api.patch(`/students/${assignForm.value.id}/assign`, {
-      class_id: assignForm.value.class_id,
+      class_ids: assignForm.value.class_ids,
       promotion_id: assignForm.value.promotion_id,
       status: assignForm.value.status,
     })
 
+    toast.add({ severity: 'success', summary: 'Student assigned', detail: `${assignForm.value.name_en} was assigned to the selected class(es).`, life: 3000 })
     assignDialog.value = false
     await fetchStudents()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to assign student to class', ...toastFromError(error) })
   }
 }
 
 // ======= BULK / IMPORT ASSIGN CLASS (NEW FEATURE) =======
 const bulkAssignDialog = ref(false)
-const bulkTargetClassId = ref(null)
+const bulkTargetClassIds = ref([])
 const bulkClassSubjects = ref([])
 const bulkAssignLoading = ref(false)
 
 const openBulkAssignDialog = () => {
   if (selectedStudents.value.length === 0) return
-  bulkTargetClassId.value = null
+  bulkTargetClassIds.value = []
   bulkClassSubjects.value = []
   bulkAssignDialog.value = true
 }
 
-const fetchBulkClassSubjects = async (classId) => {
+const fetchBulkClassSubjects = async (classIds) => {
   try {
-    const { data } = await api.get('/teacher-assignments', { params: { class_id: classId } })
-    bulkClassSubjects.value = [...new Set(data.data.map((a) => a.subject_name).filter(Boolean))]
+    const results = await Promise.all(
+      classIds.map((classId) => api.get('/teacher-assignments', { params: { class_id: classId } }))
+    )
+    const names = results.flatMap(({ data }) => data.data.map((a) => a.subject_name)).filter(Boolean)
+    bulkClassSubjects.value = [...new Set(names)]
   } catch (error) {
     bulkClassSubjects.value = []
   }
 }
 
-watch(bulkTargetClassId, (classId) => {
-  if (bulkAssignDialog.value && classId) fetchBulkClassSubjects(classId)
-})
+watch(bulkTargetClassIds, (classIds) => {
+  if (bulkAssignDialog.value) fetchBulkClassSubjects(classIds || [])
+}, { deep: true })
 
 const saveBulkAssign = async () => {
-  if (!bulkTargetClassId.value) {
-    alert('Please select a target class to import students into.')
+  if (bulkTargetClassIds.value.length === 0) {
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please select at least one target class to import students into.', life: 4000 })
     return
   }
 
   bulkAssignLoading.value = true
   try {
-    // Loops through all selected items and sends assignment patch requests
-    const promises = selectedStudents.value.map((student) =>
-      api.patch(`/students/${student.id}/assign`, {
-        class_id: bulkTargetClassId.value,
+    // Adds the target classes alongside each student's existing classes
+    // (rather than replacing them), then sends one assignment patch per student.
+    const promises = selectedStudents.value.map((student) => {
+      const classIds = new Set(student.class_ids || [])
+      bulkTargetClassIds.value.forEach((id) => classIds.add(id))
+
+      return api.patch(`/students/${student.id}/assign`, {
+        class_ids: [...classIds],
         promotion_id: student.promotion_id,
         status: student.status || 'Active',
       })
-    )
+    })
 
     await Promise.all(promises)
 
     bulkAssignDialog.value = false
     selectedStudents.value = [] // Reset selection
     await fetchStudents()
-    alert('Selected students imported/assigned successfully!')
+    toast.add({ severity: 'success', summary: 'Students imported', detail: 'Selected students imported/assigned successfully!', life: 3000 })
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to import students', ...toastFromError(error) })
   } finally {
     bulkAssignLoading.value = false
   }

@@ -8,7 +8,6 @@ use App\Models\QuestionMatchingPair;
 use App\Models\QuestionOption;
 use App\Models\Quiz;
 use App\Models\QuizSubmission;
-use App\Models\StudentEnrollment;
 use App\Models\SubmissionAnswer;
 use App\Models\SubmissionAnswerMatch;
 use App\Models\SubmissionAnswerOption;
@@ -300,10 +299,7 @@ class QuizController extends Controller
 
     private function enrolledClassIds(object $student)
     {
-        return StudentEnrollment::where('student_profile_id', $student->id)
-            ->where('status', 'Active')
-            ->pluck('class_id')
-            ->unique();
+        return $student->classes()->wherePivot('status', 'Active')->pluck('classes.id');
     }
 
     private function transformQuestionsForTaking(Quiz $quiz): array

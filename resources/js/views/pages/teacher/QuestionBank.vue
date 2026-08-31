@@ -205,11 +205,15 @@ import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import Image from 'primevue/image'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
+import api, { toastFromError } from '../../../api'
 import QuestionEditorModal from '../../../components/teacher/QuestionEditorModal.vue'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
+const confirm = useConfirm()
 
 const searchQuery = ref('')
 const selectedClassFilter = ref('')
@@ -282,7 +286,7 @@ const fetchQuestions = async () => {
     })
     questions.value = data.data
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load questions', ...toastFromError(error) })
   } finally {
     loading.value = false
   }
@@ -318,14 +322,23 @@ function openQuestionModal(q = null) {
   showModal.value = true
 }
 
-async function deleteQuestion(id) {
-  if (confirm('Are you sure you want to delete this question?')) {
-    try {
-      await api.delete(`/teacher/questions/${id}`)
-      await fetchQuestions()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+function deleteQuestion(id) {
+  confirm.require({
+    header: 'Delete question',
+    message: 'Are you sure you want to delete this question?',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teacher/questions/${id}`)
+        toast.add({ severity: 'success', summary: 'Question deleted', detail: 'The question was deleted.', life: 3000 })
+        await fetchQuestions()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete question', ...toastFromError(error) })
+      }
+    },
+  })
 }
 </script>

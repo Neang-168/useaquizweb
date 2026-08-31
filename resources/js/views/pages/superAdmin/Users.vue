@@ -469,7 +469,7 @@
             <span>Academic Information</span>
           </div>
 
-          <!-- Student Code / Admission Date / Class -->
+          <!-- Student Code / Admission Date -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Student Code *</label>
@@ -482,46 +482,53 @@
                 placeholder="Select date" class="w-full"
                 inputClass="!py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
             </div>
+            <!-- Class is assigned separately from the Students page's "Assign Class"
+                 action (a student can belong to several classes), not at creation time.
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class *</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class</label>
               <Dropdown v-model="form.class_id" :options="classes" optionLabel="name" optionValue="id"
-                placeholder="Select Class" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+                placeholder="Assign later from the Students page" showClear
+                class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
+            -->
           </div>
 
           <!-- Faculty / Department / Major -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
               <Dropdown v-model="form.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
-                placeholder="Select Faculty" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+                placeholder="Select Faculty" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+                @change="form.department_id = null; form.major_id = null" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
-              <Dropdown v-model="form.department_id" :options="departments" optionLabel="name_en" optionValue="id"
-                placeholder="Select Department" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department *</label>
+              <Dropdown v-model="form.department_id" :options="teacherDepartmentOptions" optionLabel="name_en" optionValue="id"
+                placeholder="Select Department" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+                @change="form.major_id = null" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major</label>
-              <Dropdown v-model="form.major_id" :options="majors" optionLabel="name_en" optionValue="id"
-                placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major *</label>
+              <Dropdown v-model="form.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en" optionValue="id"
+                placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+                :disabled="!form.department_id" />
             </div>
           </div>
 
           <!-- Promotion / Academic Year / Stage -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion *</label>
               <Dropdown v-model="form.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
                 placeholder="Select Promotion" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Academic Year</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Academic Year *</label>
               <Dropdown v-model="form.academic_year_id" :options="academicYears" optionLabel="name_en" optionValue="id"
                 placeholder="Select Academic Year" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
               <Dropdown v-model="form.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
                 placeholder="Select Stage" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
@@ -530,17 +537,17 @@
           <!-- Semester / Term / Shift -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester *</label>
               <Dropdown v-model="form.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
                 placeholder="Select Semester" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term *</label>
               <Dropdown v-model="form.term_id" :options="terms" optionLabel="name_en" optionValue="id"
                 placeholder="Select Term" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
               <Dropdown v-model="form.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
                 placeholder="Select Shift" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
@@ -600,7 +607,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { FilterMatchMode } from '@primevue/core/api'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -615,6 +624,9 @@ import Avatar from 'primevue/avatar'
 import DatePicker from 'primevue/datepicker'
 import FileUpload from 'primevue/fileupload'
 
+
+const toast = useToast()
+const confirm = useConfirm()
 
 const showAllColumns = ref(false);
 // ======= Data =======
@@ -922,7 +934,7 @@ const editUser = (data) => {
 
     student_code: sp?.student_code || '',
     admission_date: parseApiDate(sp?.admission_date),
-    class_id: enrollment?.class_id ?? null,
+    class_id: sp?.classes?.[0]?.id ?? null,
     promotion_id: enrollment?.promotion_id ?? null,
     academic_year_id: enrollment?.academic_year_id ?? null,
     stage_id: enrollment?.stage_id ?? null,
@@ -936,27 +948,25 @@ const editUser = (data) => {
 
 const saveUser = async () => {
   if (!form.value.username || !form.value.first_name || !form.value.last_name || !form.value.role_id) {
-    alert('Username, first name, last name, and role are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Username, first name, last name, and role are required.', life: 4000 })
     return
   }
   if (!isEdit.value && !form.value.password) {
-    alert('Password is required when creating a new user.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Password is required when creating a new user.', life: 4000 })
     return
   }
   if (isTeacherRole.value && (!form.value.employee_code || !form.value.faculty_id)) {
-    alert('Employee code and faculty are required for Teacher accounts.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Employee code and faculty are required for Teacher accounts.', life: 4000 })
     return
   }
   if (isStudentRole.value && !form.value.student_code) {
-    alert('Student code is required for Student accounts.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Student code is required for Student accounts.', life: 4000 })
     return
   }
-  if (isStudentRole.value && !form.value.class_id) {
-    alert('Class is required for Student accounts.')
-    return
-  }
-  if (isStudentRole.value && classes.value.length === 0) {
-    alert('No classes exist yet. Create a Class first (Classes page) before adding students.')
+  if (isStudentRole.value && (!form.value.faculty_id || !form.value.department_id || !form.value.major_id ||
+    !form.value.promotion_id || !form.value.academic_year_id || !form.value.stage_id ||
+    !form.value.semester_id || !form.value.term_id || !form.value.shift_id)) {
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Faculty, Department, Major, Promotion, Academic Year, Stage, Semester, Term, and Shift are all required for Student accounts.', life: 4000 })
     return
   }
 
@@ -1000,26 +1010,37 @@ const saveUser = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/users/${form.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'User updated', detail: `${form.value.first_name} ${form.value.last_name} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/users', payload)
+      toast.add({ severity: 'success', summary: 'User created', detail: `${form.value.first_name} ${form.value.last_name} was created successfully.`, life: 3000 })
     }
 
     userDialog.value = false
     await fetchUsers()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update user' : 'Failed to create user', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteUser = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.first_name} ${data.last_name}?`)) {
-    try {
-      await api.delete(`/users/${data.id}`)
-      await fetchUsers()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteUser = (data) => {
+  confirm.require({
+    header: 'Delete user',
+    message: `Are you sure you want to delete ${data.first_name} ${data.last_name}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/users/${data.id}`)
+        toast.add({ severity: 'success', summary: 'User deleted', detail: `${data.first_name} ${data.last_name} was deleted.`, life: 3000 })
+        await fetchUsers()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete user', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 const onAvatarSelect = async (event) => {
@@ -1034,9 +1055,10 @@ const onAvatarSelect = async (event) => {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     form.value.avatar_url = data.user.avatar_url
+    toast.add({ severity: 'success', summary: 'Avatar updated', detail: 'Profile picture was updated successfully.', life: 3000 })
     await fetchUsers()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to upload avatar', ...toastFromError(error) })
   }
 }
 </script>

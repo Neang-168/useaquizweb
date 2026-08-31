@@ -7,7 +7,6 @@ use App\Models\AppNotification;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\QuestionMatchingPair;
-use App\Models\StudentEnrollment;
 use App\Models\Quiz;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
@@ -406,7 +405,8 @@ class QuizController extends Controller
 
     private function transform(Quiz $quiz): array
     {
-        $totalStudents = StudentEnrollment::where('class_id', $quiz->class_id)
+        $totalStudents = DB::table('class_student')
+            ->where('class_id', $quiz->class_id)
             ->where('status', 'Active')
             ->count();
 

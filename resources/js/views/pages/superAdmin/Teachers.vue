@@ -49,10 +49,10 @@
 
         <!-- Faculty Filter -->
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-          placeholder="All Faculties" showClear class="w-full custom-filter-dropdown" />
+          placeholder="All Faculties" showClear class="w-full custom-filter-dropdown" @change="departmentFilter = null" />
 
         <!-- Department Filter -->
-        <Dropdown v-model="departmentFilter" :options="departments" optionLabel="name_en" optionValue="id"
+        <Dropdown v-model="departmentFilter" :options="departmentFilterOptions" optionLabel="name_en" optionValue="id"
           placeholder="All Departments" showClear class="w-full custom-filter-dropdown" />
 
         <!-- Degree Filter -->
@@ -198,7 +198,7 @@
                 title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
               <Button icon="pi pi-pencil"
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border-slate-100  !border-0 shadow-xs"
-                title="Edit Teacher" @click="editTeacher(data)" ><i class="fa-solid fa-pen-nib"></i></Button>
+                title="Edit Teacher" @click="editTeacher(data)" ><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button icon="pi pi-trash"
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border-slate-100  !border-0 shadow-xs"
                 title="Delete Teacher" @click="confirmDeleteTeacher(data)" ><i class="fa-solid fa-trash-can"></i></Button>
@@ -420,7 +420,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -432,6 +434,9 @@ import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Password from 'primevue/password'
+
+const toast = useToast()
+const confirm = useConfirm()
 
 // ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -508,6 +513,11 @@ const majorsForSelectedDepartment = computed(() => {
   if (!teacherForm.value.department_id) return []
   return majors.value.filter(m => m.department_id === teacherForm.value.department_id)
 })
+
+// Same cascade as above, scoped to the filter bar's own Faculty/Department refs.
+const departmentFilterOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === facultyFilter.value)
+)
 
 onMounted(() => {
   fetchTeachers()
@@ -631,15 +641,15 @@ const editTeacher = (data) => {
 
 const saveTeacher = async () => {
   if (!teacherForm.value.code || !teacherForm.value.name_en || !teacherForm.value.faculty_id || !teacherForm.value.phone || !teacherForm.value.username) {
-    alert('Teacher code, name (English), faculty, phone, and username are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Teacher code, name (English), faculty, phone, and username are required.', life: 4000 })
     return
   }
   if (!isEdit.value && (!teacherForm.value.password || teacherForm.value.password.length < 8)) {
-    alert('Password is required and must be at least 8 characters.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Password is required and must be at least 8 characters.', life: 4000 })
     return
   }
   if (isEdit.value && teacherForm.value.password && teacherForm.value.password.length < 8) {
-    alert('Password must be at least 8 characters.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Password must be at least 8 characters.', life: 4000 })
     return
   }
 
@@ -669,26 +679,37 @@ const saveTeacher = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/teachers/${teacherForm.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'Teacher updated', detail: `${teacherForm.value.name_en} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/teachers', payload)
+      toast.add({ severity: 'success', summary: 'Teacher created', detail: `${teacherForm.value.name_en} was created successfully.`, life: 3000 })
     }
 
     teacherDialog.value = false
     await fetchTeachers()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update teacher' : 'Failed to create teacher', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteTeacher = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    try {
-      await api.delete(`/teachers/${data.id}`)
-      await fetchTeachers()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteTeacher = (data) => {
+  confirm.require({
+    header: 'Delete teacher',
+    message: `Are you sure you want to delete ${data.name_en}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teachers/${data.id}`)
+        toast.add({ severity: 'success', summary: 'Teacher deleted', detail: `${data.name_en} was deleted.`, life: 3000 })
+        await fetchTeachers()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete teacher', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 // Assignments Dialog (Subject + Class per Teacher)
@@ -723,13 +744,13 @@ const openAssignmentsDialog = async (data) => {
   try {
     await fetchAssignments(data.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load assignments', ...toastFromError(error) })
   }
 }
 
 const addAssignment = async () => {
   if (!assignmentForm.value.subject_id || !assignmentForm.value.class_id) {
-    alert('Please select both a subject and a class.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please select both a subject and a class.', life: 4000 })
     return
   }
 
@@ -739,22 +760,32 @@ const addAssignment = async () => {
       subject_id: assignmentForm.value.subject_id,
       class_id: assignmentForm.value.class_id,
     })
+    toast.add({ severity: 'success', summary: 'Assignment added', detail: 'The subject and class were assigned to this teacher.', life: 3000 })
     assignmentForm.value = { subject_id: null, class_id: null }
     await fetchAssignments(assignmentTeacher.value.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to add assignment', ...toastFromError(error) })
   }
 }
 
-const removeAssignment = async (assignment) => {
-  if (!confirm(`Remove ${assignment.subject_name} → ${assignment.class_name}?`)) return
-
-  try {
-    await api.delete(`/teacher-assignments/${assignment.id}`)
-    await fetchAssignments(assignmentTeacher.value.id)
-  } catch (error) {
-    alert(extractError(error))
-  }
+const removeAssignment = (assignment) => {
+  confirm.require({
+    header: 'Remove assignment',
+    message: `Remove ${assignment.subject_name} → ${assignment.class_name}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Remove',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teacher-assignments/${assignment.id}`)
+        toast.add({ severity: 'success', summary: 'Assignment removed', detail: `${assignment.subject_name} → ${assignment.class_name} was removed.`, life: 3000 })
+        await fetchAssignments(assignmentTeacher.value.id)
+      } catch (error) {
+        toast.add({ summary: 'Failed to remove assignment', ...toastFromError(error) })
+      }
+    },
+  })
 }
 </script>
 

@@ -59,4 +59,25 @@ class Subject extends Model
     {
         return $this->hasMany(TeacherSubject::class);
     }
+
+    /**
+     * Auto-generate the next subject code for a faculty, e.g. "SCT101",
+     * "SCT102", so the create form can prefill it before saving.
+     */
+    public static function generateCode(string $facultyCode): string
+    {
+        $prefix = strtoupper($facultyCode);
+
+        $maxNumber = static::where('code', 'like', "{$prefix}%")
+            ->pluck('code')
+            ->map(function ($code) use ($prefix) {
+                $suffix = substr($code, strlen($prefix));
+                return ctype_digit($suffix) ? (int) $suffix : 0;
+            })
+            ->max();
+
+        $next = $maxNumber ? $maxNumber + 1 : 101;
+
+        return $prefix . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+    }
 }

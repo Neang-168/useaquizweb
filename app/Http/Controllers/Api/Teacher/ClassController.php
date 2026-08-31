@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
-use App\Models\StudentEnrollment;
+use App\Models\StudentProfile;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
 
@@ -29,18 +29,19 @@ class ClassController extends Controller
         $data = $assignments->map(function (TeacherSubject $assignment) {
             $class = $assignment->classroom;
 
-            $students = StudentEnrollment::query()
-                ->where('class_id', $class?->id)
-                ->where('status', 'Active')
-                ->with('studentProfile.user')
-                ->get()
-                ->map(fn (StudentEnrollment $enrollment) => [
-                    'id' => $enrollment->id,
-                    'student_id' => $enrollment->studentProfile?->student_code,
-                    'name' => trim($enrollment->studentProfile?->user?->first_name . ' ' . $enrollment->studentProfile?->user?->last_name),
-                    'gender' => $enrollment->studentProfile?->user?->gender,
-                    'email' => $enrollment->studentProfile?->user?->email,
-                ]);
+            $students = $class
+                ? $class->students()
+                    ->wherePivot('status', 'Active')
+                    ->with('user')
+                    ->get()
+                    ->map(fn (StudentProfile $student) => [
+                        'id' => $student->id,
+                        'student_id' => $student->student_code,
+                        'name' => trim($student->user?->first_name . ' ' . $student->user?->last_name),
+                        'gender' => $student->user?->gender,
+                        'email' => $student->user?->email,
+                    ])
+                : collect();
 
             return [
                 'id' => $assignment->id,

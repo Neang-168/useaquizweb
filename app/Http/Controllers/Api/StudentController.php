@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Classroom;
 use App\Models\Major;
 use App\Models\Promotion;
 use App\Models\Role;
-use App\Models\StudentEnrollment;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -28,7 +26,6 @@ class StudentController extends Controller
             ->with([
                 'user',
                 'enrollments' => fn ($query) => $query->latest('enrollment_date')->with(
-                    'classroom.shift',
                     'faculty',
                     'department',
                     'major',
@@ -39,6 +36,7 @@ class StudentController extends Controller
                     'term',
                     'shift'
                 ),
+                'classes.shift',
             ])
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('student_code', 'like', "%{$q}%")
@@ -92,7 +90,6 @@ class StudentController extends Controller
 
         $student->load(
             'user',
-            'enrollments.classroom.shift',
             'enrollments.faculty',
             'enrollments.department',
             'enrollments.major',
@@ -101,7 +98,8 @@ class StudentController extends Controller
             'enrollments.academicYear',
             'enrollments.semester',
             'enrollments.term',
-            'enrollments.shift'
+            'enrollments.shift',
+            'classes.shift'
         );
 
         return response()->json([
@@ -117,7 +115,6 @@ class StudentController extends Controller
     {
         $student->load(
             'user',
-            'enrollments.classroom.shift',
             'enrollments.faculty',
             'enrollments.department',
             'enrollments.major',
@@ -126,7 +123,8 @@ class StudentController extends Controller
             'enrollments.academicYear',
             'enrollments.semester',
             'enrollments.term',
-            'enrollments.shift'
+            'enrollments.shift',
+            'classes.shift'
         );
 
         return response()->json([
@@ -164,7 +162,6 @@ class StudentController extends Controller
 
         $student->load(
             'user',
-            'enrollments.classroom.shift',
             'enrollments.faculty',
             'enrollments.department',
             'enrollments.major',
@@ -173,7 +170,8 @@ class StudentController extends Controller
             'enrollments.academicYear',
             'enrollments.semester',
             'enrollments.term',
-            'enrollments.shift'
+            'enrollments.shift',
+            'classes.shift'
         );
 
         return response()->json([
@@ -183,23 +181,36 @@ class StudentController extends Controller
     }
 
     /**
-     * Quick action: (re)assign a student to a class/generation without
-     * touching the rest of their profile. Powers the "Assign" button on
-     * the Student & Enrollment page, separate from the full edit form.
+     * Quick action: (re)assign a student to one or more classes/generation
+     * without touching the rest of their profile. Powers the "Assign"
+     * button on the Student & Enrollment page, separate from the full edit
+     * form. A student can be assigned to several classes at once, so this
+     * replaces their full class list with the given `class_ids`.
      */
     public function assign(Request $request, StudentProfile $student)
     {
         $validated = $request->validate([
-            'class_id' => ['required', 'exists:classes,id'],
+            'class_ids' => ['present', 'array'],
+            'class_ids.*' => ['integer', 'exists:classes,id'],
             'promotion_id' => ['nullable', 'exists:promotions,id'],
             'status' => ['required', Rule::in(['Active', 'Inactive', 'Suspended'])],
         ]);
 
-        $this->syncEnrollment($student, $validated);
+        DB::transaction(function () use ($validated, $student) {
+            $this->syncEnrollment($student, [
+                'promotion_id' => $validated['promotion_id'] ?? null,
+                'status' => $validated['status'],
+            ]);
+
+            $student->classes()->sync(
+                collect($validated['class_ids'])
+                    ->mapWithKeys(fn ($classId) => [$classId => ['status' => $validated['status']]])
+                    ->all()
+            );
+        });
 
         $student->load(
             'user',
-            'enrollments.classroom.shift',
             'enrollments.faculty',
             'enrollments.department',
             'enrollments.major',
@@ -208,7 +219,8 @@ class StudentController extends Controller
             'enrollments.academicYear',
             'enrollments.semester',
             'enrollments.term',
-            'enrollments.shift'
+            'enrollments.shift',
+            'classes.shift'
         );
 
         return response()->json([
@@ -231,31 +243,28 @@ class StudentController extends Controller
     }
 
     /**
-     * Create or refresh the student's current enrollment record to match
-     * the class they've been assigned to.
+     * Create or refresh the student's current enrollment record (their
+     * general academic placement: faculty/major/academic year/etc). Class
+     * membership itself lives separately on the `classes()` pivot, since a
+     * student can belong to more than one class at once.
      */
     private function syncEnrollment(StudentProfile $profile, array $validated): void
     {
-        $class = isset($validated['class_id'])
-            ? Classroom::with('major.degree')->findOrFail($validated['class_id'])
-            : null;
-
         $enrollment = $profile->enrollments()->latest('enrollment_date')->first();
 
-        $major = $class?->major ?? (isset($validated['major_id']) ? Major::find($validated['major_id']) : null);
+        $major = isset($validated['major_id']) ? Major::find($validated['major_id']) : null;
 
         $attributes = [
-            'class_id' => $class->id ?? $enrollment?->class_id,
             'faculty_id' => $validated['faculty_id'] ?? $major?->degree?->faculty_id ?? $enrollment?->faculty_id,
-            'department_id' => $validated['department_id'] ?? $class?->department_id ?? $enrollment?->department_id,
+            'department_id' => $validated['department_id'] ?? $enrollment?->department_id,
             'degree_id' => $validated['degree_id'] ?? $major?->degree_id ?? $enrollment?->degree_id,
-            'major_id' => $validated['major_id'] ?? $class?->major_id ?? $enrollment?->major_id,
+            'major_id' => $validated['major_id'] ?? $enrollment?->major_id,
             'promotion_id' => $validated['promotion_id'] ?? $enrollment?->promotion_id ?? $this->resolveCurrentPromotionId(),
-            'stage_id' => $validated['stage_id'] ?? $class?->stage_id ?? $enrollment?->stage_id,
-            'academic_year_id' => $validated['academic_year_id'] ?? $class?->academic_year_id ?? $enrollment?->academic_year_id,
-            'semester_id' => $validated['semester_id'] ?? $class?->semester_id ?? $enrollment?->semester_id,
-            'term_id' => $validated['term_id'] ?? $class?->term_id ?? $enrollment?->term_id,
-            'shift_id' => $validated['shift_id'] ?? $class?->shift_id ?? $enrollment?->shift_id,
+            'stage_id' => $validated['stage_id'] ?? $enrollment?->stage_id,
+            'academic_year_id' => $validated['academic_year_id'] ?? $enrollment?->academic_year_id,
+            'semester_id' => $validated['semester_id'] ?? $enrollment?->semester_id,
+            'term_id' => $validated['term_id'] ?? $enrollment?->term_id,
+            'shift_id' => $validated['shift_id'] ?? $enrollment?->shift_id,
             'status' => $validated['status'],
         ];
 
@@ -297,7 +306,6 @@ class StudentController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'password' => [$student ? 'nullable' : 'required', 'string', 'min:8'],
-            'class_id' => ['nullable', 'exists:classes,id'],
             'faculty_id' => ['required', 'exists:faculties,id'],
             'department_id' => ['required', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
@@ -324,7 +332,6 @@ class StudentController extends Controller
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? null,
             'password' => $validated['password'] ?? null,
-            'class_id' => $validated['class_id'] ?? null,
             'faculty_id' => $validated['faculty_id'] ?? null,
             'department_id' => $validated['department_id'] ?? null,
             'degree_id' => $validated['degree_id'] ?? null,
@@ -350,6 +357,7 @@ class StudentController extends Controller
     {
         $user = $student->user;
         $enrollment = $student->enrollments->first();
+        $classes = $student->classes;
 
         return [
             'id' => $student->id,
@@ -361,8 +369,17 @@ class StudentController extends Controller
             'dob' => $user->dob?->toDateString(),
             'phone' => $user->phone,
             'address' => $user->address,
-            'class_id' => $enrollment?->class_id,
-            'class_name' => $enrollment?->classroom?->name,
+            // A student can belong to several classes at once; class_id /
+            // class_name mirror the first one for older UI that only shows
+            // a single class, while class_ids / classes carry the full list.
+            'class_id' => $classes->first()?->id,
+            'class_name' => $classes->pluck('name')->filter()->implode(', ') ?: null,
+            'class_ids' => $classes->pluck('id')->values(),
+            'classes' => $classes->map(fn ($class) => [
+                'id' => $class->id,
+                'name' => $class->name,
+                'status' => $class->pivot->status,
+            ])->values(),
             'faculty_id' => $enrollment?->faculty_id,
             'faculty_name' => $enrollment?->faculty?->name,
             'department_id' => $enrollment?->department_id,
@@ -383,7 +400,7 @@ class StudentController extends Controller
             'term_id' => $enrollment?->term_id,
             'term_name' => $enrollment?->term?->name,
             'shift_id' => $enrollment?->shift_id,
-            'shift' => $enrollment?->shift?->name ?? $enrollment?->classroom?->shift?->name,
+            'shift' => $enrollment?->shift?->name ?? $classes->first()?->shift?->name,
             'status' => $enrollment?->status ?? ($user->status ? 'Active' : 'Inactive'),
             'avatar' => $user->avatar,
         ];

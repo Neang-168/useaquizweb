@@ -89,27 +89,20 @@
 
     <FeedbackDetailDialog :feedback="selectedFeedback" @close="selectedFeedback = null" />
 
-    <ConfirmDialog
-      v-model="showClearAllConfirm"
-      title="Clear all notifications?"
-      message="This will remove every notification and cannot be undone."
-      confirm-text="Clear All"
-      cancel-text="Cancel"
-      @confirm="confirmClearAll"
-      @cancel="showClearAllConfirm = false"
-    />
-
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { notificationState, fetchNotifications, markRead, markAllRead, deleteNotification, clearAllNotifications } from '../../../store/notifications'
 import FeedbackDetailDialog from '../../../components/student/FeedbackDetailDialog.vue'
-import ConfirmDialog from '../../../components/ConfirmDialog.vue'
+
+const confirm = useConfirm()
+const toast = useToast()
 
 const selectedFeedback = ref(null)
-const showClearAllConfirm = ref(false)
 
 onMounted(fetchNotifications)
 
@@ -119,12 +112,18 @@ function onItemClick(item) {
 }
 
 function onClearAll() {
-  showClearAllConfirm.value = true
-}
-
-function confirmClearAll() {
-  showClearAllConfirm.value = false
-  clearAllNotifications()
+  confirm.require({
+    header: 'Clear all notifications?',
+    message: 'This will remove every notification and cannot be undone.',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Clear All',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      await clearAllNotifications()
+      toast.add({ severity: 'success', summary: 'Notifications cleared', detail: 'All notifications were removed.', life: 3000 })
+    },
+  })
 }
 
 function openFeedback(item) {

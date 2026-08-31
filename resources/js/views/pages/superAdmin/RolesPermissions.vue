@@ -107,9 +107,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
 import Button from 'primevue/button'
 import InputSwitch from 'primevue/inputswitch'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 
 const roles = ref([])
 const permissions = ref([])
@@ -182,9 +185,9 @@ const savePermissions = async () => {
       }
     }
     await fetchRoles()
-    alert('Permissions matrix updated successfully!')
+    toast.add({ severity: 'success', summary: 'Permissions updated', detail: 'Permissions matrix updated successfully!', life: 3000 })
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to update permissions', ...toastFromError(error) })
   } finally {
     saving.value = false
   }

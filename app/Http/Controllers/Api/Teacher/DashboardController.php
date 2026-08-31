@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizSubmission;
-use App\Models\StudentEnrollment;
 use App\Models\TeacherSubject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -38,9 +38,11 @@ class DashboardController extends Controller
             ->pluck('class_id')
             ->unique();
 
-        $studentsCount = StudentEnrollment::whereIn('class_id', $classIds)
+        $studentsCount = DB::table('class_student')
+            ->whereIn('class_id', $classIds)
             ->where('status', 'Active')
-            ->count();
+            ->distinct()
+            ->count('student_profile_id');
 
         $quizzes = Quiz::where('teacher_profile_id', $teacher->id)
             ->with('questions')
@@ -75,7 +77,10 @@ class DashboardController extends Controller
 
         $recentQuizzes = $quizzes->sortByDesc('created_at')->take(5)->values()->map(function (Quiz $quiz) use ($submissions, $classIds) {
             $quiz->load('subject', 'classroom');
-            $totalStudents = StudentEnrollment::where('class_id', $quiz->class_id)->where('status', 'Active')->count();
+            $totalStudents = DB::table('class_student')
+                ->where('class_id', $quiz->class_id)
+                ->where('status', 'Active')
+                ->count();
 
             return [
                 'id' => $quiz->id,

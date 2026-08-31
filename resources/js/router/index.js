@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import ConfirmationEventBus from 'primevue/confirmationeventbus'
 import { quizInProgress } from '../utils/quizLock'
 
 
@@ -237,14 +238,31 @@ const router = createRouter({
 })
 
 // ================= Navigation Guard (ការពារតាម Role) =================
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   // While a timed quiz attempt is open, block leaving the quiz page for
   // anything else (sidebar links, back button, address bar) unless the
   // student explicitly confirms — the server-side timer keeps running
   // regardless, so this is about preventing accidental abandonment, not
   // protecting the clock itself.
+  //
+  // This runs outside any component, so it can't use the useConfirm()
+  // composable (it needs inject()) — it talks to PrimeVue's ConfirmDialog
+  // (mounted globally in App.vue) via the same event bus useConfirm() uses
+  // internally.
   if (quizInProgress.value && from.name === 'student.takeQuiz' && to.name !== 'student.takeQuiz') {
-    const leave = window.confirm('Your quiz is still in progress. Leaving now will not stop the timer or save your answers. Leave anyway?')
+    const leave = await new Promise((resolve) => {
+      ConfirmationEventBus.emit('confirm', {
+        header: 'Quiz still in progress',
+        message: 'Your quiz is still in progress. Leaving now will not stop the timer or save your answers. Leave anyway?',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Leave',
+        rejectLabel: 'Stay',
+        acceptClass: 'p-button-danger',
+        accept: () => resolve(true),
+        reject: () => resolve(false),
+        onHide: () => resolve(false),
+      })
+    })
     if (!leave) return false
     quizInProgress.value = false
   }

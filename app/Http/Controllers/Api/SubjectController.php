@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\TranslatesStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Faculty;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -11,6 +12,21 @@ use Illuminate\Validation\Rule;
 class SubjectController extends Controller
 {
     use TranslatesStatus;
+
+    /**
+     * Preview the next auto-generated subject code for a faculty, so the
+     * create form can show it before the subject is actually saved.
+     */
+    public function nextCode(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_id' => ['required', 'exists:faculties,id'],
+        ]);
+
+        $faculty = Faculty::findOrFail($validated['faculty_id']);
+
+        return response()->json(['code' => Subject::generateCode($faculty->code)]);
+    }
 
     /**
      * Get all subjects.

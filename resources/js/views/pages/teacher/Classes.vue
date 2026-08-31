@@ -273,7 +273,10 @@ import { ref, computed, onMounted } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
+
+const toast = useToast()
 
 const viewMode = ref('grid') // Mode: 'grid' or 'table'
 const searchQuery = ref('')
@@ -291,7 +294,7 @@ const fetchMyClasses = async () => {
     const { data } = await api.get('/teacher/classes')
     myClasses.value = data.data
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load classes', ...toastFromError(error) })
   } finally {
     loading.value = false
   }

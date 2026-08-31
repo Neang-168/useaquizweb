@@ -73,8 +73,9 @@
       <div class="flex flex-wrap items-center gap-2.5 px-4 py-3 border-b border-slate-100">
         <i class="pi pi-filter text-slate-400 text-xs"></i>
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-          placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
-        <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
+          placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
+          @change="majorFilter = null" />
+        <Dropdown v-model="majorFilter" :options="majorFilterOptions" optionLabel="name_en" optionValue="id"
           placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
         <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']"
           placeholder="All Statuses" showClear class="w-40 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
@@ -311,7 +312,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -321,6 +324,9 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
+
+const toast = useToast()
+const confirm = useConfirm()
 
 const studySessions = ref([])
 const faculties = ref([])
@@ -369,6 +375,16 @@ const statusFilter = ref(null)
 const hasActiveFilters = computed(() =>
   !!(facultyFilter.value || majorFilter.value || statusFilter.value)
 )
+
+// No Department filter sits between Faculty and Major in this bar, so Major
+// is narrowed transitively: each major's department tells us its faculty.
+const majorFilterOptions = computed(() => {
+  if (!facultyFilter.value) return majors.value
+  return majors.value.filter((m) => {
+    const dept = departments.value.find((d) => d.id === m.department_id)
+    return dept && dept.faculty_id === facultyFilter.value
+  })
+})
 
 const clearFilters = () => {
   facultyFilter.value = null
@@ -444,7 +460,7 @@ const editSession = (data) => {
 
 const saveSession = async () => {
   if (!sessionForm.value.code || !sessionForm.value.name_en || !sessionForm.value.faculty_id) {
-    alert('Faculty, session code, and name (English) are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Faculty, session code, and name (English) are required.', life: 4000 })
     return
   }
 
@@ -462,26 +478,37 @@ const saveSession = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/study-sessions/${sessionForm.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'Session updated', detail: `${sessionForm.value.name_en} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/study-sessions', payload)
+      toast.add({ severity: 'success', summary: 'Session created', detail: `${sessionForm.value.name_en} was created successfully.`, life: 3000 })
     }
 
     sessionDialog.value = false
     await fetchSessions()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update session' : 'Failed to create session', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteSession = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    try {
-      await api.delete(`/study-sessions/${data.id}`)
-      await fetchSessions()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteSession = (data) => {
+  confirm.require({
+    header: 'Delete session',
+    message: `Are you sure you want to delete ${data.name_en}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/study-sessions/${data.id}`)
+        toast.add({ severity: 'success', summary: 'Session deleted', detail: `${data.name_en} was deleted.`, life: 3000 })
+        await fetchSessions()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete session', ...toastFromError(error) })
+      }
+    },
+  })
 }
 </script>
 

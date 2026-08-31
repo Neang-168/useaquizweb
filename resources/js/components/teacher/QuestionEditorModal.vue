@@ -259,7 +259,10 @@ import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import RadioButton from 'primevue/radiobutton'
 import QuestionImageField from './QuestionImageField.vue'
-import api, { extractError } from '../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../api'
+
+const toast = useToast()
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -396,7 +399,7 @@ function hasStemContent() {
 
 async function save() {
   if (!hasStemContent()) {
-    alert('Please enter the question text, add an image, or both.')
+    toast.add({ severity: 'warn', summary: 'Question text required', detail: 'Please enter the question text, add an image, or both.', life: 4000 })
     return
   }
 
@@ -434,9 +437,12 @@ async function save() {
     emit('saved', response.data.question)
 
     if (isEditing.value) {
+      toast.add({ severity: 'success', summary: 'Question updated', detail: 'Your changes have been saved.', life: 3000 })
       close()
       return
     }
+
+    toast.add({ severity: 'success', summary: 'Question added', detail: `"${form.value.title || 'Image question'}" was added.`, life: 3000 })
 
     // Creating: keep the modal open, remember the subject/type/difficulty,
     // and clear the rest so the teacher can add the next question immediately.
@@ -444,7 +450,7 @@ async function save() {
     sessionTitles.value.push(form.value.title || '(image question)')
     form.value = defaultForm(form.value)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to save question', ...toastFromError(error) })
   }
 }
 </script>

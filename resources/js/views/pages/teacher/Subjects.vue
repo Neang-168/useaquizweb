@@ -61,8 +61,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import InputText from 'primevue/inputtext'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 
+const toast = useToast()
 const searchQuery = ref('')
 
 const mySubjects = ref([])
@@ -74,7 +76,7 @@ const fetchMySubjects = async () => {
     const { data } = await api.get('/teacher/subjects')
     mySubjects.value = data.data
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load subjects', ...toastFromError(error) })
   } finally {
     loading.value = false
   }

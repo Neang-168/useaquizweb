@@ -66,9 +66,12 @@ import { ref, computed, watch, onMounted } from 'vue'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import SelectButton from 'primevue/selectbutton'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 import CalendarGrid from '../../../components/teacher/calendar/CalendarGrid.vue'
 import QuizDetailModal from '../../../components/teacher/calendar/QuizDetailModal.vue'
+
+const toast = useToast()
 
 const referenceDate = ref(new Date())
 const viewMode = ref('month')
@@ -141,7 +144,7 @@ const fetchCalendar = async () => {
     })
     quizzes.value = data.data
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load calendar', ...toastFromError(error) })
   } finally {
     loading.value = false
   }

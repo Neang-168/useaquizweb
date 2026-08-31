@@ -265,9 +265,11 @@ import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 
 const router = useRouter()
+const toast = useToast()
 
 const authUser = computed(() => {
   try {
@@ -315,7 +317,7 @@ const fetchDashboard = async () => {
     needsAttention.value = data.needsAttention
     upcomingQuizzes.value = data.upcomingQuizzes
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load dashboard', ...toastFromError(error) })
   }
 }
 

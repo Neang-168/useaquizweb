@@ -191,11 +191,15 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import LogoUsea from '../images/usea_logo.png'
 import { authUser, clearAuthUser } from '../store/authUser'
 
 const route = useRoute()
 const router = useRouter()
+const confirm = useConfirm()
+const toast = useToast()
 
 // Profile dropdown (User Profile / Logout)
 const profileMenuOpen = ref(false)
@@ -228,11 +232,22 @@ function isRouteActive(routeName) {
 
 // Logout handler
 function handleLogout() {
-  localStorage.removeItem('auth_token')
-  clearAuthUser()
-  localStorage.removeItem('auth_role')
-  localStorage.removeItem('remember_me')
+  confirm.require({
+    header: 'Log out',
+    message: 'Are you sure you want to log out?',
+    icon: 'pi pi-sign-out',
+    acceptLabel: 'Log out',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: () => {
+      localStorage.removeItem('auth_token')
+      clearAuthUser()
+      localStorage.removeItem('auth_role')
+      localStorage.removeItem('remember_me')
 
-  router.push({ name: 'login' })
+      toast.add({ severity: 'success', summary: 'Logged out', detail: 'You have been logged out successfully.', life: 3000 })
+      router.push({ name: 'login' })
+    },
+  })
 }
 </script>

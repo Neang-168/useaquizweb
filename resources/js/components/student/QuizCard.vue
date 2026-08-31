@@ -83,23 +83,13 @@
       </div>
     </div>
   </div>
-
-  <ConfirmDialog
-    v-model="showConfirm"
-    title="Start this quiz?"
-    :message="`Duration: ${exam.duration} minutes, ${exam.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.`"
-    confirm-text="Start Exam"
-    cancel-text="Cancel"
-    @confirm="confirmStart"
-    @cancel="showConfirm = false"
-  />
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useConfirm } from 'primevue/useconfirm'
 import { formatFullDate } from '../../utils/formatDateTime'
-import ConfirmDialog from '../ConfirmDialog.vue'
 
 const props = defineProps({
   exam: { type: Object, required: true },
@@ -109,7 +99,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const showConfirm = ref(false)
+const confirm = useConfirm()
 
 const statusBadge = computed(() => {
   if (props.exam.isUpcoming) return { label: 'Upcoming', class: 'bg-[#D8E7EC]/60 text-[#002060]' }
@@ -134,11 +124,16 @@ function onStartClick() {
     router.push(`/student/take-quiz?id=${props.exam.id}`)
     return
   }
-  showConfirm.value = true
-}
 
-function confirmStart() {
-  showConfirm.value = false
-  router.push(`/student/take-quiz?id=${props.exam.id}`)
+  confirm.require({
+    header: 'Start this quiz?',
+    message: `Duration: ${props.exam.duration} minutes, ${props.exam.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Start Exam',
+    rejectLabel: 'Cancel',
+    accept: () => {
+      router.push(`/student/take-quiz?id=${props.exam.id}`)
+    },
+  })
 }
 </script>

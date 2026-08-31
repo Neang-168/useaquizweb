@@ -198,9 +198,11 @@ import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import SelectButton from 'primevue/selectbutton'
 import FileUpload from 'primevue/fileupload'
-import api, { extractError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
 
 const router = useRouter()
+const toast = useToast()
 
 const goBack = () => router.push({ name: 'teacher.questionbank' })
 
@@ -264,8 +266,9 @@ async function runExport() {
       subject_id: exportSubjectId.value || undefined,
       type: exportType.value || undefined,
     }, `my-questions.${extensionFor(exportFormat.value)}`)
+    toast.add({ severity: 'success', summary: 'Questions exported', detail: 'Your question bank export has downloaded.', life: 3000 })
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to export questions', ...toastFromError(error) })
   } finally {
     exporting.value = false
   }
@@ -284,7 +287,7 @@ async function downloadTemplate() {
   try {
     await downloadBlob('/teacher/questions/template', { format: importFormat.value }, `question-import-template.${extensionFor(importFormat.value)}`)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to download template', ...toastFromError(error) })
   } finally {
     downloadingTemplate.value = false
   }
@@ -315,7 +318,7 @@ async function runPreview() {
     })
     preview.value = { imported: data.imported, skipped: data.skipped, questions: data.questions }
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to preview import file', ...toastFromError(error) })
     selectedFile.value = null
   } finally {
     previewing.value = false
@@ -348,12 +351,14 @@ async function runImport() {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     if (data.imported > 0) {
+      toast.add({ severity: 'success', summary: 'Questions imported', detail: `${data.imported} question${data.imported === 1 ? '' : 's'} imported successfully.`, life: 3000 })
       router.push({ name: 'teacher.questionbank', query: { imported: data.imported } })
     } else {
       preview.value = { imported: data.imported, skipped: data.skipped, questions: [] }
+      toast.add({ severity: 'warn', summary: 'No questions imported', detail: 'No rows could be imported. Check the skipped rows below.', life: 4000 })
     }
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to import questions', ...toastFromError(error) })
   } finally {
     importing.value = false
   }

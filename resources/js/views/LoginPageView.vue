@@ -126,8 +126,10 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
+const toast = useToast()
 
 const form = ref({
   username: '',
@@ -179,6 +181,8 @@ async function submitLogin() {
       localStorage.setItem('remember_me', 'true')
     }
 
+    toast.add({ severity: 'success', summary: 'Logged in', detail: `Welcome back, ${data.user?.first_name || form.value.username}!`, life: 3000 })
+
    if (userRole === 'Admin') {
       router.push({ name: 'admin.dashboard' })
     } else if (userRole === 'Teacher') {
@@ -191,6 +195,7 @@ async function submitLogin() {
 
   } catch (err) {
     error.value = err.message || 'Login failed. Please try again.'
+    toast.add({ severity: 'error', summary: 'Login failed', detail: error.value, life: 5000 })
   } finally {
     loading.value = false
   }

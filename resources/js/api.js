@@ -38,4 +38,16 @@ export function extractError(error) {
   return data?.message || error?.message || 'Something went wrong. Please try again.'
 }
 
+// Shared shape for toast.add() on a failed API call — validation errors (422)
+// surface as a 'warn' toast with the field messages, everything else as an
+// 'error' toast with the server message or a generic fallback.
+export function toastFromError(error) {
+  const isValidation = error?.response?.status === 422
+  return {
+    severity: isValidation ? 'warn' : 'error',
+    detail: extractError(error),
+    life: isValidation ? 4000 : 5000,
+  }
+}
+
 export default api

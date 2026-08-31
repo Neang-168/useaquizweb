@@ -295,11 +295,11 @@
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <!-- Manage Class (Router Link) -->
-              <router-link to="/admin/class-management"
+              <!-- <router-link to="/admin/class-management"
                 class="!w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-[#63c7df] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
                 title="Manage Class">
                 <i class="fa-solid fa-gear text-xs"></i>
-              </router-link>
+              </router-link> -->
 
               <!-- Assign / Subjects Taught -->
               <Button
@@ -433,11 +433,11 @@
 
           <!-- Bottom Action Buttons (Fixed Alignment & Equal Sizing) -->
           <div class="flex items-center justify-between gap-1.5 pt-3 mt-3 border-t border-slate-100">
-            <router-link to="/admin/class-management"
+            <!-- <router-link to="/admin/class-management"
               class="inline-flex items-center justify-center gap-1 !py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-[#63c7df] !border !border-indigo-100 hover:!border-indigo-200 !rounded-lg transition-all">
               <i class="fa-solid fa-gear"></i>
               <span>Manage</span>
-            </router-link>
+            </router-link> -->
 
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
@@ -449,7 +449,7 @@
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-slate-50 hover:!bg-amber-100/90 !text-[#e4ac14] !border-slate-200 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
               @click="editClass(cls)">
-              <i class="fa-solid fa-pen-nib"></i>
+              <i class="fa-solid fa-pen-to-square"></i>
               <span>Edit</span>
             </Button>
 
@@ -493,18 +493,21 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty</label>
             <Dropdown v-model="classForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
               placeholder="Select Faculty" showClear
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="classForm.department_id = null; classForm.major_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
-            <Dropdown v-model="classForm.department_id" :options="departments" optionLabel="name_en" optionValue="id"
+            <Dropdown v-model="classForm.department_id" :options="departmentOptions" optionLabel="name_en" optionValue="id"
               placeholder="Select Department" showClear
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              @change="classForm.major_id = null" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major *</label>
-            <Dropdown v-model="classForm.major_id" :options="majors" optionLabel="name_en" optionValue="id"
-              placeholder="Select Major" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            <Dropdown v-model="classForm.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en" optionValue="id"
+              placeholder="Select Major" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
+              :disabled="!classForm.department_id" />
           </div>
         </div>
 
@@ -659,7 +662,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -668,6 +673,9 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
+
+const toast = useToast()
+const confirm = useConfirm()
 
 const assignmentSearchQuery = ref('');
 const filteredClassSubjectAssignments = computed(() => {
@@ -826,6 +834,18 @@ const classForm = ref({
   status: 'Active'
 })
 
+// Department options are scoped to whichever faculty is currently selected
+// in the form, since a department belongs to exactly one faculty.
+const departmentOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === classForm.value.faculty_id)
+)
+
+// Major options narrow down by the selected Department.
+const majorsForSelectedDepartment = computed(() => {
+  if (!classForm.value.department_id) return []
+  return majors.value.filter(m => m.department_id === classForm.value.department_id)
+})
+
 // Computed Properties
 const activeClassesCount = computed(() => classes.value.filter(c => c.status === 'Active').length)
 const totalStudents = computed(() => classes.value.reduce((sum, c) => sum + Number(c.students_count || 0), 0))
@@ -862,7 +882,7 @@ const editClass = (data) => {
 
 const saveClass = async () => {
   if (!classForm.value.code || !classForm.value.name || !classForm.value.major_id || !classForm.value.stage_id || !classForm.value.shift_id) {
-    alert('Code, name, department/major, stage, and shift are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Code, name, department/major, stage, and shift are required.', life: 4000 })
     return
   }
 
@@ -887,26 +907,37 @@ const saveClass = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/classes/${classForm.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'Class updated', detail: `${classForm.value.name} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/classes', payload)
+      toast.add({ severity: 'success', summary: 'Class created', detail: `${classForm.value.name} was created successfully.`, life: 3000 })
     }
 
     classDialog.value = false
     await fetchClasses()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update class' : 'Failed to create class', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteClass = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.name}?`)) {
-    try {
-      await api.delete(`/classes/${data.id}`)
-      await fetchClasses()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteClass = (data) => {
+  confirm.require({
+    header: 'Delete class',
+    message: `Are you sure you want to delete ${data.name}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/classes/${data.id}`)
+        toast.add({ severity: 'success', summary: 'Class deleted', detail: `${data.name} was deleted.`, life: 3000 })
+        await fetchClasses()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete class', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 // ======= Subjects Taught Dialog (Subject + Teacher per Class) =======
@@ -940,13 +971,13 @@ const openSubjectsDialog = async (data) => {
   try {
     await fetchClassSubjectAssignments(data.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load subject assignments', ...toastFromError(error) })
   }
 }
 
 const addSubjectToClass = async () => {
   if (!subjectAssignForm.value.subject_id || !subjectAssignForm.value.teacher_profile_id) {
-    alert('Please select both a subject and a teacher.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please select both a subject and a teacher.', life: 4000 })
     return
   }
 
@@ -956,22 +987,32 @@ const addSubjectToClass = async () => {
       subject_id: subjectAssignForm.value.subject_id,
       class_id: assignmentClass.value.id,
     })
+    toast.add({ severity: 'success', summary: 'Subject assigned', detail: 'The subject and teacher were assigned to this class.', life: 3000 })
     subjectAssignForm.value = { subject_id: null, teacher_profile_id: null }
     await fetchClassSubjectAssignments(assignmentClass.value.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to assign subject', ...toastFromError(error) })
   }
 }
 
-const removeSubjectFromClass = async (assignment) => {
-  if (!confirm(`Remove ${assignment.subject_name} (${assignment.teacher_name}) from this class?`)) return
-
-  try {
-    await api.delete(`/teacher-assignments/${assignment.id}`)
-    await fetchClassSubjectAssignments(assignmentClass.value.id)
-  } catch (error) {
-    alert(extractError(error))
-  }
+const removeSubjectFromClass = (assignment) => {
+  confirm.require({
+    header: 'Remove subject assignment',
+    message: `Remove ${assignment.subject_name} (${assignment.teacher_name}) from this class?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Remove',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teacher-assignments/${assignment.id}`)
+        toast.add({ severity: 'success', summary: 'Subject assignment removed', detail: `${assignment.subject_name} (${assignment.teacher_name}) was removed from this class.`, life: 3000 })
+        await fetchClassSubjectAssignments(assignmentClass.value.id)
+      } catch (error) {
+        toast.add({ summary: 'Failed to remove subject assignment', ...toastFromError(error) })
+      }
+    },
+  })
 }
 </script>
 

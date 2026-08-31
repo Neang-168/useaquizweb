@@ -12,11 +12,16 @@
       </main>
 
     </div>
+
+    <Toast />
+    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
+import Toast from 'primevue/toast'
+import ConfirmDialog from 'primevue/confirmdialog'
 import api from './api'
 import { setAuthUser } from './store/authUser'
 

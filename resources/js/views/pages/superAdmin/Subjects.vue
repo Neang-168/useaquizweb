@@ -58,10 +58,12 @@
     <div class="flex flex-wrap items-center gap-2.5 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
       <i class="pi pi-filter text-slate-400 text-sm ml-1"></i>
       <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
-        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="departmentFilter" :options="departments" optionLabel="name_en" optionValue="id"
-        placeholder="All Departments" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
-      <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
+        placeholder="All Faculties" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs"
+        @change="departmentFilter = null; majorFilter = null" />
+      <Dropdown v-model="departmentFilter" :options="departmentFilterOptions" optionLabel="name_en" optionValue="id"
+        placeholder="All Departments" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs"
+        @change="majorFilter = null" />
+      <Dropdown v-model="majorFilter" :options="majorFilterOptions" optionLabel="name_en" optionValue="id"
         placeholder="All Majors" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
       <Dropdown v-model="academicYearFilter" :options="academicYears" optionLabel="name_en" optionValue="id"
         placeholder="All Academic Years" showClear class="w-44 !bg-slate-50 !border-slate-200 !rounded-xl text-xs" />
@@ -206,7 +208,7 @@
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border-slate-100 shadow-xs  cursor-pointer"
                 @click="editSubject(data)"
               >
-              <i class="fa-solid fa-pen-nib"></i>
+              <i class="fa-solid fa-pen-to-square"></i>
               </Button>
               <Button
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border-slate-100 shadow-xs cursor-pointer"
@@ -235,7 +237,7 @@
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Subject Code *</label>
             <InputText
               v-model="subjectForm.code"
-              placeholder="e.g. CS101"
+              placeholder="Select a faculty to auto-fill"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
             />
           </div>
@@ -268,14 +270,14 @@
               optionValue="id"
               placeholder="Select Faculty"
               class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
-              @change="subjectForm.department_id = null; subjectForm.major_id = null"
+              @change="subjectForm.department_id = null; subjectForm.major_id = null; if (!isEdit) fetchNextCode()"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Department</label>
             <Dropdown
               v-model="subjectForm.department_id"
-              :options="departments"
+              :options="departmentOptions"
               optionLabel="name_en"
               optionValue="id"
               placeholder="Select Department"
@@ -357,7 +359,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api, { extractError } from '../../../api'
+import api, { toastFromError } from '../../../api'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 
 // PrimeVue Components Import
 import DataTable from 'primevue/datatable'
@@ -367,6 +371,9 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
+
+const toast = useToast()
+const confirm = useConfirm()
 
 const subjects = ref([])
 const faculties = ref([])
@@ -433,6 +440,14 @@ const hasActiveFilters = computed(() =>
   !!(facultyFilter.value || departmentFilter.value || majorFilter.value || academicYearFilter.value || statusFilter.value)
 )
 
+// Same Faculty -> Department -> Major cascade as the form, scoped to the filter bar's own refs.
+const departmentFilterOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === facultyFilter.value)
+)
+const majorFilterOptions = computed(() =>
+  majors.value.filter(m => m.department_id === departmentFilter.value)
+)
+
 const clearFilters = () => {
   facultyFilter.value = null
   departmentFilter.value = null
@@ -468,6 +483,12 @@ const subjectForm = ref({
   status: 'Active'
 })
 
+// Department options are scoped to whichever faculty is currently selected
+// in the form, since a department belongs to exactly one faculty.
+const departmentOptions = computed(() =>
+  departments.value.filter(d => d.faculty_id === subjectForm.value.faculty_id)
+)
+
 // Major options narrow down by the selected Department.
 const majorsForSelectedDepartment = computed(() => {
   if (!subjectForm.value.department_id) return []
@@ -498,6 +519,16 @@ const openNewDialog = () => {
   subjectDialog.value = true
 }
 
+const fetchNextCode = async () => {
+  if (!subjectForm.value.faculty_id) return
+  try {
+    const { data } = await api.get('/subjects/next-code', { params: { faculty_id: subjectForm.value.faculty_id } })
+    subjectForm.value.code = data.code
+  } catch (error) {
+    // Leave the field blank so the admin can type one manually.
+  }
+}
+
 const editSubject = (data) => {
   subjectForm.value = { ...data }
   isEdit.value = true
@@ -506,7 +537,7 @@ const editSubject = (data) => {
 
 const saveSubject = async () => {
   if (!subjectForm.value.code || !subjectForm.value.name_en || !subjectForm.value.faculty_id) {
-    alert('Faculty, subject code, and name (English) are required.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Faculty, subject code, and name (English) are required.', life: 4000 })
     return
   }
 
@@ -527,26 +558,37 @@ const saveSubject = async () => {
   try {
     if (isEdit.value) {
       await api.put(`/subjects/${subjectForm.value.id}`, payload)
+      toast.add({ severity: 'success', summary: 'Subject updated', detail: `${subjectForm.value.name_en} was updated successfully.`, life: 3000 })
     } else {
       await api.post('/subjects', payload)
+      toast.add({ severity: 'success', summary: 'Subject created', detail: `${subjectForm.value.name_en} was created successfully.`, life: 3000 })
     }
 
     subjectDialog.value = false
     await fetchSubjects()
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: isEdit.value ? 'Failed to update subject' : 'Failed to create subject', ...toastFromError(error) })
   }
 }
 
-const confirmDeleteSubject = async (data) => {
-  if (confirm(`Are you sure you want to delete ${data.name_en}?`)) {
-    try {
-      await api.delete(`/subjects/${data.id}`)
-      await fetchSubjects()
-    } catch (error) {
-      alert(extractError(error))
-    }
-  }
+const confirmDeleteSubject = (data) => {
+  confirm.require({
+    header: 'Delete subject',
+    message: `Are you sure you want to delete ${data.name_en}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/subjects/${data.id}`)
+        toast.add({ severity: 'success', summary: 'Subject deleted', detail: `${data.name_en} was deleted.`, life: 3000 })
+        await fetchSubjects()
+      } catch (error) {
+        toast.add({ summary: 'Failed to delete subject', ...toastFromError(error) })
+      }
+    },
+  })
 }
 
 // ======= Classes Teaching This Subject Dialog (Class + Teacher per Subject) =======
@@ -580,13 +622,13 @@ const openClassesDialog = async (data) => {
   try {
     await fetchSubjectClassAssignments(data.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to load class assignments', ...toastFromError(error) })
   }
 }
 
 const addClassToSubject = async () => {
   if (!classAssignForm.value.class_id || !classAssignForm.value.teacher_profile_id) {
-    alert('Please select both a class and a teacher.')
+    toast.add({ severity: 'warn', summary: 'Missing information', detail: 'Please select both a class and a teacher.', life: 4000 })
     return
   }
 
@@ -596,22 +638,32 @@ const addClassToSubject = async () => {
       subject_id: assignmentSubject.value.id,
       class_id: classAssignForm.value.class_id,
     })
+    toast.add({ severity: 'success', summary: 'Class assigned', detail: 'The class and teacher were assigned to this subject.', life: 3000 })
     classAssignForm.value = { class_id: null, teacher_profile_id: null }
     await fetchSubjectClassAssignments(assignmentSubject.value.id)
   } catch (error) {
-    alert(extractError(error))
+    toast.add({ summary: 'Failed to assign class', ...toastFromError(error) })
   }
 }
 
-const removeClassFromSubject = async (assignment) => {
-  if (!confirm(`Remove ${assignment.class_name} (${assignment.teacher_name}) from this subject?`)) return
-
-  try {
-    await api.delete(`/teacher-assignments/${assignment.id}`)
-    await fetchSubjectClassAssignments(assignmentSubject.value.id)
-  } catch (error) {
-    alert(extractError(error))
-  }
+const removeClassFromSubject = (assignment) => {
+  confirm.require({
+    header: 'Remove class assignment',
+    message: `Remove ${assignment.class_name} (${assignment.teacher_name}) from this subject?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Remove',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await api.delete(`/teacher-assignments/${assignment.id}`)
+        toast.add({ severity: 'success', summary: 'Class assignment removed', detail: `${assignment.class_name} (${assignment.teacher_name}) was removed from this subject.`, life: 3000 })
+        await fetchSubjectClassAssignments(assignmentSubject.value.id)
+      } catch (error) {
+        toast.add({ summary: 'Failed to remove class assignment', ...toastFromError(error) })
+      }
+    },
+  })
 }
 </script>
 

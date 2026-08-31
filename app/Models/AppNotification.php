@@ -71,10 +71,10 @@ class AppNotification extends Model
 
     private static function notifyClassStudents(Quiz $quiz, string $type, string $title, string $message): void
     {
-        $userIds = StudentEnrollment::query()
+        $userIds = DB::table('class_student')
             ->where('class_id', $quiz->class_id)
             ->where('status', 'Active')
-            ->join('student_profiles', 'student_profiles.id', '=', 'student_enrollments.student_profile_id')
+            ->join('student_profiles', 'student_profiles.id', '=', 'class_student.student_profile_id')
             ->pluck('student_profiles.user_id')
             ->unique()
             ->values();

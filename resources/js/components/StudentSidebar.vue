@@ -107,6 +107,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import LogoUsea from '../images/usea_logo.png'
 import { authUser, clearAuthUser } from '../store/authUser'
 import { quizInProgress } from '../utils/quizLock'
@@ -114,6 +116,8 @@ import { notificationState, startPolling, stopPolling } from '../store/notificat
 import NotificationToastContainer from './student/NotificationToastContainer.vue'
 
 const router = useRouter()
+const confirm = useConfirm()
+const toast = useToast()
 
 onMounted(startPolling)
 onUnmounted(stopPolling)
@@ -133,11 +137,22 @@ const userInitial = computed(() => {
 
 // Function Logout
 function handleLogout() {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_role')
-  localStorage.removeItem('remember_me')
-  clearAuthUser()
+  confirm.require({
+    header: 'Log out',
+    message: 'Are you sure you want to log out?',
+    icon: 'pi pi-sign-out',
+    acceptLabel: 'Log out',
+    rejectLabel: 'Cancel',
+    acceptClass: 'p-button-danger',
+    accept: () => {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_role')
+      localStorage.removeItem('remember_me')
+      clearAuthUser()
 
-  router.push({ name: 'login' })
+      toast.add({ severity: 'success', summary: 'Logged out', detail: 'You have been logged out successfully.', life: 3000 })
+      router.push({ name: 'login' })
+    },
+  })
 }
 </script>

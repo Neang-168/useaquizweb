@@ -99,7 +99,6 @@ class UserController extends Controller
     {
         $profile = $user->studentProfile()->with([
             'enrollments' => fn ($query) => $query->latest('enrollment_date')->with(
-                'classroom',
                 'faculty',
                 'department',
                 'degree',
@@ -111,6 +110,7 @@ class UserController extends Controller
                 'term',
                 'shift'
             ),
+            'classes',
         ])->first();
 
         if (! $profile) {
@@ -123,7 +123,7 @@ class UserController extends Controller
             'student_code' => $profile->student_code,
             'admission_date' => $profile->admission_date?->format('Y-m-d'),
             'enrollment' => $enrollment ? [
-                'class_name' => $enrollment->classroom?->name,
+                'class_name' => $profile->classes->pluck('name')->filter()->implode(', ') ?: null,
                 'major_name' => $enrollment->major?->name,
                 'faculty_name' => $enrollment->faculty?->name,
                 'degree_name' => $enrollment->degree?->name,
@@ -400,7 +400,6 @@ class UserController extends Controller
             'teacherProfile.major',
             'studentProfile',
             'studentProfile.enrollments' => fn ($query) => $query->latest('enrollment_date')->with(
-                'classroom.shift',
                 'faculty',
                 'department',
                 'major',
@@ -411,6 +410,7 @@ class UserController extends Controller
                 'term',
                 'shift'
             ),
+            'studentProfile.classes',
         ];
     }
 
@@ -450,10 +450,10 @@ class UserController extends Controller
 
             // Teacher profile
             'employee_code' => $employeeCodeRules,
-            'faculty_id' => [Rule::requiredIf($roleName === 'Teacher'), 'nullable', 'exists:faculties,id'],
-            'department_id' => ['nullable', 'exists:departments,id'],
+            'faculty_id' => [Rule::requiredIf(in_array($roleName, ['Teacher', 'Student'], true)), 'nullable', 'exists:faculties,id'],
+            'department_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
-            'major_id' => ['nullable', 'exists:majors,id'],
+            'major_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:majors,id'],
             'qualification' => ['nullable', 'string', 'max:255'],
             'specialization' => ['nullable', 'string', 'max:255'],
             'employment_type' => ['nullable', Rule::in(['full_time', 'part_time'])],
@@ -473,15 +473,17 @@ class UserController extends Controller
             ],
             'admission_date' => ['nullable', 'date'],
 
-            // Student enrollment (independent of the class's own values, same as the
-            // dedicated Students page: left blank, each falls back to the class's value)
-            'class_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:classes,id'],
-            'promotion_id' => ['nullable', 'exists:promotions,id'],
-            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
-            'stage_id' => ['nullable', 'exists:stages,id'],
-            'semester_id' => ['nullable', 'exists:semesters,id'],
-            'term_id' => ['nullable', 'exists:terms,id'],
-            'shift_id' => ['nullable', 'exists:shifts,id'],
+            // Student enrollment — required for Student accounts, same as the
+            // dedicated Students page (StudentController::store). Class itself
+            // stays optional here — same as the Students page, it's assigned as
+            // a separate step (Students page's "Assign Class" action).
+            'class_id' => ['nullable', 'exists:classes,id'],
+            'promotion_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:promotions,id'],
+            'academic_year_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:academic_years,id'],
+            'stage_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:stages,id'],
+            'semester_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:semesters,id'],
+            'term_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:terms,id'],
+            'shift_id' => [Rule::requiredIf($roleName === 'Student'), 'nullable', 'exists:shifts,id'],
         ]);
     }
 
@@ -568,6 +570,9 @@ class UserController extends Controller
      * the class they've been assigned to, same logic as the dedicated
      * Students page: any field left blank falls back to the class's own
      * value, so picking just a Class still produces a complete enrollment.
+     * Class membership itself is synced onto the `classes()` pivot (a
+     * student can belong to more than one class — this form only assigns
+     * the one picked here, without disturbing any others they already have).
      */
     private function syncStudentEnrollment(StudentProfile $profile, array $data, bool $userStatus): void
     {
@@ -576,11 +581,11 @@ class UserController extends Controller
         }
 
         $class = Classroom::with('major.degree')->findOrFail($data['class_id']);
+        $status = $userStatus ? 'Active' : 'Inactive';
 
         $enrollment = $profile->enrollments()->latest('enrollment_date')->first();
 
         $attributes = [
-            'class_id' => $class->id,
             'faculty_id' => $data['faculty_id'] ?? $class->major->degree->faculty_id,
             'department_id' => $data['department_id'] ?? $class->department_id,
             'degree_id' => $data['degree_id'] ?? $class->major->degree_id,
@@ -591,7 +596,7 @@ class UserController extends Controller
             'semester_id' => $data['semester_id'] ?? $class->semester_id,
             'term_id' => $data['term_id'] ?? $class->term_id,
             'shift_id' => $data['shift_id'] ?? $class->shift_id,
-            'status' => $userStatus ? 'Active' : 'Inactive',
+            'status' => $status,
         ];
 
         if ($enrollment) {
@@ -599,6 +604,8 @@ class UserController extends Controller
         } else {
             $profile->enrollments()->create($attributes + ['enrollment_date' => now()]);
         }
+
+        $profile->classes()->syncWithoutDetaching([$class->id => ['status' => $status]]);
     }
 
     private function resolveCurrentPromotionId(): ?int

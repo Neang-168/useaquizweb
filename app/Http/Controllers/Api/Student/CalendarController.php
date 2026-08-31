@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
-use App\Models\StudentEnrollment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -23,10 +22,7 @@ class CalendarController extends Controller
 
         Quiz::autoCloseExpired();
 
-        $classIds = StudentEnrollment::where('student_profile_id', $student->id)
-            ->where('status', 'Active')
-            ->pluck('class_id')
-            ->unique();
+        $classIds = $student->classes()->wherePivot('status', 'Active')->pluck('classes.id');
 
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);

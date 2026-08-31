@@ -133,7 +133,7 @@
             
             <Column header="SUBMITTED" class="!text-center">
               <template #body="{ data }">
-                <span class="font-bold text-[#002060] text-xs bg-[#F8F8F8] px-2.5 py-1 rounded-lg border border-[#D8E7EC]">
+                <span class="font-bold text-[#0bbb54] text-xs bg-[#F8F8F8] px-2.5 py-1 rounded-lg border border-[#D8E7EC]">
                   {{ data.submittedCount }}/{{ data.totalStudents }}
                 </span>
               </template>
@@ -141,7 +141,7 @@
             
             <Column header="STATUS" class="!text-center">
               <template #body="{ data }">
-                <span :class="data.statusClass" class="text-[10px] font-bold px-2.5 py-1 rounded-md border">
+                <span :class="data.statusClass" class="text-[10px] text-white bg-[#e4ac14] font-bold px-2.5 py-1 rounded-md border">
                   {{ data.statusText }}
                 </span>
               </template>
@@ -214,7 +214,7 @@
                 </h4>
                 <span 
                   :class="statusClassMap[quiz.status] || statusClassMap.Closed" 
-                  class="text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0"
+                  class="text-[10px] text-white bg-[#e4ac14]  font-bold px-2 py-0.5 rounded-md border shrink-0"
                 >
                   {{ quiz.status }}
                 </span>

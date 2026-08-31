@@ -233,7 +233,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (Khmer)</label>
             <InputText v-model="teacherForm.name_kh" placeholder="ឧ. សុខ ចាន់ថាន"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer" />
           </div>
         </div>
 

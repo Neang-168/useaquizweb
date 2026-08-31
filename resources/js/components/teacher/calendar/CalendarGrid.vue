@@ -22,6 +22,7 @@
         :is-current-month="viewMode === 'week' || day.getMonth() === referenceDate.getMonth()"
         :view-mode="viewMode"
         :max-visible="viewMode === 'week' ? 6 : 3"
+        :compact="compact"
         @quiz-click="$emit('quiz-click', $event)"
       />
     </div>
@@ -36,6 +37,7 @@ const props = defineProps({
   viewMode: { type: String, default: 'month' }, // 'month' | 'week'
   referenceDate: { type: Date, required: true },
   quizzes: { type: Array, default: () => [] },
+  compact: { type: Boolean, default: false },
 })
 
 defineEmits(['quiz-click'])

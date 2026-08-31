@@ -29,8 +29,8 @@
     </div>
 
     <!-- 2. Detailed Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
       <!-- Card 1: My Classes -->
       <div class="bg-white p-5 rounded-2xl border border-[#D8E7EC] shadow-xs hover:shadow-md hover:border-[#63C7DF] transition-all">
         <div class="flex items-center justify-between">
@@ -61,200 +61,118 @@
         </div>
       </div>
 
-      <!-- Card 3: Pending Grading -->
-      <div class="bg-white p-5 rounded-2xl border border-[#D8E7EC] shadow-xs hover:shadow-md hover:border-[#E4AC40] transition-all">
+      <!-- Card 3: Question Bank Quick Shortcut -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-[#D8E7EC] shadow-xs hover:shadow-md hover:border-[#E4AC40] transition-all cursor-pointer"
+        @click="router.push({ name: 'teacher.questionbank' })"
+      >
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending Grading</span>
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Question Bank</span>
           <div class="w-10 h-10 rounded-xl bg-[#E4AC40]/15 text-[#E4AC40] border border-[#E4AC40]/30 flex items-center justify-center">
-            <i class="pi pi-exclamation-circle text-base"></i>
+            <i class="pi pi-database text-base"></i>
           </div>
         </div>
-        <div class="mt-3">
-          <h2 class="text-2xl font-black text-[#E4AC40] m-0">{{ pendingEssaysCount }}</h2>
-          <p class="text-xs text-slate-500 mt-1 m-0">Essay & short answers</p>
-        </div>
-      </div>
-
-      <!-- Card 4: Average Score -->
-      <div class="bg-white p-5 rounded-2xl border border-[#D8E7EC] shadow-xs hover:shadow-md hover:border-[#63C7DF] transition-all">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Average Score</span>
-          <div class="w-10 h-10 rounded-xl bg-[#002060]/5 text-[#002060] border border-[#002060]/10 flex items-center justify-center">
-            <i class="pi pi-chart-line text-base"></i>
-          </div>
-        </div>
-        <div class="mt-3">
-          <h2 class="text-2xl font-black text-[#002060] m-0">{{ averageScore }}%</h2>
-          <p class="text-xs text-slate-500 mt-1 m-0">Overall class performance</p>
+        <div class="mt-3 flex items-center justify-between">
+          <p class="text-xs text-slate-500 m-0">Manage your questions</p>
+          <i class="pi pi-arrow-right text-[#E4AC40] text-sm"></i>
         </div>
       </div>
 
     </div>
 
-    <!-- 3. Main Operational Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- 3. Quizzes & Performance -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 
-      <!-- Left Column (2 Cols): Quizzes & Performance -->
-      <div class="lg:col-span-2 space-y-6">
-
-        <!-- Quizzes Table Section -->
-        <div class="bg-white rounded-2xl border border-[#D8E7EC] shadow-xs p-6">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
-            <div>
-              <h3 class="text-base font-bold text-[#002060] m-0 flex items-center gap-2">
-                <i class="pi pi-[#63C7DF] pi-list text-[#63C7DF]"></i> Recent Quizzes
-              </h3>
-              <p class="text-xs text-slate-400 mt-0.5 m-0">Quizzes you've created and their current status</p>
-            </div>
+      <!-- Quizzes Table Section -->
+      <div class="bg-white rounded-2xl border border-[#D8E7EC] shadow-xs p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+          <div>
+            <h3 class="text-base font-bold text-[#002060] m-0 flex items-center gap-2">
+              <i class="pi pi-[#63C7DF] pi-list text-[#63C7DF]"></i> Recent Quizzes
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5 m-0">Quizzes you've created and their current status</p>
           </div>
+        </div>
 
-          <DataTable :value="recentQuizzes" dataKey="id" responsiveLayout="scroll" class="p-datatable-sm">
-            <template #empty>
-              <div class="text-center py-8 text-xs font-medium text-slate-400">
-                You haven't created any quizzes yet.
+        <DataTable :value="recentQuizzes" dataKey="id" responsiveLayout="scroll" class="p-datatable-sm">
+          <template #empty>
+            <div class="text-center py-8 text-xs font-medium text-slate-400">
+              You haven't created any quizzes yet.
+            </div>
+          </template>
+
+          <Column header="QUIZ">
+            <template #body="{ data }">
+              <div class="font-bold text-[#002060] text-sm">{{ data.title }}</div>
+              <div class="text-[11px] text-slate-400 font-medium mt-0.5">
+                {{ data.questionsCount }} questions &middot; {{ data.duration }} min
               </div>
             </template>
+          </Column>
 
-            <Column header="QUIZ">
-              <template #body="{ data }">
-                <div class="font-bold text-[#002060] text-sm">{{ data.title }}</div>
-                <div class="text-[11px] text-slate-400 font-medium mt-0.5">
-                  {{ data.questionsCount }} questions &middot; {{ data.duration }} min
-                </div>
-              </template>
-            </Column>
-            
-            <Column header="SUBJECT & CLASS">
-              <template #body="{ data }">
-                <div class="text-slate-700 font-bold text-xs">{{ data.subject }}</div>
-                <div class="text-[11px] text-slate-400 font-medium">{{ data.className }}</div>
-              </template>
-            </Column>
-            
-            <Column header="SUBMITTED" class="!text-center">
-              <template #body="{ data }">
-                <span class="font-bold text-[#0bbb54] text-xs bg-[#F8F8F8] px-2.5 py-1 rounded-lg border border-[#D8E7EC]">
-                  {{ data.submittedCount }}/{{ data.totalStudents }}
-                </span>
-              </template>
-            </Column>
-            
-            <Column header="STATUS" class="!text-center">
-              <template #body="{ data }">
-                <span :class="data.statusClass" class="text-[10px] text-white bg-[#e4ac14] font-bold px-2.5 py-1 rounded-md border">
-                  {{ data.statusText }}
-                </span>
-              </template>
-            </Column>
-          </DataTable>
-        </div>
+          <Column header="SUBJECT & CLASS">
+            <template #body="{ data }">
+              <div class="text-slate-700 font-bold text-xs">{{ data.subject }}</div>
+              <div class="text-[11px] text-slate-400 font-medium">{{ data.className }}</div>
+            </template>
+          </Column>
 
-        <!-- Student Performance Alert -->
-        <div class="bg-[#E4AC40]/10 rounded-2xl border border-[#E4AC40]/30 p-5">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-8 h-8 rounded-xl bg-[#D71818] text-white flex items-center justify-center shrink-0">
-              <i class="pi pi-exclamation-triangle text-sm"></i>
-            </div>
-            <div>
-              <h4 class="text-sm font-bold text-[#002060] m-0">Students Needing Attention</h4>
-              <p class="text-xs text-slate-600 m-0">Students who scored below 50% on their most recent quiz</p>
-            </div>
-          </div>
-
-          <div v-if="needsAttention.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-            <div 
-              v-for="(s, idx) in needsAttention" 
-              :key="idx" 
-              class="p-3 bg-white rounded-xl border border-[#D8E7EC] flex items-center justify-between shadow-xs hover:border-[#D71818]/40 transition-colors"
-            >
-              <div>
-                <div class="text-xs font-bold text-[#002060]">{{ s.name }}</div>
-                <div class="text-[11px] text-slate-400 font-medium mt-0.5">{{ s.className }} &middot; {{ s.subject }}</div>
-              </div>
-              <span class="text-xs font-bold text-[#D71818] bg-[#D71818]/10 px-2 py-0.5 rounded-md border border-[#D71818]/20">
-                {{ s.score }}%
+          <Column header="SUBMITTED" class="!text-center">
+            <template #body="{ data }">
+              <span class="font-bold text-[#0bbb54] text-xs bg-[#F8F8F8] px-2.5 py-1 rounded-lg border border-[#D8E7EC]">
+                {{ data.submittedCount }}/{{ data.totalStudents }}
               </span>
-            </div>
-          </div>
-          
-          <p v-else class="text-xs text-slate-500 font-medium mt-3 m-0 pl-11">
-            No students need extra support right now, or there's no submission data yet.
-          </p>
-        </div>
+            </template>
+          </Column>
 
+          <Column header="STATUS" class="!text-center">
+            <template #body="{ data }">
+              <span :class="data.statusClass" class="text-[10px] text-white bg-[#e4ac14] font-bold px-2.5 py-1 rounded-md border">
+                {{ data.statusText }}
+              </span>
+            </template>
+          </Column>
+        </DataTable>
       </div>
 
-      <!-- Right Column (1 Col): Schedule & Quick Links -->
-      <div class="space-y-6">
-
-        <!-- Upcoming Quizzes -->
-        <div class="bg-white rounded-2xl border border-[#D8E7EC] shadow-xs p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-[#002060] m-0 flex items-center gap-2">
-              <i class="pi pi-calendar text-[#63C7DF]"></i> Upcoming Quizzes
-            </h3>
-            <router-link 
-              :to="{ name: 'teacher.calendar' }" 
-              class="text-xs font-bold text-[#63C7DF] hover:underline no-underline"
-            >
-              View Calendar
-            </router-link>
+      <!-- Student Performance Alert -->
+      <div class="bg-[#E4AC40]/10 rounded-2xl border border-[#E4AC40]/30 p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-8 h-8 rounded-xl bg-[#D71818] text-white flex items-center justify-center shrink-0">
+            <i class="pi pi-exclamation-triangle text-sm"></i>
           </div>
-
-          <div class="space-y-3">
-            <router-link
-              v-for="quiz in upcomingQuizzes"
-              :key="quiz.id"
-              :to="{ name: 'teacher.calendar' }"
-              class="block p-3.5 rounded-xl border border-[#D8E7EC] hover:border-[#63C7DF] bg-[#F8F8F8] hover:bg-white transition-all no-underline group"
-            >
-              <div class="flex justify-between items-start gap-2">
-                <h4 class="text-xs font-bold text-[#002060] m-0 group-hover:text-[#63C7DF] transition-colors">
-                  {{ quiz.title }}
-                </h4>
-                <span 
-                  :class="statusClassMap[quiz.status] || statusClassMap.Closed" 
-                  class="text-[10px] text-white bg-[#e4ac14]  font-bold px-2 py-0.5 rounded-md border shrink-0"
-                >
-                  {{ quiz.status }}
-                </span>
-              </div>
-              <p class="text-[11px] text-slate-500 font-medium mt-1 m-0">{{ quiz.subject }} &middot; {{ quiz.className }}</p>
-              <p class="text-[11px] text-[#002060] font-bold mt-1.5 m-0 flex items-center gap-1">
-                <i class="pi pi-clock text-[10px] text-[#E4AC40]"></i> {{ formatQuizDate(quiz) }}
-              </p>
-            </router-link>
-
-            <p v-if="upcomingQuizzes.length === 0" class="text-xs text-slate-400 font-medium text-center py-6 m-0">
-              No upcoming quizzes scheduled.
-            </p>
+          <div>
+            <h4 class="text-sm font-bold text-[#002060] m-0">Students Needing Attention</h4>
+            <p class="text-xs text-slate-600 m-0">Students who scored below 50% on their most recent quiz</p>
           </div>
         </div>
 
-        <!-- Question Bank Quick Shortcut -->
-        <div class="bg-[#002060] rounded-2xl p-6 text-white relative overflow-hidden shadow-sm">
-          <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-[#63C7DF]/10 rounded-full blur-xl pointer-events-none"></div>
-          
-          <div class="relative z-10">
-            <div class="w-10 h-10 rounded-xl bg-white/10 text-[#E4AC40] flex items-center justify-center mb-3">
-              <i class="pi pi-database text-lg"></i>
+        <div v-if="needsAttention.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+          <div
+            v-for="(s, idx) in needsAttention"
+            :key="idx"
+            class="p-3 bg-white rounded-xl border border-[#D8E7EC] flex items-center justify-between shadow-xs hover:border-[#D71818]/40 transition-colors"
+          >
+            <div>
+              <div class="text-xs font-bold text-[#002060]">{{ s.name }}</div>
+              <div class="text-[11px] text-slate-400 font-medium mt-0.5">{{ s.className }} &middot; {{ s.subject }}</div>
             </div>
-            <h3 class="text-base font-bold m-0">Question Bank</h3>
-            <p class="text-xs text-slate-300 mt-1 m-0">Manage and add questions for each of your lessons.</p>
-            
-            <Button
-              label="Open Question Bank"
-              icon="pi pi-arrow-right"
-              iconPos="right"
-              size="small"
-              class="!mt-5 w-full !bg-[#E4AC40] hover:!bg-[#d49c30] !border-[#E4AC40] !text-white !text-xs !font-bold !rounded-xl !py-2.5 transition-colors"
-              @click="router.push({ name: 'teacher.questionbank' })"
-            />
+            <span class="text-xs font-bold text-[#D71818] bg-[#D71818]/10 px-2 py-0.5 rounded-md border border-[#D71818]/20">
+              {{ s.score }}%
+            </span>
           </div>
         </div>
 
+        <p v-else class="text-xs text-slate-500 font-medium mt-3 m-0 pl-11">
+          No students need extra support right now, or there's no submission data yet.
+        </p>
       </div>
 
+    </div>
+
+    <!-- 4. Calendar -->
+    <div class="bg-white p-6 rounded-2xl border border-[#D8E7EC] shadow-xs">
+      <TeacherCalendar />
     </div>
   </div>
 </template>
@@ -267,6 +185,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import api, { toastFromError } from '../../../api'
+import TeacherCalendar from '../../../components/teacher/calendar/TeacherCalendar.vue'
 
 const router = useRouter()
 const toast = useToast()

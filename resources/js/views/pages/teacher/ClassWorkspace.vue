@@ -22,7 +22,7 @@
           <p class="text-xs text-slate-500 mt-1">
             <span class="font-semibold text-slate-700">{{ classInfo.className }}</span>
             • {{ classInfo.totalStudents }} students
-            • Room {{ classInfo.room }}
+            <!-- • Room {{ classInfo.room }} -->
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -58,7 +58,7 @@
               <InputText
                 v-model="rosterSearch"
                 size="small"
-                placeholder="Search by name or student ID..."
+                placeholder="Search by name or username..."
                 class="w-full !pl-9 !pr-3 !bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs focus:!border-[#002060]"
               />
             </div>
@@ -82,37 +82,56 @@
         </div>
 
         <DataTable :value="filteredStudents" dataKey="id"
-          paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]"
-          responsiveLayout="scroll" class="p-datatable-sm">
+          paginator :rows="rosterRows" v-model:first="rosterFirst" :rowsPerPageOptions="[10, 20, 50]"
+          scrollable scrollHeight="calc(100vh - 460px)"
+          class="p-datatable-sm roster-table">
           <template #empty>
             <div class="text-center py-10 text-xs text-slate-400">
               {{ classInfo.students.length === 0 ? 'No students are enrolled in this class yet.' : 'No students match your search or filter.' }}
             </div>
           </template>
 
-          <Column header="#">
+          <template #paginatorstart>
+            <span class="text-xs text-slate-500">
+              Showing <span class="font-semibold text-slate-700">{{ filteredStudents.length ? rosterFirst + 1 : 0 }}</span>
+              to <span class="font-semibold text-slate-700">{{ Math.min(rosterFirst + rosterRows, filteredStudents.length) }}</span>
+              of <span class="font-semibold text-slate-700">{{ filteredStudents.length }}</span> students
+            </span>
+          </template>
+
+          <Column header="#" style="width: 60px; padding-left: 1.25rem">
             <template #body="{ index }">
-              <span class="text-slate-400 font-mono text-xs">{{ index + 1 }}</span>
+              <span class="text-slate-400 font-mono text-sm">{{ index + 1 }}</span>
             </template>
           </Column>
-          <Column field="student_id" header="STUDENT ID">
+          <Column field="username" header="USERNAME">
             <template #body="{ data }">
-              <span class="font-mono font-bold text-[#002060] text-xs">{{ data.student_id }}</span>
+              <span class="font-mono font-bold text-[#002060] text-sm">{{ data.username }}</span>
             </template>
           </Column>
           <Column field="name" header="NAME">
             <template #body="{ data }">
-              <span class="font-semibold text-slate-800 text-xs">{{ data.name }}</span>
+              <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
+            </template>
+          </Column>
+          <Column field="name_kh" header="NAME (KH)">
+            <template #body="{ data }">
+              <span class="text-slate-600 text-sm font-khmer">{{ data.name_kh || '—' }}</span>
             </template>
           </Column>
           <Column field="gender" header="GENDER">
             <template #body="{ data }">
-              <span class="text-slate-500 text-xs">{{ data.gender }}</span>
+              <span class="text-slate-500 text-sm">{{ data.gender }}</span>
             </template>
           </Column>
-          <Column field="email" header="EMAIL">
+          <Column field="dob" header="DATE OF BIRTH">
             <template #body="{ data }">
-              <span class="text-slate-500 text-xs">{{ data.email }}</span>
+              <span class="text-slate-500 text-sm">{{ data.dob || '—' }}</span>
+            </template>
+          </Column>
+          <Column field="phone" header="PHONE">
+            <template #body="{ data }">
+              <span class="text-slate-500 text-sm">{{ data.phone || '—' }}</span>
             </template>
           </Column>
           <Column header="STATUS" class="!text-center">
@@ -390,16 +409,10 @@
           <div>
             <label class="block font-bold text-slate-700 mb-1">Total Score</label>
             <InputNumber v-model="builderForm.totalScore" :min="1" :max="1000" size="small" placeholder="e.g. 100" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
-            <p class="text-[10px] text-slate-400 mt-1">
-              Questions are auto-scaled to sum to this ({{ selectedPoints }} raw pt{{ selectedPoints === 1 ? '' : 's' }} in the bank).
-            </p>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Pass mark (%)</label>
             <InputNumber v-model="builderForm.passMark" :min="0" :max="100" size="small" placeholder="e.g. 50" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
-            <p class="text-[10px] text-slate-400 mt-1">
-              = {{ passMarkPoints }} / {{ builderForm.totalScore || selectedPoints }} pts to pass
-            </p>
           </div>
         </div>
 
@@ -407,14 +420,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Opens at</label>
-            <DatePicker v-model="startAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
+            <input
+              type="datetime-local"
+              v-model="builderForm.startAt"
+              class="w-full bg-[#F8F8F8] border border-slate-200 rounded-lg text-xs px-3 py-2 text-slate-700 focus:border-[#002060] focus:outline-none focus:ring-2 focus:ring-[#002060]/20"
+            />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Closes at</label>
-            <DatePicker v-model="endAtDate" showTime hourFormat="24" showIcon iconDisplay="input" dateFormat="yy-mm-dd" size="small" class="w-full" input-class="w-full !bg-[#F8F8F8] !border-slate-200 !rounded-lg" />
+            <input
+              type="datetime-local"
+              v-model="builderForm.endAt"
+              class="w-full bg-[#F8F8F8] border border-slate-200 rounded-lg text-xs px-3 py-2 text-slate-700 focus:border-[#002060] focus:outline-none focus:ring-2 focus:ring-[#002060]/20"
+            />
           </div>
         </div>
-        <p class="text-[11px] text-slate-400 -mt-2">Leave these blank for no fixed schedule. A published quiz is only open to students inside this window.</p>
+        <p class="text-[11px] text-slate-400 -mt-2">Leave these blank for no fixed schedule. Closes at auto-fills from Opens at + Duration — you can still edit it. A published quiz is only open to students inside this window.</p>
 
         <!-- Shuffle toggles -->
         <div class="flex flex-wrap gap-3">
@@ -593,7 +614,6 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Dropdown from 'primevue/dropdown'
-import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Image from 'primevue/image'
 import SplitButton from 'primevue/splitbutton'
@@ -612,13 +632,13 @@ const confirm = useConfirm()
 const assignmentId = computed(() => Number(route.params.assignmentId))
 
 const tabs = [
-  { label: 'Overview', value: 'overview' },
   { label: 'Quizzes & Exams', value: 'quizzes' },
   { label: 'Score Report', value: 'scores' },
   { label: 'Feedback', value: 'feedback' },
+  { label: 'Student List', value: 'overview' },
 ]
 const validTabs = tabs.map(t => t.value)
-const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'overview')
+const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'quizzes')
 
 const classInfo = ref(null)
 const quizzes = ref([])
@@ -679,14 +699,23 @@ const filteredStudents = computed(() => {
   return classInfo.value.students.filter(s => {
     if (rosterGenderFilter.value && s.gender !== rosterGenderFilter.value) return false
     if (!q) return true
-    return s.name?.toLowerCase().includes(q) || s.student_id?.toLowerCase().includes(q)
+    return s.name?.toLowerCase().includes(q) || s.name_kh?.toLowerCase().includes(q) || s.username?.toLowerCase().includes(q)
   })
 })
 
-const rosterExportHeader = ['#', 'Student ID', 'Name', 'Gender', 'Email', 'Status']
+const rosterFirst = ref(0)
+const rosterRows = ref(10)
+
+// Jump back to page 1 whenever the underlying list changes shape, so the
+// paginator never gets stranded past the end of a smaller filtered list.
+watch(filteredStudents, () => {
+  rosterFirst.value = 0
+})
+
+const rosterExportHeader = ['#', 'Username', 'Name', 'Name (KH)', 'Gender', 'Date of Birth', 'Phone', 'Status']
 
 const rosterExportRows = () => filteredStudents.value.map((s, i) => [
-  i + 1, s.student_id, s.name, s.gender, s.email, 'Enrolled',
+  i + 1, s.username, s.name, s.name_kh, s.gender, s.dob, s.phone, 'Enrolled',
 ])
 
 function exportRosterCsv() {
@@ -778,14 +807,13 @@ function dateToLocalString(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-const startAtDate = computed({
-  get: () => localStringToDate(builderForm.value.startAt),
-  set: (val) => { builderForm.value.startAt = dateToLocalString(val) },
-})
-
-const endAtDate = computed({
-  get: () => localStringToDate(builderForm.value.endAt),
-  set: (val) => { builderForm.value.endAt = dateToLocalString(val) },
+// Auto-fill "Closes at" from "Opens at" + Duration whenever either changes —
+// still a plain field afterwards, so the teacher can edit it by hand.
+watch(() => [builderForm.value.startAt, builderForm.value.duration], ([newStart, newDuration]) => {
+  if (!newStart) return
+  const start = localStringToDate(newStart)
+  start.setMinutes(start.getMinutes() + (newDuration || 0))
+  builderForm.value.endAt = dateToLocalString(start)
 })
 
 const filteredPickerQuestions = computed(() => {
@@ -801,12 +829,6 @@ const selectedPoints = computed(() => {
   return pickerQuestions.value
     .filter(q => selectedIds.has(q.id))
     .reduce((sum, q) => sum + (q.points || 0), 0)
-})
-
-const passMarkPoints = computed(() => {
-  const pct = builderForm.value.passMark ?? 0
-  const total = builderForm.value.totalScore || selectedPoints.value
-  return Math.round((pct / 100) * total)
 })
 
 const pointsOverLimit = computed(() => {
@@ -1032,6 +1054,14 @@ watch(selectedScoreQuiz, (newQuizId) => {
 </script>
 
  <style scoped>
+.roster-table :deep(.p-datatable-thead > tr > th) {
+  font-size: 13px;
+}
+
+.roster-table :deep(.p-datatable-tbody > tr > td) {
+  font-size: 14px;
+}
+
 .teacher-tabs :deep(.p-togglebutton) {
   border: 0;
   background: transparent;

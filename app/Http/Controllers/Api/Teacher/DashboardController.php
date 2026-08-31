@@ -104,7 +104,7 @@ class DashboardController extends Controller
             ->sortBy($percentageOf)
             ->take(4)
             ->values()
-            ->map(function (QuizSubmission $submission) use ($quizzes) {
+            ->map(function (QuizSubmission $submission) use ($quizzes, $percentageOf) {
                 $quiz = $quizzes->firstWhere('id', $submission->quiz_id);
                 $submission->load('studentProfile.user');
 
@@ -112,7 +112,7 @@ class DashboardController extends Controller
                     'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
                     'className' => $quiz?->classroom?->name,
                     'subject' => $quiz?->subject?->name,
-                    'score' => $submission->mcq_score + ($submission->essay_score ?? 0),
+                    'score' => round($percentageOf($submission), 1),
                 ];
             });
 

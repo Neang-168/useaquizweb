@@ -1,9 +1,11 @@
 <template>
   <div
-    class="border border-slate-100 flex flex-col p-1.5 gap-1 min-h-[6rem] bg-white"
+    class="border border-slate-100 flex flex-col p-1.5 gap-1 bg-white"
     :class="[
       isCurrentMonth ? '' : 'bg-slate-50/60',
-      viewMode === 'week' ? 'min-h-[10rem]' : '',
+      compact
+        ? (viewMode === 'week' ? 'min-h-[6rem]' : 'min-h-[3.5rem]')
+        : (viewMode === 'week' ? 'min-h-[10rem]' : 'min-h-[6rem]'),
     ]"
   >
     <div class="flex items-center justify-between">
@@ -59,6 +61,7 @@ const props = defineProps({
   isCurrentMonth: { type: Boolean, default: true },
   viewMode: { type: String, default: 'month' },
   maxVisible: { type: Number, default: 3 },
+  compact: { type: Boolean, default: false },
 })
 
 defineEmits(['quiz-click'])

@@ -161,11 +161,13 @@
 
           <!-- Class metadata -->
           <div class="grid grid-cols-2 gap-2 text-center">
+            <!-- Room field not needed in the UI
             <div class="bg-[#F8F8F8] p-2 rounded-xl border border-slate-100">
               <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Room</span>
               <span class="text-xs font-bold text-[#002060]">{{ course.room || '—' }}</span>
             </div>
-            <div class="bg-[#F8F8F8] p-2 rounded-xl border border-slate-100">
+            -->
+            <div class="bg-[#F8F8F8] p-2 rounded-xl border border-slate-100 col-span-2">
               <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Academic Year</span>
               <span class="text-xs font-bold text-[#002060]">{{ course.academicYear || '—' }}</span>
             </div>

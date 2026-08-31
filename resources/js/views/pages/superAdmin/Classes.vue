@@ -483,7 +483,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Class Name (Khmer)</label>
             <InputText v-model="classForm.name_kh" placeholder="ឧ. ថ្នាក់ M1-CS (ឆ្នាំទី១ ព្រឹក)"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer" />
           </div>
         </div>
 

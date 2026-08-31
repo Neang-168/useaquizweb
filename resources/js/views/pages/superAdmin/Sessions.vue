@@ -274,7 +274,7 @@
           <InputText
             v-model="sessionForm.name_kh"
             placeholder="ឧ. សម័យសិក្សាព្រឹក"
-            class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm"
+            class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer"
           />
         </div>
 

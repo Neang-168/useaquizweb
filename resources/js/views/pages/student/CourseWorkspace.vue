@@ -30,19 +30,21 @@
         </div>
 
         <!-- Class & subject detail -->
-        <div v-if="course" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-[#D8E7EC]/60">
+        <div v-if="course" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-4 border-t border-[#D8E7EC]/60">
           <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
             <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Shift</p>
             <p class="text-xs font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
               <i class="pi pi-clock text-xs text-[#63C7DF]"></i> {{ course.shift || '—' }}
             </p>
           </div>
+          <!-- Room field not needed in the UI
           <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
             <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Room</p>
             <p class="text-xs font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
               <i class="pi pi-building text-xs text-[#63C7DF]"></i> {{ course.room || '—' }}
             </p>
           </div>
+          -->
           <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
             <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Major</p>
             <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ course.major || '—' }}</p>

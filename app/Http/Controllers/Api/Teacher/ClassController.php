@@ -23,7 +23,7 @@ class ClassController extends Controller
         $assignments = TeacherSubject::query()
             ->where('teacher_profile_id', $teacher->id)
             ->whereNotNull('class_id')
-            ->with(['subject', 'classroom.major', 'classroom.shift', 'classroom.academicYear'])
+            ->with(['subject', 'classroom.major', 'classroom.shift', 'classroom.academicYear', 'classroom.stage', 'classroom.semester'])
             ->get();
 
         $data = $assignments->map(function (TeacherSubject $assignment) {
@@ -36,10 +36,12 @@ class ClassController extends Controller
                     ->get()
                     ->map(fn (StudentProfile $student) => [
                         'id' => $student->id,
-                        'student_id' => $student->student_code,
+                        'username' => $student->user?->username,
                         'name' => trim($student->user?->first_name . ' ' . $student->user?->last_name),
+                        'name_kh' => $student->user?->name_kh,
                         'gender' => $student->user?->gender,
-                        'email' => $student->user?->email,
+                        'dob' => $student->user?->dob?->format('Y-m-d'),
+                        'phone' => $student->user?->phone,
                     ])
                 : collect();
 
@@ -48,6 +50,8 @@ class ClassController extends Controller
                 'class_id' => $class?->id,
                 'className' => $class?->name,
                 'major' => $class?->major?->name,
+                'stage' => $class?->stage?->name,
+                'semester' => $class?->semester?->name,
                 'subject' => $assignment->subject?->name,
                 'subject_id' => $assignment->subject_id,
                 'subject_code' => $assignment->subject?->code,

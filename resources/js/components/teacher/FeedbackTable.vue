@@ -10,47 +10,25 @@
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div class="relative w-full sm:w-56">
             <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
-            <InputText
-              v-model="searchQuery"
-              size="small"
-              placeholder="Search by name or student ID..."
-              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
-            />
+            <InputText v-model="searchQuery" size="small" placeholder="Search by name or username..."
+              class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs" />
           </div>
           <div class="flex gap-2">
-            <Button
-              label="All"
-              size="small"
+            <Button label="All" size="small"
               :class="filterStatus === 'all' ? '!bg-slate-800 !border-slate-800 !text-white' : '!bg-slate-100 !border-slate-100 !text-slate-600 hover:!bg-slate-200'"
-              class="!rounded-lg !text-xs !font-semibold !px-3 !py-1"
-              @click="filterStatus = 'all'"
-            />
-            <Button
-              label="Failed Only"
-              size="small"
+              class="!rounded-lg !text-xs !font-semibold !px-3 !py-1" @click="filterStatus = 'all'" />
+            <Button label="Failed Only" size="small"
               :class="filterStatus === 'failed' ? '!bg-rose-600 !border-rose-600 !text-white' : '!bg-rose-50 !border-rose-50 !text-rose-600 hover:!bg-rose-100'"
-              class="!rounded-lg !text-xs !font-semibold !px-3 !py-1"
-              @click="filterStatus = 'failed'"
-            />
+              class="!rounded-lg !text-xs !font-semibold !px-3 !py-1" @click="filterStatus = 'failed'" />
           </div>
-          <SplitButton
-            label="Export CSV"
-            icon="pi pi-file-excel"
-            size="small"
-            :model="exportMenuItems"
-            class="!text-xs whitespace-nowrap export-split-button"
-            @click="exportCsv"
-          />
+          <SplitButton label="Export CSV" icon="pi pi-file-excel" size="small" :model="exportMenuItems"
+            class="!text-xs whitespace-nowrap export-split-button" @click="exportCsv" />
         </div>
       </div>
 
-      <TreeTable
-        :value="treeNodes"
-        :loading="loading"
-        paginator :rows="rows" v-model:first="first" :rowsPerPageOptions="[10, 20, 50]"
-        scrollable scrollHeight="calc(100vh - 460px)"
-        class="p-treetable-sm feedback-treetable"
-      >
+      <DataTable :value="displayedStudents" dataKey="submissionId" :loading="loading" paginator :rows="rows"
+        v-model:first="first" :rowsPerPageOptions="[10, 20, 50]" scrollable scrollHeight="calc(100vh - 460px)"
+        class="p-datatable-sm feedback-table">
         <template #empty>
           <div class="text-center py-10 text-xs text-slate-400">
             No submissions yet.
@@ -59,125 +37,84 @@
 
         <template #paginatorstart>
           <span class="text-xs text-slate-500">
-            Showing <span class="font-semibold text-slate-700">{{ treeNodes.length ? first + 1 : 0 }}</span>
-            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, treeNodes.length) }}</span>
-            of <span class="font-semibold text-slate-700">{{ treeNodes.length }}</span> students
+            Showing <span class="font-semibold text-slate-700">{{ displayedStudents.length ? first + 1 : 0 }}</span>
+            to <span class="font-semibold text-slate-700">{{ Math.min(first + rows, displayedStudents.length) }}</span>
+            of <span class="font-semibold text-slate-700">{{ displayedStudents.length }}</span> students
           </span>
         </template>
-
-        <Column field="label" header="STUDENT / QUESTION" expander style="min-width: 260px; padding-left: 1.25rem">
-          <template #body="{ node }">
-            <span v-if="node.data.type === 'student'" class="font-semibold text-slate-800 text-sm">
-              {{ node.data.name }}
-            </span>
-            <div v-else class="text-slate-600 text-sm py-1">
-              <span class="flex items-center gap-2">
-                <i :class="['pi text-xs shrink-0', node.data.isCorrect ? 'pi-check-circle text-emerald-500' : 'pi-times-circle text-rose-500']"></i>
-                <span class="truncate">{{ node.data.label }}</span>
-              </span>
-            </div>
+        <Column header="USERNAME" style="width: 130px; padding-left: 1.25rem">
+          <template #body="{ data }">
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.username }}</span>
           </template>
         </Column>
 
-        <Column header="STUDENT ID" style="width: 130px">
-          <template #body="{ node }">
-            <span v-if="node.data.type === 'student'" class="font-mono font-bold text-indigo-600 text-sm">{{ node.data.studentId }}</span>
-            <span v-else class="text-slate-300 text-xs">—</span>
+        <Column field="name" header="STUDENT" style="min-width: 200px">
+          <template #body="{ data }">
+            <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
           </template>
         </Column>
 
-        <Column header="TYPE" style="width: 100px">
-          <template #body="{ node }">
-            <span v-if="node.data.type === 'question'" class="text-[11px] font-semibold text-slate-400 uppercase">{{ formatType(node.data.questionType) }}</span>
-          </template>
-        </Column>
+
 
         <Column header="POINTS" style="width: 110px">
-          <template #body="{ node }">
-            <span class="font-bold text-slate-700 text-sm">{{ node.data.pointsLabel }}</span>
+          <template #body="{ data }">
+            <span class="font-bold text-slate-700 text-sm">{{ data.score }} / {{ data.totalPoints }}</span>
           </template>
         </Column>
 
         <Column header="RESULT" style="width: 140px">
-          <template #body="{ node }">
+          <template #body="{ data }">
             <span
-              v-if="node.data.type === 'student'"
-              :class="node.data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
+              :class="data.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
               class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block"
-              :title="`Pass mark: ${node.data.passMark}%`"
-            >
-              {{ node.data.passed ? 'PASSED' : 'FAILED' }}
-            </span>
-            <span
-              v-else
-              :class="node.data.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
-              class="font-semibold px-2 py-0.5 rounded-full text-[11px] border inline-block"
-            >
-              {{ node.data.isCorrect ? 'Correct' : (node.data.answered ? 'Incorrect' : 'Not answered') }}
+              :title="`Pass mark: ${data.passMark}%`">
+              {{ data.passed ? 'PASSED' : 'FAILED' }}
             </span>
           </template>
         </Column>
 
         <Column header="FEEDBACK STATUS" style="width: 160px">
-          <template #body="{ node }">
-            <template v-if="node.data.type === 'student'">
-              <span v-if="node.data.hasFeedbackSent" class="text-emerald-600 font-semibold inline-flex items-center gap-1 text-sm">
-                <i class="pi pi-check-circle text-sm"></i> Sent
-              </span>
-              <span v-else-if="!node.data.passed" class="text-rose-500 font-semibold inline-flex items-center gap-1 text-sm">
-                <i class="pi pi-exclamation-circle text-sm"></i> Needs Feedback
-              </span>
-              <span v-else class="text-slate-400 text-sm">-</span>
-            </template>
+          <template #body="{ data }">
+            <span v-if="data.hasFeedbackSent"
+              class="text-emerald-600 font-semibold inline-flex items-center gap-1 text-sm">
+              <i class="pi pi-check-circle text-sm"></i> Sent
+            </span>
+            <span v-else-if="!data.passed" class="text-rose-500 font-semibold inline-flex items-center gap-1 text-sm">
+              <i class="pi pi-exclamation-circle text-sm"></i> Needs Feedback
+            </span>
+            <span v-else class="text-slate-400 text-sm">-</span>
           </template>
         </Column>
 
         <Column header="ACTION" style="width: 300px">
-          <template #body="{ node }">
-            <div v-if="node.data.type === 'student'" class="flex items-center gap-2 flex-wrap">
-              <Button
-                label="View Answer"
-                icon="pi pi-eye"
-                size="small"
-                outlined
+          <template #body="{ data }">
+            <div class="flex items-center gap-2 flex-wrap">
+              <Button label="View Answer" icon="pi pi-eye" size="small" outlined
                 class="!border-indigo-200 !text-indigo-600 hover:!bg-indigo-50 !rounded-xl !text-xs !px-3 !py-1.5"
-                @click="openViewAnswer(node.data)"
-              />
-              <Button
-                v-if="!node.data.passed"
-                label="Send Study Guidance"
-                icon="pi pi-send"
-                size="small"
+                @click="openViewAnswer(data)" />
+              <Button v-if="!data.passed" label="Send" icon="pi pi-send" size="small"
                 class="!bg-rose-500 hover:!bg-rose-600 !border-rose-500 !text-white !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
-                @click="openFeedbackModal(node.data)"
-              />
-              <Button
-                v-else
-                label="Send Feedback"
-                size="small"
+                @click="openFeedbackModal(data)" />
+              <Button v-else label="Send" icon="pi pi-send" size="small"
                 class="!bg-slate-100 hover:!bg-slate-200 !border-slate-100 !text-slate-600 !rounded-xl !text-xs !px-3 !py-1.5"
-                @click="openFeedbackModal(node.data)"
-              />
+                @click="openFeedbackModal(data)" />
             </div>
           </template>
         </Column>
-      </TreeTable>
+      </DataTable>
     </div>
 
     <!-- Modal: Send Feedback to Student -->
-    <Dialog
-      :visible="!!selectedStudent"
-      @update:visible="(val) => { if (!val) selectedStudent = null }"
-      modal
-      class="w-full max-w-lg"
-    >
+    <Dialog :visible="!!selectedStudent" @update:visible="(val) => { if (!val) selectedStudent = null }" modal
+      class="w-full max-w-lg">
       <template #header>
         <div>
           <h3 class="text-sm font-bold text-slate-800 m-0">
             Send Feedback to: <span class="text-indigo-600">{{ selectedStudent?.name }}</span>
           </h3>
           <p class="text-xs text-slate-400 mt-0.5 mb-0">
-            Score: <span class="font-bold text-rose-600">{{ selectedStudent?.score }}/{{ selectedStudent?.totalPoints }}</span>
+            Score: <span class="font-bold text-rose-600">{{ selectedStudent?.score }}/{{ selectedStudent?.totalPoints
+              }}</span>
           </p>
         </div>
       </template>
@@ -186,48 +123,36 @@
         <div>
           <label class="block font-bold text-slate-700 mb-1">Quick Message Templates:</label>
           <div class="flex flex-wrap gap-2">
-            <Button
-              label="+ Suggest reviewing the material"
-              size="small"
-              text
+            <Button label="+ Suggest reviewing the material" size="small" text
               class="!bg-indigo-50 hover:!bg-indigo-100 !text-indigo-700 !border !border-indigo-200 !rounded-lg !text-[11px] !px-2.5 !py-1"
-              @click="applyTemplate('restudy')"
-            />
-            <Button
-              label="+ Invite for a 1-on-1 consultation"
-              size="small"
-              text
+              @click="applyTemplate('restudy')" />
+            <Button label="+ Invite for a 1-on-1 consultation" size="small" text
               class="!bg-amber-50 hover:!bg-amber-100 !text-amber-700 !border !border-amber-200 !rounded-lg !text-[11px] !px-2.5 !py-1"
-              @click="applyTemplate('consult')"
-            />
+              @click="applyTemplate('consult')" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Feedback Message *</label>
-          <Textarea
-            v-model="feedbackMessage"
-            rows="5"
-            size="small"
+          <Textarea v-model="feedbackMessage" rows="5" size="small"
             placeholder="Write study guidance or encouragement here..."
-            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg !text-slate-700 leading-relaxed"
-          />
+            class="w-full !bg-slate-50 !border-slate-200 !rounded-lg !text-slate-700 leading-relaxed" />
         </div>
       </div>
 
       <template #footer>
-        <Button label="Cancel" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="selectedStudent = null" />
-        <Button label="Send to Student" icon="pi pi-send" size="small" class="!bg-rose-600 hover:!bg-rose-700 !border-rose-600 !text-white !rounded-lg !text-xs" @click="sendFeedback" />
+        <Button label="Cancel" size="small"
+          class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs"
+          @click="selectedStudent = null" />
+        <Button label="Send to Student" icon="pi pi-send" size="small"
+          class="!bg-rose-600 hover:!bg-rose-700 !border-rose-600 !text-white !rounded-lg !text-xs"
+          @click="sendFeedback" />
       </template>
     </Dialog>
 
     <!-- Modal: View Student's Answers -->
-    <Dialog
-      :visible="!!viewingStudent"
-      @update:visible="(val) => { if (!val) viewingStudent = null }"
-      modal
-      class="w-full max-w-3xl"
-    >
+    <Dialog :visible="!!viewingStudent" @update:visible="(val) => { if (!val) viewingStudent = null }" modal
+      class="w-full max-w-3xl">
       <template #header>
         <div>
           <h3 class="text-sm font-bold text-slate-800 m-0">
@@ -243,37 +168,31 @@
       </template>
 
       <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-        <div
-          v-for="(q, idx) in viewingStudent?.questions || []"
-          :key="q.questionId"
-          class="border border-[#D8E7EC] rounded-2xl p-4 space-y-3"
-        >
+        <div v-for="(q, idx) in viewingStudent?.questions || []" :key="q.questionId"
+          class="border border-[#D8E7EC] rounded-2xl p-4 space-y-3">
           <div class="flex items-start justify-between gap-2 border-b border-[#D8E7EC] pb-3">
             <div class="flex items-start gap-2">
               <span class="text-xs font-bold text-slate-400 font-mono">Q{{ idx + 1 }}.</span>
               <h4 class="text-sm font-semibold text-[#002060] m-0 leading-relaxed">{{ q.title }}</h4>
             </div>
-            <span
-              class="shrink-0 font-bold px-2.5 py-0.5 rounded-full text-[11px] border whitespace-nowrap"
-              :class="q.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'"
-            >
-              {{ q.isCorrect ? 'Correct' : (q.answered ? 'Incorrect' : 'Not answered') }} · {{ q.pointsAwarded }}/{{ q.pointsPossible }} pts
+            <span class="shrink-0 font-bold px-2.5 py-0.5 rounded-full text-[11px] border whitespace-nowrap"
+              :class="q.isCorrect ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'">
+              {{ q.isCorrect ? 'Correct' : (q.answered ? 'Incorrect' : 'Not answered') }} · {{ q.pointsAwarded }}/{{
+                q.pointsPossible }} pts
             </span>
           </div>
 
-          <div v-if="q.imageUrl" class="ml-6 inline-block rounded-xl border border-[#D8E7EC] bg-[#F8F8F8] overflow-hidden">
+          <div v-if="q.imageUrl"
+            class="ml-6 inline-block rounded-xl border border-[#D8E7EC] bg-[#F8F8F8] overflow-hidden">
             <Image :src="q.imageUrl" :alt="q.imageAlt || ''" preview image-class="max-h-40 object-contain block" />
           </div>
 
           <!-- Multiple Choice / True False -->
           <div v-if="q.type === 'multiple_choice' || q.type === 'true_false'" class="grid grid-cols-1 gap-2 pl-6">
-            <div
-              v-for="(opt, oIdx) in q.options"
-              :key="opt.id"
-              :class="optionClass(opt)"
-              class="p-2.5 rounded-xl border text-xs flex items-center gap-2"
-            >
-              <Image v-if="opt.imageUrl" :src="opt.imageUrl" alt="" preview image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
+            <div v-for="(opt, oIdx) in q.options" :key="opt.id" :class="optionClass(opt)"
+              class="p-2.5 rounded-xl border text-xs flex items-center gap-2">
+              <Image v-if="opt.imageUrl" :src="opt.imageUrl" alt="" preview
+                image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
               <span class="flex-1">{{ String.fromCharCode(65 + oIdx) }}. {{ opt.text }}</span>
               <i v-if="opt.isCorrect" class="pi pi-check-circle text-[#002060] text-xs shrink-0"></i>
               <i v-else-if="opt.isSelected" class="pi pi-times-circle text-rose-500 text-xs shrink-0"></i>
@@ -283,16 +202,21 @@
           <!-- Matching -->
           <div v-else-if="q.type === 'matching'" class="space-y-2 pl-6">
             <div v-for="pair in q.matchingPairs" :key="pair.id" class="space-y-1.5">
-              <div class="p-2.5 rounded-xl border text-xs flex items-center gap-2 bg-[#63C7DF]/15 border-[#63C7DF]/50 text-[#002060] font-bold">
-                <Image v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" preview image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
+              <div
+                class="p-2.5 rounded-xl border text-xs flex items-center gap-2 bg-[#63C7DF]/15 border-[#63C7DF]/50 text-[#002060] font-bold">
+                <Image v-if="pair.leftImageUrl" :src="pair.leftImageUrl" alt="" preview
+                  image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
                 <span>{{ pair.leftText }}</span>
                 <i class="pi pi-arrow-right-arrow-left text-[#63C7DF] text-[10px] shrink-0"></i>
-                <Image v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" preview image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
+                <Image v-if="pair.rightImageUrl" :src="pair.rightImageUrl" alt="" preview
+                  image-class="w-8 h-8 rounded-lg object-cover border border-[#D8E7EC] shrink-0 cursor-pointer" />
                 <span class="flex-1">{{ pair.rightText }}</span>
                 <i class="pi pi-check-circle text-[#002060] text-xs shrink-0"></i>
               </div>
-              <div v-if="pair.answered && !pair.isCorrect" class="p-2.5 rounded-xl border text-xs flex items-center gap-2 bg-rose-50 border-rose-300 text-rose-700">
-                <Image v-if="pair.selectedRightImageUrl" :src="pair.selectedRightImageUrl" alt="" preview image-class="w-8 h-8 rounded-lg object-cover border border-rose-200 shrink-0 cursor-pointer" />
+              <div v-if="pair.answered && !pair.isCorrect"
+                class="p-2.5 rounded-xl border text-xs flex items-center gap-2 bg-rose-50 border-rose-300 text-rose-700">
+                <Image v-if="pair.selectedRightImageUrl" :src="pair.selectedRightImageUrl" alt="" preview
+                  image-class="w-8 h-8 rounded-lg object-cover border border-rose-200 shrink-0 cursor-pointer" />
                 <span class="text-[10px] font-bold uppercase tracking-wide shrink-0">Their answer:</span>
                 <span class="flex-1">{{ pair.selectedRightText }}</span>
                 <i class="pi pi-times-circle text-rose-500 text-xs shrink-0"></i>
@@ -308,7 +232,9 @@
       </div>
 
       <template #footer>
-        <Button label="Close" size="small" class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs" @click="viewingStudent = null" />
+        <Button label="Close" size="small"
+          class="!bg-slate-200 hover:!bg-slate-300 !border-slate-200 !text-slate-700 !rounded-lg !text-xs"
+          @click="viewingStudent = null" />
       </template>
     </Dialog>
   </div>
@@ -316,7 +242,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import TreeTable from 'primevue/treetable'
+import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import SplitButton from 'primevue/splitbutton'
@@ -374,7 +300,7 @@ const displayedStudents = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return byStatus.filter(s =>
     s.name?.toLowerCase().includes(q) ||
-    s.studentId?.toLowerCase().includes(q)
+    s.username?.toLowerCase().includes(q)
   )
 })
 
@@ -384,39 +310,11 @@ watch(displayedStudents, () => {
   first.value = 0
 })
 
-function formatType(type) {
-  if (type === 'multiple_choice') return 'MC'
-  if (type === 'true_false') return 'T/F'
-  if (type === 'matching') return 'Matching'
-  return type
-}
-
-// One tree node per student (their score/result/feedback status + actions),
-// expanding into one child node per quiz question (correct/incorrect + points).
-const treeNodes = computed(() => displayedStudents.value.map((s) => ({
-  key: `s-${s.submissionId}`,
-  data: {
-    ...s,
-    type: 'student',
-    pointsLabel: `${s.score} / ${s.totalPoints}`,
-  },
-  children: (s.questions || []).map((q, idx) => ({
-    key: `s-${s.submissionId}-q-${q.questionId}`,
-    data: {
-      ...q,
-      type: 'question',
-      questionType: q.type,
-      label: `Q${idx + 1}. ${q.title}`,
-      pointsLabel: `${q.pointsAwarded} / ${q.pointsPossible}`,
-    },
-  })),
-})))
-
-const exportHeader = ['#', 'Student ID', 'Name', 'Score', 'Result', 'Feedback Status']
+const exportHeader = ['#', 'Username', 'Name', 'Score', 'Result', 'Feedback Status']
 
 const exportRows = () => displayedStudents.value.map((s, i) => [
   i + 1,
-  s.studentId,
+  s.username,
   s.name,
   `${s.score}/${s.totalPoints}`,
   s.passed ? 'PASSED' : 'FAILED',
@@ -498,11 +396,11 @@ async function sendFeedback() {
 
 <style scoped>
 /* Header two sizes smaller, body two sizes larger, than the table's base text-xs. */
-.feedback-treetable :deep(.p-treetable-thead > tr > th) {
+.feedback-table :deep(.p-datatable-thead > tr > th) {
   font-size: 13px;
 }
 
-.feedback-treetable :deep(.p-treetable-tbody > tr > td) {
+.feedback-table :deep(.p-datatable-tbody > tr > td) {
   font-size: 14px;
 }
 

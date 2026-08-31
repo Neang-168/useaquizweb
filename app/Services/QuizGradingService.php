@@ -52,12 +52,12 @@ class QuizGradingService
             }
 
             $points = $quiz->pointsFor($question);
-            $awarded = $this->scoreAnswer($question, $answer, $points);
+            ['awarded' => $awarded, 'correct' => $correct] = $this->scoreAnswer($question, $answer, $points);
             $total += $awarded;
 
             $answer->forceFill([
                 'awarded_score' => $awarded,
-                'is_correct' => $awarded >= $points,
+                'is_correct' => $correct,
             ])->saveQuietly();
         }
 
@@ -68,43 +68,58 @@ class QuizGradingService
         ])->saveQuietly();
     }
 
-    private function scoreAnswer(Question $question, SubmissionAnswer $answer, int $points): int
+    /**
+     * @return array{awarded: int, correct: bool}
+     */
+    private function scoreAnswer(Question $question, SubmissionAnswer $answer, int $points): array
     {
         return match ($question->type) {
             'true_false' => $this->scoreTrueFalse($question, $answer, $points),
             'multiple_choice' => $this->scoreMultipleChoice($question, $answer, $points),
             'matching' => $this->scoreMatching($question, $answer, $points),
-            default => 0,
+            default => ['awarded' => 0, 'correct' => false],
         };
     }
 
-    private function scoreTrueFalse(Question $question, SubmissionAnswer $answer, int $points): int
+    private function scoreTrueFalse(Question $question, SubmissionAnswer $answer, int $points): array
     {
         $selected = $question->options->firstWhere('id', $answer->selected_option_id);
+        $correct = (bool) $selected?->is_correct;
 
-        return $selected?->is_correct ? $points : 0;
+        return ['awarded' => $correct ? $points : 0, 'correct' => $correct];
     }
 
-    private function scoreMultipleChoice(Question $question, SubmissionAnswer $answer, int $points): int
+    private function scoreMultipleChoice(Question $question, SubmissionAnswer $answer, int $points): array
     {
         $correctIds = $question->options->where('is_correct', true)->pluck('id')->sort()->values()->all();
         $selectedIds = $answer->selectedOptions->pluck('question_option_id')->sort()->values()->all();
+        $correct = $correctIds === $selectedIds;
 
-        return $correctIds === $selectedIds ? $points : 0;
+        return ['awarded' => $correct ? $points : 0, 'correct' => $correct];
     }
 
-    private function scoreMatching(Question $question, SubmissionAnswer $answer, int $points): int
+    /**
+     * Partial credit: points are split evenly across pairs, awarded per pair
+     * matched correctly. "Correct" (for display) means every pair was
+     * matched — kept separate from the awarded score, since rounding the
+     * split can make a partial score equal to $points (e.g. 1 point over 2
+     * pairs, 1 right: round(1 * 1/2) = 1) without every pair being right.
+     */
+    private function scoreMatching(Question $question, SubmissionAnswer $answer, int $points): array
     {
         $pairCount = $question->matchingPairs->count();
 
         if ($pairCount === 0) {
-            return 0;
+            return ['awarded' => 0, 'correct' => false];
         }
 
         $correctCount = $answer->matches
             ->filter(fn ($match) => $match->left_pair_id !== null && $match->left_pair_id === $match->selected_right_pair_id)
             ->count();
 
-        return (int) round($points * $correctCount / $pairCount);
+        return [
+            'awarded' => (int) round($points * $correctCount / $pairCount),
+            'correct' => $correctCount === $pairCount,
+        ];
     }
 }

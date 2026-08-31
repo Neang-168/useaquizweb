@@ -5,12 +5,15 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white rounded-2xl border border-[#D8E7EC] shadow-xs">
       <div>
         <h1 class="text-2xl font-bold text-[#002060] tracking-tight m-0 flex items-center gap-2">
-          <i class="pi pi-graduation-cap text-[#E4AC40]"></i> My Classes
+          Classes
+          <p>
+            Manage your classes, subjects, and students in one place.
+          </p>
         </h1>
-        <p class="text-xs text-slate-500 mt-1 m-0">
+        <!-- <p class="text-xs text-slate-500 mt-1 m-0">
           <span class="font-bold text-[#002060]">{{ filteredClasses.length }}</span> of {{ myClasses.length }} class{{ myClasses.length === 1 ? '' : 'es' }}
           &middot; <span class="font-bold text-[#002060]">{{ totalStudentsAcrossClasses }}</span> students total
-        </p>
+        </p> -->
       </div>
 
       <div class="flex items-center gap-3 self-start sm:self-auto">
@@ -134,12 +137,11 @@
             </span>
           </div>
 
-          <!-- Subject Name & Code -->
+          <!-- Subject & Class -->
           <div class="space-y-1">
             <p class="text-base font-bold text-[#002060] m-0 flex items-center gap-2 flex-wrap">
-              <i class="pi pi-book text-sm text-[#E4AC40]"></i> 
               <span>{{ item.subject }}</span>
-              
+
               <button
                 v-if="item.subject_code"
                 type="button"
@@ -151,31 +153,30 @@
                 <i class="pi pi-copy text-[9px]"></i>
               </button>
             </p>
-            
-            <h3 class="text-sm font-bold text-slate-600 m-0 pl-5">
-              {{ item.className }}
-            </h3>
+
+            <p class="text-xs text-slate-500 m-0 flex items-baseline gap-1.5">
+              <span class="font-semibold text-slate-400">Class:</span>
+              <span class="font-bold text-slate-600">{{ item.className }}</span>
+            </p>
           </div>
 
           <!-- Key info grid -->
           <div class="mt-4 pt-4 border-t border-[#D8E7EC]/60 grid grid-cols-2 gap-2.5">
-            <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+            <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40 col-span-2">
               <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Students</p>
               <p class="text-sm font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
                 <i class="pi pi-users text-xs text-[#63C7DF]"></i> {{ item.totalStudents }}
               </p>
             </div>
-            
+
             <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
-              <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Room</p>
-              <p class="text-sm font-bold text-[#002060] m-0 mt-0.5 flex items-center gap-1.5">
-                <i class="pi pi-building text-xs text-[#63C7DF]"></i> {{ item.room || '—' }}
-              </p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Stage</p>
+              <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ item.stage || '—' }}</p>
             </div>
 
-            <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40 col-span-2">
-              <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Major</p>
-              <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ item.major || '—' }}</p>
+            <div class="bg-[#F8F8F8] rounded-xl p-2.5 border border-[#D8E7EC]/40">
+              <p class="text-[10px] font-bold text-slate-400 uppercase m-0">Semester</p>
+              <p class="text-xs font-bold text-slate-700 m-0 mt-0.5 truncate">{{ item.semester || '—' }}</p>
             </div>
           </div>
         </div>
@@ -205,7 +206,7 @@
               <th class="py-3.5 px-4">Major</th>
               <th class="py-3.5 px-4 text-center">Shift</th>
               <th class="py-3.5 px-4 text-center">Year</th>
-              <th class="py-3.5 px-4 text-center">Room</th>
+              <!-- <th class="py-3.5 px-4 text-center">Room</th> -->
               <th class="py-3.5 px-4 text-center">Students</th>
               <th class="py-3.5 px-4 text-right">Action</th>
             </tr>
@@ -235,7 +236,7 @@
                 </span>
               </td>
               <td class="py-3 px-4 text-center font-bold text-[#E4AC40]">{{ item.academicYear }}</td>
-              <td class="py-3 px-4 text-center font-semibold text-slate-600">{{ item.room || '—' }}</td>
+              <!-- <td class="py-3 px-4 text-center font-semibold text-slate-600">{{ item.room || '—' }}</td> -->
               <td class="py-3 px-4 text-center font-bold text-[#002060]">
                 <i class="pi pi-users text-xs text-[#63C7DF] mr-1"></i>{{ item.totalStudents }}
               </td>
@@ -305,8 +306,9 @@ onMounted(fetchMyClasses)
 const copySubjectCode = async (code) => {
   try {
     await navigator.clipboard.writeText(code)
+    toast.add({ severity: 'success', summary: 'Copied', detail: `Subject code "${code}" copied to clipboard.`, life: 2000 })
   } catch (error) {
-    // Clipboard API fail silently
+    toast.add({ severity: 'error', summary: 'Copy failed', detail: 'Could not copy the subject code.', life: 3000 })
   }
 }
 

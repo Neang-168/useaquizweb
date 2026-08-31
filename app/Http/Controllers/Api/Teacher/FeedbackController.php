@@ -75,7 +75,7 @@ class FeedbackController extends Controller
 
             return [
                 'submissionId' => $submission->id,
-                'studentId' => $submission->studentProfile?->student_code,
+                'username' => $submission->studentProfile?->user?->username,
                 'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
                 'score' => $score,
                 'totalPoints' => $submissionTotalPoints,

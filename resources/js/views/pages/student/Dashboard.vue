@@ -59,7 +59,7 @@
       </div>
     </div>
 
-    <!-- ======= MY CLASSES ======= -->
+    <!-- ======= MY CLASSES (NEW DESIGN EXACTLY LIKE REFERENCE IMAGE) ======= -->
     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-base font-bold text-slate-800 m-0 flex items-center gap-2">
@@ -72,20 +72,74 @@
       </div>
 
       <p v-if="!myClasses.length" class="text-sm text-slate-400 m-0">You're not enrolled in any classes yet.</p>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <router-link
+      
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div
           v-for="course in myClasses.slice(0, 3)"
           :key="`${course.id}-${course.classId}`"
-          :to="{ name: 'student.courseWorkspace', params: { classId: course.classId, subjectId: course.id } }"
-          class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-[#63C7DF] hover:bg-white transition-all no-underline block"
+          class="bg-white border border-slate-200/90 hover:border-[#63c7df] rounded-[24px] p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
         >
-          <span class="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#002060] text-white mb-2">{{ course.code }}</span>
-          <h4 class="text-sm font-bold text-slate-800 m-0">{{ course.title }}</h4>
-          <p class="text-xs text-slate-400 m-0 mt-1">{{ course.className }}</p>
-          <p class="text-[11px] text-slate-500 m-0 mt-2">
-            <span class="font-semibold text-emerald-600">{{ course.completedQuizzes }}</span> / {{ course.totalQuizzes }} quizzes done
-          </p>
-        </router-link>
+          <div>
+            <!-- Header Badge & Active Tag -->
+            <div class="flex items-center justify-between mb-3">
+              <span class="inline-block px-3 py-1 rounded-xl text-xs font-extrabold bg-[#002060] text-white tracking-wide">
+                {{ course.code }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </span>
+            </div>
+
+            <!-- Subject Title & Class Name -->
+            <h4 class="text-base font-bold text-[#002060] m-0 leading-snug">{{ course.title }}</h4>
+            <p class="text-xs text-slate-400 font-medium m-0 mt-1">{{ course.className }}</p>
+
+            <!-- Metadata List Section with Top/Bottom Borders -->
+            <div class="space-y-2 py-3.5 my-3.5 border-y border-slate-100 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-2">
+                  <i class="pi pi-book text-[#e4ac14] text-sm"></i> Subject Code
+                </span>
+                <span class="font-semibold text-[#002060]">{{ course.code }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 flex items-center gap-2">
+                  <i class="pi pi-users text-[#e4ac14] text-sm"></i> Class Group
+                </span>
+                <span class="font-semibold text-[#002060]">{{ course.className }}</span>
+              </div>
+            </div>
+
+            <!-- Quizzes Progress Section -->
+            <div class="mt-2">
+              <div class="flex justify-between items-center text-xs font-semibold mb-2">
+                <span class="text-slate-400">Quizzes Completed</span>
+                <span class="text-[#002060] font-bold font-mono">
+                  <span class="text-emerald-600">{{ course.completedQuizzes }}</span> / {{ course.totalQuizzes }}
+                </span>
+              </div>
+              <!-- Progress Bar -->
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div 
+                  class="h-full bg-blue-600 rounded-full transition-all duration-500"
+                  :style="{ width: course.totalQuizzes ? Math.min((course.completedQuizzes / course.totalQuizzes) * 100, 100) + '%' : '0%' }"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Button (Open Workspace) -->
+          <div class="pt-4 mt-4 border-t border-slate-100">
+            <router-link
+              :to="{ name: 'student.courseWorkspace', params: { classId: course.classId, subjectId: course.id } }"
+              class="w-full py-2 px-3 rounded-xl bg-[#002060] hover:bg-blue-900 text-white border border-cyan-100 flex items-center justify-center gap-2 font-semibold text-xs transition-colors no-underline"
+            >
+              <i class="fa-solid fa-folder-open text-[#e4ac14]"></i>
+              <span>Open Workspace</span>
+            </router-link>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -159,74 +213,16 @@
       <StudentCalendar />
     </div>
 
-    <!-- ======= MAIN CONTENT GRID ======= -->
-    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-slate-800 m-0 flex items-center gap-2">
-              <i class="pi pi-calendar text-amber-500"></i>
-              Schedule
-            </h3>
-            <router-link to="/student/myexam" class="text-xs font-bold text-blue-600 hover:underline no-underline">
-              View All
-            </router-link>
-          </div>
-
-          <p v-if="!stats.dueSoon.length" class="text-sm text-slate-400 m-0">No quizzes to take right now</p>
-
-          <ol v-else class="relative border-l-2 border-slate-100 ml-2 space-y-6">
-            <li v-for="quiz in stats.dueSoon" :key="quiz.id" class="ml-5 relative">
-              <span class="absolute -left-[27px] top-0.5 w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow"></span>
-
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <div>
-                  <p class="text-[11px] font-bold text-blue-600 m-0 flex items-center gap-1.5">
-                    <i class="pi pi-clock text-[10px]"></i>
-                    {{ quiz.endAt ? `Due ${formatDate(quiz.endAt)}` : 'No fixed deadline' }}
-                  </p>
-                  <router-link
-                    v-if="quiz.classId && quiz.subjectId"
-                    :to="{ name: 'student.courseWorkspace', params: { classId: quiz.classId, subjectId: quiz.subjectId } }"
-                    class="text-sm font-bold text-slate-800 no-underline hover:text-blue-600"
-                  >
-                    {{ quiz.title }}
-                  </router-link>
-                  <h4 v-else class="text-sm font-bold text-slate-800 m-0">{{ quiz.title }}</h4>
-                  <p class="text-xs text-slate-400 m-0 mt-1 flex items-center gap-3 flex-wrap">
-                    <span v-if="quiz.subject" class="font-semibold text-slate-500">{{ quiz.subject }}</span>
-                    <span><i class="pi pi-clock text-xs"></i> {{ quiz.duration }} min</span>
-                    <span><i class="pi pi-list text-xs"></i> {{ quiz.totalQuestions }} questions</span>
-                  </p>
-                </div>
-                <router-link :to="`/student/take-quiz?id=${quiz.id}`" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all no-underline text-center shrink-0">
-                  Start Exam
-                </router-link>
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="space-y-6">
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-          <h3 class="text-base font-bold text-slate-800 m-0 mb-4 flex items-center gap-2">
-            <i class="pi pi-bell text-blue-500"></i>
-            Feedback From Teachers
-          </h3>
-          <div class="space-y-3">
-            <p v-if="!stats.announcements.length" class="text-xs text-slate-400 m-0">No feedback yet</p>
-            <div v-for="note in stats.announcements" :key="note.id" class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <p class="text-xs font-bold text-slate-700 m-0">{{ note.teacherName || 'Teacher' }}</p>
-              <p class="text-[11px] text-slate-500 m-0 mt-1">{{ note.message }}</p>
-              <span class="text-[10px] text-slate-400 mt-2 block">{{ note.sentAt }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div> -->
+    <!-- ======= CONFIRM DIALOG ======= -->
+    <ConfirmDialog
+      v-model="showStartConfirm"
+      title="Start this quiz?"
+      :message="pendingQuiz ? `Duration: ${pendingQuiz.duration} minutes, ${pendingQuiz.totalQuestions} questions. Once started, the timer begins immediately and cannot be paused.` : ''"
+      confirm-text="Start Exam"
+      cancel-text="Cancel"
+      @confirm="confirmStartQuiz"
+      @cancel="showStartConfirm = false"
+    />
 
   </div>
 </template>

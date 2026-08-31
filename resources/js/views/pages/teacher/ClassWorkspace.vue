@@ -183,7 +183,7 @@
 
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
               <div class="flex items-center gap-1">
-                <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-slate-400 hover:!text-[#002060]" @click="openPreview(quiz)" />
+                <Button icon="pi pi-eye" text rounded size="small" severity="secondary" title="Preview" class="!w-7 !h-7 !text-[#e4ac14] hover:!text-[#002060]" @click="openPreview(quiz)" />
                 <Button
                   v-if="isEditable(quiz)"
                   icon="pi pi-pencil" text rounded size="small" severity="secondary" title="Edit"
@@ -214,7 +214,7 @@
                 class="!bg-[#E4AC40]/15 hover:!bg-[#E4AC40]/30 !text-[#E4AC40] !rounded-xl !text-xs !font-bold !px-3 !py-1.5"
                 @click="closeQuiz(quiz)"
               />
-              <span v-else class="text-[11px] text-slate-400 font-semibold">Closed</span>
+              <span v-else class="text-[11px] text-[#e4ac14] font-semibold">Closed</span>
             </div>
           </div>
 

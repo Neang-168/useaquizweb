@@ -111,7 +111,7 @@
             <!-- People: the individuals who use the system -->
             <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                People
+                Members
               </span>
 
               <router-link to="/admin/teachers"
@@ -129,7 +129,7 @@
               </router-link>
             </div>
             <!-- Report: the individuals who use the system -->
-            <div class="space-y-1">
+            <!-- <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
                 Report
               </span>
@@ -140,7 +140,7 @@
                 <i class="pi pi-users text-base"></i>
                 <span>Report</span>
               </router-link>
-            </div>
+            </div> -->
 
             <!-- Administration: system-wide account management first,
                  the admin's own profile last -->

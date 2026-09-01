@@ -11,9 +11,9 @@
         <div>
           <h1 class="m-0 text-[16px] font-semibold text-slate-900 leading-tight">University Of South-East Asia</h1>
         </div>
-        <div>
+        <!-- <div>
           <h1 class="ml-10 text-[14px] font-semibold text-slate-900 leading-tight">Teacher Portal</h1>
-        </div>
+        </div> -->
       </div>
 
       <!-- Right: Search, Notifications, Profile -->
@@ -23,13 +23,13 @@
           <i class="pi pi-search text-lg"></i>
         </Button> -->
 
-        <Button text rounded severity="secondary" aria-label="Notifications"
+        <!-- <Button text rounded severity="secondary" aria-label="Notifications"
           class="relative !text-slate-400 hover:!text-blue-600 !p-0 !w-auto !h-auto">
           <i class="pi pi-bell text-lg"></i>
           <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600"></span>
         </Button>
 
-        <div class="w-px h-6 bg-slate-200"></div>
+        <div class="w-px h-6 bg-slate-200"></div> -->
 
         <div class="relative" ref="profileMenuRef">
           <Button text severity="secondary" class="!p-0 !w-auto !h-auto" @click="profileMenuOpen = !profileMenuOpen">

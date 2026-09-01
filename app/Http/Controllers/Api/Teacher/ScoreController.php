@@ -38,12 +38,15 @@ class ScoreController extends Controller
             return [
                 'id' => $submission->id,
                 'studentId' => $submission->studentProfile?->student_code,
+                'username' => $submission->studentProfile?->user?->username,
                 'name' => trim($submission->studentProfile?->user?->first_name . ' ' . $submission->studentProfile?->user?->last_name),
+                'nameKh' => $submission->studentProfile?->user?->name_kh,
                 'submittedAt' => $submission->submitted_at?->format('Y-m-d h:i A'),
                 'mcqScore' => $submission->mcq_score,
                 'essayScore' => $submission->essay_score,
                 'essayNeedsGrade' => $hasEssay && is_null($submission->essay_score),
                 'passMark' => $submissionPassMark,
+                'scorePercentage' => round($percentage),
                 'passed' => $percentage >= $submissionPassMark,
                 'tabSwitchCount' => $submission->tab_switch_count,
             ];

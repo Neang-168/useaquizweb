@@ -2,7 +2,7 @@
   <div class="space-y-6 w-full pb-10">
 
     <!-- 1. Header Section (Single Class Header) -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs flex flex-col md:flex-row md:items-start justify-between gap-4">
       <div class="flex items-start gap-4">
         <div class="w-14 h-14 rounded-2xl bg-[#002060] text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-md">
           {{ classData.code }}
@@ -10,51 +10,86 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-extrabold text-slate-800 m-0">{{ classData.name }}</h1>
-            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-extrabold rounded-md border border-emerald-100">
-              Active Class
+            <span
+              class="px-2 py-0.5 text-[10px] font-extrabold rounded-md border"
+              :class="classData.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'"
+            >
+              {{ classData.status || '—' }}
             </span>
           </div>
           <p class="text-xs text-slate-400 m-0 mt-1">
-            មុខវិជ្ជា៖ <span class="font-semibold text-slate-600">{{ classData.subject }}</span> | 
-            គ្រូបង្រៀន៖ <span class="font-semibold text-slate-600">{{ classData.teacher }}</span>
+            Major: <span class="font-semibold text-slate-600">{{ classData.subject || '—' }}</span>
+            <span class="mx-1.5 text-slate-300">|</span>
+            Faculty: <span class="font-semibold text-slate-600">{{ classData.faculty || '—' }}</span>
+            <span class="mx-1.5 text-slate-300">|</span>
+            Shift: <span class="font-semibold text-slate-600">{{ classData.shift || '—' }}</span>
+            <span class="mx-1.5 text-slate-300">|</span>
+            {{ classData.academic_year || '—' }} · {{ classData.semester || '—' }} · {{ classData.term || '—' }}
           </p>
+          <!-- <p class="text-xs text-slate-400 m-0 mt-1">
+            Teacher{{ teacherNames.length > 1 ? 's' : '' }}:
+            <span v-if="teacherNames.length" class="font-semibold text-slate-600">{{ teacherNames.join(', ') }}</span>
+            <span v-else class="italic text-slate-400">No teacher assigned to this class yet</span>
+          </p> -->
+          <div v-if="subjects.length" class="flex flex-wrap gap-1.5 mt-2">
+            <span
+              v-for="(row, i) in subjects" :key="i"
+              class="px-2 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-semibold rounded-md border border-slate-100"
+              title="Subject — Teacher"
+            >
+              {{ row.subject || 'Subject' }}<span v-if="row.teacher"> — {{ row.teacher }}</span>
+            </span>
+          </div>
         </div>
-      </div>
-
-      <!-- Action Buttons for this Class -->
-      <div class="flex items-center gap-2">
-        <button
-          @click="openSubjectsDialog"
-          class="py-2 px-3.5 text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200/60 hover:border-indigo-300 rounded-xl transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
-        >
-          <i class="fa-solid fa-gear text-[11px]"></i>
-          <span>Manage Settings</span>
-        </button>
-
-        <button 
-          @click="showAnalyticsModal = true"
-          class="py-2 px-3.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/60 rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
-        >
-          <i class="pi pi-chart-scatter text-xs"></i>
-          <span>Spider Analytics</span>
-        </button>
-
-        <button 
-          @click="showExportModal = true"
-          class="py-2 px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
-        >
-          <i class="pi pi-download text-xs"></i>
-          <span>Export Results</span>
-        </button>
       </div>
     </div>
 
-    <!-- 2. KPI Summary Stat Cards -->
+    <!-- 2. Subject / Teacher / Quiz Filters -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-wrap items-center gap-2.5">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Filter results:</span>
+
+      <Dropdown
+        v-model="filterSubjectId" :options="subjectOptions" optionLabel="name" optionValue="id"
+        placeholder="All Subjects" showClear class="w-full sm:w-52 custom-filter-dropdown"
+      />
+
+      <Dropdown
+        v-model="filterTeacher" :options="teacherOptions"
+        placeholder="All Teachers" showClear class="w-full sm:w-52 custom-filter-dropdown"
+      />
+
+      <Dropdown
+        v-model="filterQuizId" :options="quizOptions" optionLabel="title" optionValue="id"
+        placeholder="All Quizzes" showClear class="w-full sm:w-60 custom-filter-dropdown"
+      />
+
+      <Button
+        v-if="hasActiveFilter" icon="pi pi-filter-slash" label="Reset"
+        class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer whitespace-nowrap"
+        @click="clearFilters"
+      />
+
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Export:</span>
+        <Button
+          icon="pi pi-file" label="CSV" :loading="exporting"
+          class="!bg-slate-100 !text-slate-600 hover:!bg-slate-200 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
+          @click="handleExport('csv')"
+        />
+        <Button
+          icon="pi pi-file-excel" label="Excel" :loading="exporting"
+          class="!bg-emerald-50 !text-emerald-600 hover:!bg-emerald-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer"
+          @click="handleExport('xlsx')"
+        />
+      </div>
+    </div>
+
+    <!-- 3. KPI Summary Stat Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">សិស្សសរុប</p>
-          <h2 class="text-2xl font-black text-slate-800 font-mono m-0 mt-1">{{ classData.total_students }} នាក់</h2>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">Total Students</p>
+          <h2 class="text-2xl font-black text-slate-800 font-mono m-0 mt-1">{{ classData.total_students }} / {{ classData.capacity || '—' }}</h2>
         </div>
         <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
           <i class="pi pi-users text-base"></i>
@@ -63,8 +98,8 @@
 
       <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">Quizzes សរុប</p>
-          <h2 class="text-2xl font-black text-purple-700 font-mono m-0 mt-1">{{ classData.total_quizzes }} Active</h2>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">Total Quizzes<span v-if="hasActiveFilter" class="normal-case font-medium text-slate-300"> (filtered)</span></p>
+          <h2 class="text-2xl font-black text-purple-700 font-mono m-0 mt-1">{{ displayTotalQuizzes }}</h2>
         </div>
         <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
           <i class="pi pi-file text-base"></i>
@@ -73,9 +108,9 @@
 
       <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">ជាប់ / ធ្លាក់</p>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">Passed / Failed<span v-if="hasActiveFilter" class="normal-case font-medium text-slate-300"> (filtered)</span></p>
           <h2 class="text-2xl font-black text-emerald-600 font-mono m-0 mt-1">
-            {{ classData.stats.passed }} <span class="text-slate-400 text-sm font-normal">/</span> <span class="text-rose-600">{{ classData.stats.failed }}</span>
+            {{ displayStats.passed }} <span class="text-slate-400 text-sm font-normal">/</span> <span class="text-rose-600">{{ displayStats.failed }}</span>
           </h2>
         </div>
         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -85,8 +120,8 @@
 
       <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">ពិន្ទុមធ្យម</p>
-          <h2 class="text-2xl font-black text-amber-600 font-mono m-0 mt-1">{{ classData.stats.avg_score }}/100</h2>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider m-0">Average Score<span v-if="hasActiveFilter" class="normal-case font-medium text-slate-300"> (filtered)</span></p>
+          <h2 class="text-2xl font-black text-amber-600 font-mono m-0 mt-1">{{ displayStats.avg_score }}/100</h2>
         </div>
         <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
           <i class="pi pi-star text-base"></i>
@@ -94,48 +129,76 @@
       </div>
     </div>
 
-    <!-- 3. Student List Table inside Class -->
+    <!-- 4. Student List Table inside Class -->
     <div class="bg-white rounded-2xl border border-slate-100 shadow-xs p-5">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <div>
-          <h3 class="text-sm font-bold text-slate-800 m-0">បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់</h3>
-          <p class="text-xs text-slate-400 m-0 mt-0.5">បញ្ជីសិស្សទាំងអស់ដែលបានចុះឈ្មោះក្នុងថ្នាក់ {{ classData.code }}</p>
+          <h3 class="text-sm font-bold text-slate-800 m-0">Class Roster</h3>
+          <p class="text-xs text-slate-400 m-0 mt-0.5">All students enrolled in class {{ classData.code }}</p>
         </div>
-        <div class="relative w-56">
+        <div class="relative w-full lg:w-56">
           <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input 
+          <input
             v-model="studentSearch"
-            type="text" 
-            placeholder="ស្វែងរកឈ្មោះសិស្ស..." 
+            type="text"
+            placeholder="Search by name, username, or student ID..."
             class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div v-if="loading" class="py-10 text-center text-xs text-slate-400">Loading roster…</div>
+
+      <div v-else-if="!studentsList.length" class="py-10 text-center text-xs text-slate-400">
+        No students are assigned to this class yet.
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-              <th class="py-3 px-3">Student ID</th>
-              <th class="py-3 px-3">ឈ្មោះសិស្ស</th>
+              <th class="py-3 px-3">Username</th>
+              <th class="py-3 px-3">Name</th>
+              <th class="py-3 px-3">Name (KH)</th>
+              <th class="py-3 px-3">Gender</th>
+              <th class="py-3 px-3">Phone</th>
               <th class="py-3 px-3 text-center">Quiz Completed</th>
-              <th class="py-3 px-3 text-center">ពិន្ទុមធ្យម</th>
-              <th class="py-3 px-3 text-center">ស្ថានភាព</th>
+              <th class="py-3 px-3 text-center">Total Score</th>
+              <th class="py-3 px-3 text-center">%</th>
+              <th class="py-3 px-3 text-center">Result</th>
+              <th class="py-3 px-3 text-right">Details</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-xs">
-            <tr v-for="std in filteredStudents" :key="std.id" class="hover:bg-slate-50/80 transition-colors">
-              <td class="py-3 px-3 font-mono font-bold text-slate-500">{{ std.student_id }}</td>
+            <tr v-for="std in displayedStudents" :key="std.id" class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-3 px-3 font-mono font-bold text-slate-500">{{ std.username || '—' }}</td>
               <td class="py-3 px-3 font-semibold text-slate-800">{{ std.name }}</td>
-              <td class="py-3 px-3 text-center font-mono">{{ std.quiz_completed }}/{{ classData.total_quizzes }}</td>
-              <td class="py-3 px-3 text-center font-mono font-extrabold text-blue-600">{{ std.score }}</td>
+              <td class="py-3 px-3 text-slate-600 font-khmer">{{ std.name_kh || '—' }}</td>
+              <td class="py-3 px-3 text-slate-500">{{ std.gender || '—' }}</td>
+              <td class="py-3 px-3 text-slate-500">{{ std.phone || '—' }}</td>
+              <td class="py-3 px-3 text-center font-mono">{{ std.effective.completed }}/{{ std.effective.total }}</td>
+              <td class="py-3 px-3 text-center font-mono text-slate-500">{{ std.effective.points }}/{{ std.effective.totalPoints }}</td>
+              <td class="py-3 px-3 text-center font-mono font-extrabold text-blue-600">{{ std.effective.score !== null ? std.effective.score + '%' : '—' }}</td>
               <td class="py-3 px-3 text-center">
-                <span 
+                <span
+                  v-if="std.effective.score !== null"
                   class="px-2.5 py-0.5 rounded-md text-[10px] font-bold"
-                  :class="std.score >= 50 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'"
+                  :class="std.effective.score >= 50 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'"
                 >
-                  {{ std.score >= 50 ? 'Passed' : 'Failed' }}
+                  {{ std.effective.score >= 50 ? 'Passed' : 'Failed' }}
                 </span>
+                <span v-else class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-400 border border-slate-100">
+                  No Data
+                </span>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button
+                  @click="openStudentDetail(std)"
+                  class="!w-7 !h-7 !rounded-lg !bg-slate-100 hover:!bg-slate-200 !text-slate-500 inline-flex items-center justify-center transition-colors cursor-pointer"
+                  title="View full details"
+                >
+                  <i class="pi pi-eye text-xs"></i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -143,42 +206,75 @@
       </div>
     </div>
 
-    <!-- SPIDER GRAPH MODAL -->
-    <Dialog v-model:visible="showAnalyticsModal" modal header="Class Performance Overview (Spider Graph)" :style="{ width: '550px' }" class="rounded-2xl">
-      <div class="space-y-4 pt-2">
-        <div class="relative w-full h-64 flex items-center justify-center py-4 bg-slate-900/5 rounded-2xl border border-slate-100">
-          <svg class="w-60 h-60 overflow-visible" viewBox="0 0 200 200">
-            <polygon v-for="level in [0.2, 0.4, 0.6, 0.8, 1.0]" :key="level" :points="getSpiderWebPoints(level)" fill="none" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>
-            <line v-for="(axis, i) in spiderAxes" :key="i" x1="100" y1="100" :x2="axis.x" :y2="axis.y" stroke="#94a3b8" stroke-width="1"/>
-            <polygon :points="spiderDataPoints" fill="rgba(37, 99, 235, 0.35)" stroke="#2563eb" stroke-width="2.5" />
-            <circle v-for="(pt, i) in spiderDataDotCoords" :key="i" :cx="pt.x" :cy="pt.y" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
-            <text v-for="(axis, i) in spiderAxes" :key="'label-'+i" :x="axis.labelX" :y="axis.labelY" text-anchor="middle" dominant-baseline="middle" class="text-[9px] font-extrabold fill-slate-700 font-mono">
-              {{ axis.name }} ({{ axis.value }})
-            </text>
-          </svg>
-        </div>
-      </div>
-    </Dialog>
-
-    <!-- EXPORT QUIZ MODAL -->
-    <Dialog v-model:visible="showExportModal" modal header="Export Quiz Results" :style="{ width: '450px' }" class="rounded-2xl">
-      <div class="space-y-4 pt-2">
-        <p class="text-xs text-slate-500 m-0">ជ្រើសរើស Quiz ដើម្បីទាញយកលទ្ធផលសិស្សជា CSV សម្រាប់ថ្នាក់ {{ classData.code }}</p>
-        <div class="space-y-2">
-          <div 
-            v-for="quiz in staticQuizzes" 
-            :key="quiz.id"
-            @click="selectedQuizId = quiz.id"
-            class="p-3 border rounded-xl flex items-center justify-between cursor-pointer transition-all"
-            :class="selectedQuizId === quiz.id ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 hover:bg-slate-50'"
-          >
-            <span class="text-xs font-bold text-slate-800">{{ quiz.title }}</span>
-            <i class="pi" :class="selectedQuizId === quiz.id ? 'pi-check-circle text-blue-600' : 'pi-circle text-slate-300'"></i>
+    <!-- STUDENT DETAIL MODAL -->
+    <Dialog v-model:visible="showDetailDialog" modal header="Student Details" :style="{ width: '680px' }" class="rounded-2xl">
+      <div v-if="selectedStudent" class="space-y-5 pt-2">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-[#002060] text-white flex items-center justify-center font-bold shrink-0">
+            {{ (selectedStudent.name || '?').charAt(0) }}
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-800 m-0">{{ selectedStudent.name }}</h3>
+            <p class="text-xs text-slate-400 m-0 mt-0.5 font-khmer" v-if="selectedStudent.name_kh">{{ selectedStudent.name_kh }}</p>
           </div>
         </div>
-        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
-          <button @click="showExportModal = false" class="px-3.5 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">បោះបង់</button>
-          <button @click="handleExport" :disabled="!selectedQuizId" class="px-3.5 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-semibold disabled:opacity-50">Download</button>
+
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+          <div><span class="text-slate-400 block">Username</span><span class="font-semibold text-slate-700">{{ selectedStudent.username || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Student ID</span><span class="font-semibold text-slate-700">{{ selectedStudent.student_id || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Gender</span><span class="font-semibold text-slate-700">{{ selectedStudent.gender || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Date of Birth</span><span class="font-semibold text-slate-700">{{ selectedStudent.dob || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Phone</span><span class="font-semibold text-slate-700">{{ selectedStudent.phone || '—' }}</span></div>
+          <div class="col-span-2"><span class="text-slate-400 block">Address</span><span class="font-semibold text-slate-700">{{ selectedStudent.address || '—' }}</span></div>
+
+          <div><span class="text-slate-400 block">Class Status</span><span class="font-semibold text-slate-700">{{ selectedStudent.class_status || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Account Status</span><span class="font-semibold text-slate-700">{{ selectedStudent.account_status || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Admission Date</span><span class="font-semibold text-slate-700">{{ selectedStudent.admission_date || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Generation</span><span class="font-semibold text-slate-700">{{ selectedStudent.generation || '—' }}</span></div>
+
+          <div><span class="text-slate-400 block">Faculty</span><span class="font-semibold text-slate-700">{{ selectedStudent.faculty || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Department</span><span class="font-semibold text-slate-700">{{ selectedStudent.department || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Major</span><span class="font-semibold text-slate-700">{{ selectedStudent.major || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Stage</span><span class="font-semibold text-slate-700">{{ selectedStudent.stage || '—' }}</span></div>
+
+          <div><span class="text-slate-400 block">Academic Year</span><span class="font-semibold text-slate-700">{{ selectedStudent.academic_year || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Semester</span><span class="font-semibold text-slate-700">{{ selectedStudent.semester || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Term</span><span class="font-semibold text-slate-700">{{ selectedStudent.term || '—' }}</span></div>
+          <div><span class="text-slate-400 block">Shift</span><span class="font-semibold text-slate-700">{{ selectedStudent.shift || '—' }}</span></div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-4 text-xs">
+          <div><span class="text-slate-400 block">Quizzes Completed</span><span class="font-bold text-slate-700">{{ selectedStudent.quiz_completed }}/{{ selectedStudent.total_quizzes }}</span></div>
+          <div><span class="text-slate-400 block">Average Score</span><span class="font-bold text-blue-600">{{ selectedStudent.score ?? 'No Data' }}</span></div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100">
+          <h4 class="text-xs font-bold text-slate-700 m-0 mb-2">Quiz Results Breakdown</h4>
+          <div v-if="!selectedStudent.quiz_results?.length" class="text-xs text-slate-400 py-3 text-center bg-slate-50 rounded-lg">
+            This student hasn't submitted any quiz in this class yet.
+          </div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                  <th class="py-2 px-2">Quiz</th>
+                  <th class="py-2 px-2">Subject</th>
+                  <th class="py-2 px-2">Teacher</th>
+                  <th class="py-2 px-2 text-center">Score</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-xs">
+                <tr v-for="r in selectedStudent.quiz_results" :key="r.quiz_id">
+                  <td class="py-2 px-2 font-semibold text-slate-800">{{ r.quiz_title || '—' }}</td>
+                  <td class="py-2 px-2 text-slate-500">{{ r.subject || '—' }}</td>
+                  <td class="py-2 px-2 text-slate-500">{{ r.teacher || '—' }}</td>
+                  <td class="py-2 px-2 text-center font-mono font-bold" :class="r.score >= 50 ? 'text-emerald-600' : 'text-rose-600'">
+                    {{ r.score ?? '—' }} <span class="text-slate-400 font-normal">({{ r.points }}/{{ r.total_points }})</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </Dialog>
@@ -187,120 +283,253 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Dialog from 'primevue/dialog'
+import Dropdown from 'primevue/dropdown'
+import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
+import api, { toastFromError } from '../../../api'
+
+const props = defineProps({
+  id: { type: [String, Number], required: true },
+})
 
 const toast = useToast()
 
-// Data សម្រាប់ថ្នាក់តែមួយគត់ (Single Class Object)
 const classData = ref({
-  id: 1,
-  code: 'IT-301',
-  name: 'Web Architecture & Vue 3',
-  subject: 'Computer Science',
-  teacher: 'Dr. Chan Sok',
-  total_students: 35,
-  total_quizzes: 4,
-  stats: {
-    passed: 30,
-    failed: 5,
-    avg_score: 82,
-    pass_rate: 86,
-    completion: 92,
-    attendance: 88,
-    engagement: 80
+  id: null,
+  code: '',
+  name: '',
+  subject: '',
+  faculty: '',
+  shift: '',
+  academic_year: '',
+  semester: '',
+  term: '',
+  status: '',
+  capacity: null,
+  total_students: 0,
+  total_quizzes: 0,
+})
+
+const studentsList = ref([])
+const quizList = ref([])
+const subjects = ref([])
+const loading = ref(false)
+
+const fetchRoster = async () => {
+  loading.value = true
+  try {
+    const { data } = await api.get(`/classes/${props.id}/roster`)
+    const cls = data.class
+
+    classData.value = {
+      id: cls.id,
+      code: cls.code,
+      name: cls.name,
+      subject: cls.major_name || '',
+      faculty: cls.faculty_name || '',
+      shift: cls.shift || '',
+      academic_year: cls.academic_year || '',
+      semester: cls.semester || '',
+      term: cls.term || '',
+      status: cls.status || '',
+      capacity: cls.capacity,
+      total_students: cls.students_count,
+      total_quizzes: cls.total_quizzes,
+    }
+    studentsList.value = data.students
+    quizList.value = data.quizzes
+    subjects.value = data.subjects
+  } catch (error) {
+    toast.add({ summary: 'Failed to load class roster', ...toastFromError(error) })
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchRoster)
+
+const studentSearch = ref('')
+const showDetailDialog = ref(false)
+const selectedStudent = ref(null)
+
+const filterSubjectId = ref(null)
+const filterTeacher = ref(null)
+const filterQuizId = ref(null)
+
+const clearFilters = () => {
+  filterSubjectId.value = null
+  filterTeacher.value = null
+  filterQuizId.value = null
+}
+
+// Subject dropdown: one entry per real subject taught in this class.
+const subjectOptions = computed(() => {
+  const seen = new Map()
+  subjects.value.forEach(row => {
+    if (row.subject_id != null && !seen.has(row.subject_id)) seen.set(row.subject_id, row.subject)
+  })
+  return [...seen].map(([id, name]) => ({ id, name }))
+})
+
+// Teacher dropdown narrows to only the teacher(s) who teach the selected
+// subject, so picking a subject first makes finding the right teacher easier.
+const teacherOptions = computed(() => {
+  const relevant = filterSubjectId.value
+    ? subjects.value.filter(row => row.subject_id === filterSubjectId.value)
+    : subjects.value
+  return [...new Set(relevant.map(row => row.teacher).filter(Boolean))]
+})
+
+// Quiz dropdown narrows to whichever subject/teacher is selected, since a
+// quiz belongs to exactly one subject.
+const quizOptions = computed(() => quizList.value.filter(q =>
+  (!filterSubjectId.value || q.subject_id === filterSubjectId.value) &&
+  (!filterTeacher.value || q.teacher === filterTeacher.value)
+))
+
+const quizzesMatchingFilter = computed(() => quizOptions.value.filter(q =>
+  !filterQuizId.value || q.id === filterQuizId.value
+))
+
+// Selecting a subject can invalidate an already-picked teacher/quiz that
+// doesn't belong to it, so drop those rather than showing a stale filter.
+watch(filterSubjectId, () => {
+  if (filterTeacher.value && !teacherOptions.value.includes(filterTeacher.value)) {
+    filterTeacher.value = null
   }
 })
 
-// Static Student List
-const studentsList = ref([
-  { id: 1, student_id: 'STD-001', name: 'Chan Keo', quiz_completed: 4, score: 95 },
-  { id: 2, student_id: 'STD-002', name: 'Sok Mean', quiz_completed: 4, score: 78 },
-  { id: 3, student_id: 'STD-003', name: 'Vanna Eng', quiz_completed: 3, score: 42 },
-  { id: 4, student_id: 'STD-004', name: 'Rithy Leng', quiz_completed: 4, score: 88 },
-  { id: 5, student_id: 'STD-005', name: 'Bopha Tep', quiz_completed: 2, score: 35 }
-])
+watch([filterSubjectId, filterTeacher], () => {
+  if (filterQuizId.value && !quizOptions.value.some(q => q.id === filterQuizId.value)) {
+    filterQuizId.value = null
+  }
+})
 
-// Static Quizzes
-const staticQuizzes = ref([
-  { id: 101, title: 'Midterm Assessment Quiz' },
-  { id: 102, title: 'HTML & Tailwind Fundamentals' },
-  { id: 103, title: 'Vue 3 & Composition API Test' }
-])
+const hasActiveFilter = computed(() => Boolean(filterSubjectId.value || filterTeacher.value || filterQuizId.value))
 
-const studentSearch = ref('')
-const showAnalyticsModal = ref(false)
-const showExportModal = ref(false)
-const selectedQuizId = ref(null)
+// A student's completed/total/points/score, scoped to whichever quizzes
+// match the current Subject/Teacher/Quiz filters (all quizzes when none set).
+const effectiveStats = (std) => {
+  const matchingIds = new Set((hasActiveFilter.value ? quizzesMatchingFilter.value : quizList.value).map(q => q.id))
+  const results = (std.quiz_results || []).filter(r => matchingIds.has(r.quiz_id))
+  const points = results.reduce((sum, r) => sum + r.points, 0)
+  const totalPoints = results.reduce((sum, r) => sum + r.total_points, 0)
+
+  return {
+    completed: results.length,
+    total: matchingIds.size,
+    points,
+    totalPoints,
+    score: totalPoints > 0 ? Math.round((points / totalPoints) * 100) : null,
+  }
+}
+
+const displayTotalQuizzes = computed(() => hasActiveFilter.value ? quizzesMatchingFilter.value.length : classData.value.total_quizzes)
+
+const displayStats = computed(() => {
+  const results = studentsList.value.map(effectiveStats)
+  const scored = results.filter(r => r.score !== null)
+  const passed = scored.filter(r => r.score >= 50).length
+
+  return {
+    passed,
+    failed: scored.length - passed,
+    avg_score: scored.length ? Math.round(scored.reduce((sum, r) => sum + r.score, 0) / scored.length) : 0,
+  }
+})
 
 const filteredStudents = computed(() => {
   if (!studentSearch.value.trim()) return studentsList.value
-  return studentsList.value.filter(s => 
-    s.name.toLowerCase().includes(studentSearch.value.toLowerCase()) ||
-    s.student_id.toLowerCase().includes(studentSearch.value.toLowerCase())
+  const term = studentSearch.value.toLowerCase()
+  return studentsList.value.filter(s =>
+    s.name?.toLowerCase().includes(term) ||
+    s.name_kh?.toLowerCase().includes(term) ||
+    s.username?.toLowerCase().includes(term) ||
+    s.student_id?.toLowerCase().includes(term)
   )
 })
 
+// Pre-computes each row's filter-scoped stats once, instead of recalculating
+// on every template access.
+const displayedStudents = computed(() => filteredStudents.value.map(std => ({ ...std, effective: effectiveStats(std) })))
+
+const teacherNames = computed(() => [...new Set(subjects.value.map(row => row.teacher).filter(Boolean))])
+
 // Actions
-const openSubjectsDialog = () => {
-  toast.add({ severity: 'info', summary: 'Class settings', detail: `Opening Manage Settings for class ${classData.value.code}.`, life: 3000 })
+const openStudentDetail = (std) => {
+  selectedStudent.value = std
+  showDetailDialog.value = true
 }
 
-const handleExport = () => {
-  toast.add({ severity: 'success', summary: 'Quiz results exported', detail: `CSV export started for Quiz ID: ${selectedQuizId.value}.`, life: 3000 })
-  showExportModal.value = false
+const exporting = ref(false)
+
+// Exports whatever the Subject/Teacher/Quiz filters above are currently
+// scoped to (the whole class when none are set) — no extra dialog/picker.
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const response = await api.get(`/classes/${props.id}/export`, {
+      params: {
+        subject_id: filterSubjectId.value || undefined,
+        teacher: filterTeacher.value || undefined,
+        quiz_id: filterQuizId.value || undefined,
+        format,
+      },
+      responseType: 'blob',
+    })
+    const disposition = response.headers['content-disposition'] || ''
+    const filename = disposition.match(/filename="?([^"]+)"?/)?.[1] || `${classData.value.code}-results.${format}`
+    const blobUrl = URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(blobUrl)
+    toast.add({ severity: 'success', summary: 'Results exported', detail: `Downloaded as .${format}.`, life: 3000 })
+  } catch (error) {
+    toast.add({ summary: 'Failed to export results', ...toastFromError(error) })
+  } finally {
+    exporting.value = false
+  }
 }
-
-// Spider Radar Calculations
-const spiderCategories = [
-  { key: 'pass_rate', name: 'Pass Rate' },
-  { key: 'avg_score', name: 'Avg Score' },
-  { key: 'completion', name: 'Completion' },
-  { key: 'attendance', name: 'Attendance' },
-  { key: 'engagement', name: 'Engagement' },
-]
-
-const spiderAxes = computed(() => {
-  const stats = classData.value.stats
-  const total = spiderCategories.length
-  const radius = 65
-
-  return spiderCategories.map((cat, i) => {
-    const angle = (Math.PI * 2 / total) * i - (Math.PI / 2)
-    const val = stats[cat.key] || 0
-    const x = 100 + radius * Math.cos(angle)
-    const y = 100 + radius * Math.sin(angle)
-    return { name: cat.name, value: val, x, y, labelX: 100 + (radius + 20) * Math.cos(angle), labelY: 100 + (radius + 20) * Math.sin(angle) }
-  })
-})
-
-const getSpiderWebPoints = (level) => {
-  const total = spiderCategories.length
-  const radius = 65 * level
-  return Array.from({ length: total }).map((_, i) => {
-    const angle = (Math.PI * 2 / total) * i - (Math.PI / 2)
-    return `${100 + radius * Math.cos(angle)},${100 + radius * Math.sin(angle)}`
-  }).join(' ')
-}
-
-const spiderDataPoints = computed(() => {
-  const stats = classData.value.stats
-  const total = spiderCategories.length
-  return spiderCategories.map((cat, i) => {
-    const angle = (Math.PI * 2 / total) * i - (Math.PI / 2)
-    const radius = 65 * (stats[cat.key] / 100)
-    return `${100 + radius * Math.cos(angle)},${100 + radius * Math.sin(angle)}`
-  }).join(' ')
-})
-
-const spiderDataDotCoords = computed(() => {
-  const stats = classData.value.stats
-  const total = spiderCategories.length
-  return spiderCategories.map((cat, i) => {
-    const angle = (Math.PI * 2 / total) * i - (Math.PI / 2)
-    const radius = 65 * (stats[cat.key] / 100)
-    return { x: 100 + radius * Math.cos(angle), y: 100 + radius * Math.sin(angle) }
-  })
-})
 </script>
+
+<style scoped>
+:deep(.custom-filter-dropdown) {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.75rem !important;
+  transition: all 0.2s ease;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.custom-filter-dropdown:hover) {
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+}
+
+:deep(.custom-filter-dropdown.p-focus) {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  background-color: #ffffff !important;
+}
+
+:deep(.custom-filter-dropdown .p-dropdown-label) {
+  font-size: 0.75rem !important;
+  padding: 0.4rem 0.75rem !important;
+  color: #334155 !important;
+}
+
+:deep(.custom-filter-dropdown .p-dropdown-trigger),
+:deep(.custom-filter-dropdown .p-dropdown-clear-icon) {
+  color: #94a3b8 !important;
+  width: 2rem !important;
+}
+</style>

@@ -82,7 +82,7 @@
             <InputText
               v-model="searchQuery"
               size="small"
-              placeholder="Search by name or student ID..."
+              placeholder="Search by name or username..."
               class="w-full !pl-9 !pr-3 !bg-slate-50 !border-slate-200 !rounded-lg !text-xs"
             />
           </div>
@@ -121,15 +121,21 @@
           </template>
         </Column>
 
-        <Column field="studentId" header="STUDENT ID">
+        <Column field="username" header="USERNAME">
           <template #body="{ data }">
-            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.studentId }}</span>
+            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.username || '—' }}</span>
           </template>
         </Column>
 
         <Column field="name" header="NAME">
           <template #body="{ data }">
             <span class="font-semibold text-slate-800 text-sm">{{ data.name }}</span>
+          </template>
+        </Column>
+
+        <Column field="nameKh" header="NAME (KH)">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm font-khmer">{{ data.nameKh || '—' }}</span>
           </template>
         </Column>
 
@@ -142,6 +148,12 @@
         <Column header="TOTAL">
           <template #body="{ data }">
             <span class="font-bold text-indigo-600 text-sm">{{ data.mcqScore + (data.essayScore || 0) }} / {{ totalPoints }}</span>
+          </template>
+        </Column>
+
+        <Column header="%">
+          <template #body="{ data }">
+            <span class="font-bold text-sm" :class="data.passed ? 'text-emerald-600' : 'text-rose-600'">{{ data.scorePercentage }}%</span>
           </template>
         </Column>
 
@@ -237,7 +249,11 @@ const filteredStudents = computed(() => {
 
   if (!searchQuery.value) return list
   const q = searchQuery.value.toLowerCase()
-  return list.filter(s => s.name?.toLowerCase().includes(q) || s.studentId?.toLowerCase().includes(q))
+  return list.filter(s =>
+    s.name?.toLowerCase().includes(q) ||
+    s.nameKh?.toLowerCase().includes(q) ||
+    s.username?.toLowerCase().includes(q)
+  )
 })
 
 // Jump back to page 1 whenever the underlying list changes shape, so the
@@ -382,16 +398,18 @@ const radarChartOptions = {
   },
 }
 
-const exportHeader = ['#', 'Student ID', 'Name', 'Submitted At', 'MCQ Score', 'Essay Score', 'Total', 'Result', 'Tab Switches']
+const exportHeader = ['#', 'Username', 'Name', 'Name (KH)', 'Submitted At', 'MCQ Score', 'Essay Score', 'Total', '%', 'Result', 'Tab Switches']
 
 const exportRows = () => filteredStudents.value.map((s, i) => [
   i + 1,
-  s.studentId,
+  s.username,
   s.name,
+  s.nameKh,
   s.submittedAt,
   s.mcqScore,
   s.essayScore ?? '',
   s.mcqScore + (s.essayScore || 0),
+  s.scorePercentage + '%',
   s.passed ? 'PASSED' : 'FAILED',
   s.tabSwitchCount ?? 0,
 ])

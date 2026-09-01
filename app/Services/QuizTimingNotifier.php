@@ -9,9 +9,9 @@ use Illuminate\Support\Carbon;
 class QuizTimingNotifier
 {
     /**
-     * Notify enrolled students ~1 hour before a published quiz closes, ~1 minute
-     * before it starts, and ~1 minute before it closes. Guarded by *_reminder_sent_at
-     * columns so it's idempotent no matter how often it runs.
+     * Notify enrolled students ~5 minutes before a published quiz starts. Guarded
+     * by the start_reminder_sent_at column so it's idempotent no matter how often
+     * it runs.
      *
      * Called both from the scheduled `notifications:generate-quiz-timing` command
      * (the primary trigger) and from the student notifications endpoint on every
@@ -21,51 +21,30 @@ class QuizTimingNotifier
     public static function sweep(): array
     {
         $now = Carbon::now();
-        $oneMinuteOut = $now->copy()->addMinute();
-        $oneHourOut = $now->copy()->addHour();
+        $fiveMinutesOut = $now->copy()->addMinutes(5);
 
-        $startingSoon = Quiz::where('status', 'Published')
+        $startingSoonIds = Quiz::where('status', 'Published')
             ->whereNull('start_reminder_sent_at')
             ->whereNotNull('start_at')
-            ->whereBetween('start_at', [$now, $oneMinuteOut])
-            ->with('subject')
-            ->get();
+            ->whereBetween('start_at', [$now, $fiveMinutesOut])
+            ->pluck('id');
 
-        foreach ($startingSoon as $quiz) {
-            AppNotification::notifyQuizStartingSoon($quiz);
-            $quiz->update(['start_reminder_sent_at' => $now]);
-        }
-
-        $closingInOneHour = Quiz::where('status', 'Published')
-            ->whereNull('end_hour_reminder_sent_at')
-            ->whereNotNull('end_at')
-            ->whereBetween('end_at', [$now, $oneHourOut])
-            ->with('subject')
-            ->get();
-
-        foreach ($closingInOneHour as $quiz) {
-            AppNotification::notifyQuizClosingSoon($quiz);
-            $quiz->update(['end_hour_reminder_sent_at' => $now]);
-        }
-
-        $endingSoon = Quiz::where('status', 'Published')
-            ->whereNull('end_reminder_sent_at')
-            ->whereNotNull('end_at')
-            ->whereBetween('end_at', [$now, $oneMinuteOut])
-            ->with('subject')
-            ->get();
-
-        foreach ($endingSoon as $quiz) {
-            AppNotification::notifyQuizEndingSoon($quiz);
-            $quiz->update(['end_reminder_sent_at' => $now]);
+        $startingSoonCount = 0;
+        foreach ($startingSoonIds as $quizId) {
+            // Atomically claim this quiz's reminder before notifying, so concurrent
+            // sweeps (many students polling at once) can't all pass the same
+            // whereNull check and re-notify the whole class multiple times.
+            $claimed = Quiz::where('id', $quizId)->whereNull('start_reminder_sent_at')->update(['start_reminder_sent_at' => $now]);
+            if ($claimed) {
+                AppNotification::notifyQuizStartingSoon(Quiz::with('subject')->find($quizId));
+                $startingSoonCount++;
+            }
         }
 
         $closed = Quiz::autoCloseExpired();
 
         return [
-            'startingSoon' => $startingSoon->count(),
-            'closingInOneHour' => $closingInOneHour->count(),
-            'endingSoon' => $endingSoon->count(),
+            'startingSoon' => $startingSoonCount,
             'closed' => $closed,
         ];
     }

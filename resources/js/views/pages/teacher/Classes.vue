@@ -6,10 +6,10 @@
       <div>
         <h1 class="text-2xl font-bold text-[#002060] tracking-tight m-0 flex items-center gap-2">
           Classes
-          <p>
-            Manage your classes, subjects, and students in one place.
-          </p>
         </h1>
+        <p class="text-xs text-slate-500 mt-1 m-0">
+          Manage your classes, subjects, and students in one place.
+        </p>
         <!-- <p class="text-xs text-slate-500 mt-1 m-0">
           <span class="font-bold text-[#002060]">{{ filteredClasses.length }}</span> of {{ myClasses.length }} class{{ myClasses.length === 1 ? '' : 'es' }}
           &middot; <span class="font-bold text-[#002060]">{{ totalStudentsAcrossClasses }}</span> students total

@@ -97,12 +97,20 @@
           @click="clearFilters" />
       </div>
 
-      <!-- Dropdowns Grid Container (5 Columns on Large Screens) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      <!-- Dropdowns Grid Container -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
+
+        <!-- Faculty Filter -->
+        <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
+          placeholder="All Faculties" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Department Filter -->
+        <Dropdown v-model="departmentFilter" :options="departmentFilterOptions" optionLabel="name_en" optionValue="id"
+          placeholder="All Departments" showClear class="w-full custom-filter-dropdown" />
 
         <!-- Major Filter -->
-        <Dropdown v-model="majorFilter" :options="majors" optionLabel="name_en" optionValue="id"
-          placeholder="All Departments/Majors" showClear class="w-full custom-filter-dropdown" />
+        <Dropdown v-model="majorFilter" :options="majorFilterOptions" optionLabel="name_en" optionValue="id"
+          placeholder="All Majors" showClear class="w-full custom-filter-dropdown" />
 
         <!-- Stage Filter -->
         <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
@@ -295,11 +303,11 @@
           <template #body="{ data }">
             <div class="flex items-center justify-end gap-1.5">
               <!-- Manage Class (Router Link) -->
-              <!-- <router-link to="/admin/class-management"
+              <router-link :to="{ name: 'admin.class-management', params: { id: data.id } }"
                 class="!w-8 !h-8 !rounded-xl !bg-slate-100 hover:!bg-slate-200 !text-[#63c7df] !border !border-slate-100 shadow-xs inline-flex items-center justify-center transition-colors"
                 title="Manage Class">
                 <i class="fa-solid fa-gear text-xs"></i>
-              </router-link> -->
+              </router-link>
 
               <!-- Assign / Subjects Taught -->
               <Button
@@ -433,11 +441,11 @@
 
           <!-- Bottom Action Buttons (Fixed Alignment & Equal Sizing) -->
           <div class="flex items-center justify-between gap-1.5 pt-3 mt-3 border-t border-slate-100">
-            <!-- <router-link to="/admin/class-management"
+            <router-link :to="{ name: 'admin.class-management', params: { id: cls.id } }"
               class="inline-flex items-center justify-center gap-1 !py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-[#63c7df] !border !border-indigo-100 hover:!border-indigo-200 !rounded-lg transition-all">
               <i class="fa-solid fa-gear"></i>
               <span>Manage</span>
-            </router-link> -->
+            </router-link>
 
             <Button
               class="!py-1 !px-2.5 !text-[11px] !font-medium !bg-indigo-50/60 hover:!bg-indigo-100 !text-indigo-600 !border-indigo-100 hover:!border-white !rounded-lg inline-flex items-center justify-center gap-1"
@@ -532,14 +540,8 @@
           </div>
         </div>
 
-        <!-- Session / Term / Stage -->
+        <!-- Term / Stage / Shift -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Session</label>
-            <Dropdown v-model="classForm.study_session_id" :options="studySessions" optionLabel="name_en"
-              optionValue="id" placeholder="Select Session" showClear
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term</label>
             <Dropdown v-model="classForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
@@ -550,15 +552,15 @@
             <Dropdown v-model="classForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
               placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
-        </div>
-
-        <!-- Shift / Capacity / Status -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
             <Dropdown v-model="classForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
               placeholder="Select Shift" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
+        </div>
+
+        <!-- Capacity / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Capacity *</label>
             <InputText v-model="classForm.capacity" type="number" placeholder="35"
@@ -661,7 +663,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import api, { toastFromError } from '../../../api'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -772,18 +774,54 @@ const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const first = ref(0)
 const rows = ref(10)
 
-// ======= Filter Bar (Major / Stage / Shift / Term / Status) =======
+// ======= Filter Bar (Faculty / Department / Major / Stage / Shift / Term / Status) =======
+const facultyFilter = ref(null)
+const departmentFilter = ref(null)
 const majorFilter = ref(null)
 const stageFilter = ref(null)
 const shiftFilter = ref(null)
 const termFilter = ref(null)
 const statusFilter = ref(null)
 
+// Department narrows to the selected Faculty, and Major narrows to whichever
+// Faculty/Department is selected — a department belongs to one faculty, and
+// a major belongs to one department.
+const departmentFilterOptions = computed(() =>
+  facultyFilter.value ? departments.value.filter(d => d.faculty_id === facultyFilter.value) : departments.value
+)
+
+const majorFilterOptions = computed(() => {
+  let list = majors.value
+  if (departmentFilter.value) {
+    list = list.filter(m => m.department_id === departmentFilter.value)
+  } else if (facultyFilter.value) {
+    const departmentIds = departments.value.filter(d => d.faculty_id === facultyFilter.value).map(d => d.id)
+    list = list.filter(m => departmentIds.includes(m.department_id))
+  }
+  return list
+})
+
+// Selecting a Faculty can invalidate an already-picked Department/Major that
+// doesn't belong to it, so drop those rather than showing a stale filter.
+watch(facultyFilter, () => {
+  if (departmentFilter.value && !departmentFilterOptions.value.some(d => d.id === departmentFilter.value)) {
+    departmentFilter.value = null
+  }
+})
+
+watch([facultyFilter, departmentFilter], () => {
+  if (majorFilter.value && !majorFilterOptions.value.some(m => m.id === majorFilter.value)) {
+    majorFilter.value = null
+  }
+})
+
 const hasActiveFilters = computed(() =>
-  !!(majorFilter.value || stageFilter.value || shiftFilter.value || termFilter.value || statusFilter.value)
+  !!(facultyFilter.value || departmentFilter.value || majorFilter.value || stageFilter.value || shiftFilter.value || termFilter.value || statusFilter.value)
 )
 
 const clearFilters = () => {
+  facultyFilter.value = null
+  departmentFilter.value = null
   majorFilter.value = null
   stageFilter.value = null
   shiftFilter.value = null
@@ -803,6 +841,8 @@ const filteredClasses = computed(() => {
         (c.department || '').toLowerCase().includes(query)
       if (!matchesQuery) return false
     }
+    if (facultyFilter.value && c.faculty_id !== facultyFilter.value) return false
+    if (departmentFilter.value && c.department_id !== departmentFilter.value) return false
     if (majorFilter.value && c.major_id !== majorFilter.value) return false
     if (stageFilter.value && c.stage_id !== stageFilter.value) return false
     if (shiftFilter.value && c.shift_id !== shiftFilter.value) return false

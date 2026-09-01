@@ -108,7 +108,7 @@ class QuizController extends Controller
             'quiz' => array_merge($this->transform($quiz, collect()), [
                 'attemptNumber' => $submission->attempt_number,
                 'startedAt' => $submission->started_at->toIso8601String(),
-                'deadlineAt' => $submission->started_at->copy()->addMinutes($quiz->duration_minutes)->toIso8601String(),
+                'deadlineAt' => $this->effectiveDeadline($quiz, $submission)->toIso8601String(),
                 'serverNow' => now()->toIso8601String(),
                 'questions' => $this->transformQuestionsForTaking($quiz),
             ]),
@@ -126,14 +126,23 @@ class QuizController extends Controller
     public function submit(Request $request, Quiz $quiz)
     {
         $student = $request->user()->studentProfile;
-        $this->authorizeAccess($student, $quiz);
+
+        if (! $student) {
+            abort(403);
+        }
 
         $submission = QuizSubmission::where('quiz_id', $quiz->id)
             ->where('student_profile_id', $student->id)
             ->where('status', 'in_progress')
             ->first();
 
+        // An attempt already in progress must be allowed to finish even if the
+        // quiz's window has since closed — the student was let in while it was
+        // still open, and duration can legitimately run past end_at. Only a
+        // brand-new attempt needs the full access/window check.
         if (! $submission) {
+            $this->authorizeAccess($student, $quiz);
+
             $attemptsUsed = QuizSubmission::where('quiz_id', $quiz->id)
                 ->where('student_profile_id', $student->id)
                 ->count();
@@ -267,7 +276,7 @@ class QuizController extends Controller
             return null;
         }
 
-        $deadline = $submission->started_at->copy()->addMinutes($quiz->duration_minutes);
+        $deadline = $this->effectiveDeadline($quiz, $submission);
 
         if ($deadline->isPast()) {
             $submission->forceFill(['status' => 'submitted', 'submitted_at' => $deadline])->save();
@@ -276,6 +285,22 @@ class QuizController extends Controller
         }
 
         return $submission;
+    }
+
+    /**
+     * The earlier of "duration minutes after this attempt started" and the
+     * quiz's own close time (end_at, if set) — a student who starts near the
+     * end of the window shouldn't get the full duration to answer past it.
+     */
+    private function effectiveDeadline(Quiz $quiz, QuizSubmission $submission): \Illuminate\Support\Carbon
+    {
+        $deadline = $submission->started_at->copy()->addMinutes($quiz->duration_minutes);
+
+        if ($quiz->end_at && $quiz->end_at->lt($deadline)) {
+            $deadline = $quiz->end_at->copy();
+        }
+
+        return $deadline;
     }
 
     private function authorizeAccess(?object $student, Quiz $quiz): void

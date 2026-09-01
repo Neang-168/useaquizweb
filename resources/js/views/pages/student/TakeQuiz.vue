@@ -135,13 +135,10 @@
               <span>{{ left.text }}</span>
             </div>
             <i class="pi pi-arrow-right text-slate-300 text-xs"></i>
-            <select v-model="answers[currentQuestion.id].matches[left.pairId]"
-              class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs font-medium text-slate-700 outline-none focus:border-blue-500">
-              <option :value="null">-- Select an answer --</option>
-              <option v-for="right in currentQuestion.rightItems" :key="right.pairId" :value="right.pairId">
-                {{ right.text }}
-              </option>
-            </select>
+            <Dropdown v-model="answers[currentQuestion.id].matches[left.pairId]"
+              :options="currentQuestion.rightItems" optionLabel="text" optionValue="pairId"
+              placeholder="-- Select an answer --" showClear
+              class="flex-1 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
           </div>
         </div>
       </div>
@@ -224,6 +221,7 @@ import { useRoute } from 'vue-router'
 import Image from 'primevue/image'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import Dropdown from 'primevue/dropdown'
 import api, { extractError } from '../../../api'
 import { quizInProgress } from '../../../utils/quizLock'
 

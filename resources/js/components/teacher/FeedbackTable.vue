@@ -54,11 +54,21 @@
           </template>
         </Column>
 
-
+        <Column field="nameKh" header="NAME (KH)" style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm font-khmer">{{ data.nameKh || '—' }}</span>
+          </template>
+        </Column>
 
         <Column header="POINTS" style="width: 110px">
           <template #body="{ data }">
             <span class="font-bold text-slate-700 text-sm">{{ data.score }} / {{ data.totalPoints }}</span>
+          </template>
+        </Column>
+
+        <Column header="%" style="width: 80px">
+          <template #body="{ data }">
+            <span class="font-bold text-sm" :class="data.passed ? 'text-emerald-600' : 'text-rose-600'">{{ data.scorePercentage }}%</span>
           </template>
         </Column>
 
@@ -300,6 +310,7 @@ const displayedStudents = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return byStatus.filter(s =>
     s.name?.toLowerCase().includes(q) ||
+    s.nameKh?.toLowerCase().includes(q) ||
     s.username?.toLowerCase().includes(q)
   )
 })
@@ -310,13 +321,15 @@ watch(displayedStudents, () => {
   first.value = 0
 })
 
-const exportHeader = ['#', 'Username', 'Name', 'Score', 'Result', 'Feedback Status']
+const exportHeader = ['#', 'Username', 'Name', 'Name (KH)', 'Score', '%', 'Result', 'Feedback Status']
 
 const exportRows = () => displayedStudents.value.map((s, i) => [
   i + 1,
   s.username,
   s.name,
+  s.nameKh,
   `${s.score}/${s.totalPoints}`,
+  s.scorePercentage + '%',
   s.passed ? 'PASSED' : 'FAILED',
   s.hasFeedbackSent ? 'Sent' : (s.passed ? '-' : 'Needs Feedback'),
 ])

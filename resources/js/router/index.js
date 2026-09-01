@@ -87,9 +87,10 @@ const routes = [
         component: Users,
       },
       {
-        path: 'class-management',
+        path: 'class-management/:id',
         name: 'admin.class-management',
         component: ClassManagement,
+        props: true,
       },
       {
         path: 'roles-permissions',

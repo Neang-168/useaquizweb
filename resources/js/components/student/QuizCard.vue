@@ -26,11 +26,13 @@
       <div class="grid grid-cols-3 gap-1.5 text-center">
         <div class="bg-[#F8F8F8] p-2 rounded-lg border border-slate-100">
           <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Start Date</span>
-          <span class="text-[11px] font-bold text-[#002060]">{{ exam.startAt ? formatFullDate(exam.startAt) : '—' }}</span>
+          <span class="block text-[11px] font-bold text-[#002060]">{{ exam.startAt ? formatFullDate(exam.startAt) : '—' }}</span>
+          <span v-if="exam.startAt" class="block text-[10px] font-semibold text-slate-500">{{ formatTime(exam.startAt) }}</span>
         </div>
         <div class="bg-[#F8F8F8] p-2 rounded-lg border border-slate-100">
           <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">End Date</span>
-          <span class="text-[11px] font-bold text-[#002060]">{{ exam.endAt ? formatFullDate(exam.endAt) : '—' }}</span>
+          <span class="block text-[11px] font-bold text-[#002060]">{{ exam.endAt ? formatFullDate(exam.endAt) : '—' }}</span>
+          <span v-if="exam.endAt" class="block text-[10px] font-semibold text-slate-500">{{ formatTime(exam.endAt) }}</span>
         </div>
         <div class="bg-[#F8F8F8] p-2 rounded-lg border border-slate-100">
           <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Duration</span>
@@ -89,7 +91,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useConfirm } from 'primevue/useconfirm'
-import { formatFullDate } from '../../utils/formatDateTime'
+import { formatFullDate, formatTime } from '../../utils/formatDateTime'
 
 const props = defineProps({
   exam: { type: Object, required: true },

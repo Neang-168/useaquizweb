@@ -110,6 +110,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::apiResource('shifts', ShiftController::class)->parameters(['shifts' => 'shift']);
         Route::apiResource('stages', StageController::class)->parameters(['stages' => 'stage']);
+        Route::get('/classes/{class}/roster', [ClassroomController::class, 'roster']);
+        Route::get('/classes/{class}/export', [ClassroomController::class, 'exportResults']);
         Route::apiResource('classes', ClassroomController::class)->parameters(['classes' => 'class']);
     });
 

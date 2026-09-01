@@ -104,7 +104,7 @@
       </div>
 
       <!-- ======= FILTER BAR ======= -->
-      <div class="flex flex-wrap items-center gap-2.5 shrink-0 px-4 pt-3">
+      <!-- <div class="flex flex-wrap items-center gap-2.5 shrink-0 px-4 pt-3">
         <i class="pi pi-filter text-[#e4ac40] text-sm ml-1"></i>
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
           placeholder="Faculty (Teachers)" showClear class="w-48 !bg-slate-50 !border-slate-200 !rounded-lg text-xs" />
@@ -115,7 +115,7 @@
         <Button v-if="hasActiveFilters" label="Clear Filters" icon="pi pi-filter-slash" size="small"
           class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-rose-50 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
           @click="clearFilters" />
-      </div>
+      </div> -->
 
       <!-- PrimeVue DataTable -->
       <DataTable

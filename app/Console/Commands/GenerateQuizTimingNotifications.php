@@ -9,17 +9,15 @@ class GenerateQuizTimingNotifications extends Command
 {
     protected $signature = 'notifications:generate-quiz-timing';
 
-    protected $description = 'Notify enrolled students ~1 minute before a published quiz starts, ~1 hour before it closes, and ~1 minute before it closes';
+    protected $description = 'Notify enrolled students ~5 minutes before a published quiz starts';
 
     public function handle(): int
     {
         $result = QuizTimingNotifier::sweep();
 
         $this->info(sprintf(
-            'Notified %d starting-soon, %d closing-in-1-hour, and %d closing-soon quiz(zes). Auto-closed %d expired quiz(zes).',
+            'Notified %d starting-soon quiz(zes). Auto-closed %d expired quiz(zes).',
             $result['startingSoon'],
-            $result['closingInOneHour'],
-            $result['endingSoon'],
             $result['closed']
         ));
 

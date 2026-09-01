@@ -15,29 +15,19 @@
 
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
-          <i class="pi pi-users text-[#E4AC40] text-xs"></i>
-          <select v-model="selectedClass" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
-            <option value="all">All Classes</option>
-            <option v-for="cls in classOptions" :key="cls" :value="cls">{{ cls }}</option>
-          </select>
-        </div>
+        <Dropdown v-model="selectedClass" :options="classFilterOptions" optionLabel="label" optionValue="value"
+          size="small" class="w-full sm:w-40 !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs" />
 
-        <div class="flex items-center gap-2 bg-[#F8F8F8] p-1.5 px-3 rounded-xl border border-[#D8E7EC]">
-          <i class="pi pi-filter text-[#E4AC40] text-xs"></i>
-          <select v-model="selectedSubject" class="bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer border-0 py-1">
-            <option value="all">All Subjects</option>
-            <option v-for="subject in subjectOptions" :key="subject" :value="subject">{{ subject }}</option>
-          </select>
-        </div>
+        <Dropdown v-model="selectedSubject" :options="subjectFilterOptions" optionLabel="label" optionValue="value"
+          size="small" class="w-full sm:w-40 !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl text-xs" />
 
-        <div class="relative">
+        <div class="relative w-full sm:w-56">
           <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs z-10"></i>
-          <input
+          <InputText
             v-model="searchQuery"
-            type="text"
+            size="small"
             placeholder="Search quiz title..."
-            class="bg-[#F8F8F8] border border-[#D8E7EC] rounded-xl text-xs font-medium text-slate-700 outline-none py-2 pl-9 pr-3 focus:border-[#63C7DF]"
+            class="w-full !pl-9 !pr-3 !bg-[#F8F8F8] !border-[#D8E7EC] !rounded-xl !text-xs"
           />
         </div>
       </div>
@@ -176,6 +166,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
 import api, { extractError } from '../../../api'
 import { formatDateTime } from '../../../utils/formatDateTime'
 import QuizCard from '../../../components/student/QuizCard.vue'
@@ -190,6 +182,15 @@ const submissions = ref([])
 
 const subjectOptions = computed(() => [...new Set(quizzes.value.map((q) => q.subject).filter(Boolean))])
 const classOptions = computed(() => [...new Set(quizzes.value.map((q) => q.className).filter(Boolean))])
+
+const subjectFilterOptions = computed(() => [
+  { label: 'All Subjects', value: 'all' },
+  ...subjectOptions.value.map((s) => ({ label: s, value: s })),
+])
+const classFilterOptions = computed(() => [
+  { label: 'All Classes', value: 'all' },
+  ...classOptions.value.map((c) => ({ label: c, value: c })),
+])
 
 const applyFilters = (list) => list.filter((item) => {
   if (selectedSubject.value !== 'all' && item.subject !== selectedSubject.value) return false

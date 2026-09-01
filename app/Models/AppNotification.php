@@ -35,17 +35,7 @@ class AppNotification extends Model
 
     public static function notifyQuizStartingSoon(Quiz $quiz): void
     {
-        static::notifyClassStudents($quiz, 'quiz_starting_soon', 'Quiz starting soon', "\"{$quiz->title}\" ({$quiz->subject?->name}) opens in about 1 minute.");
-    }
-
-    public static function notifyQuizEndingSoon(Quiz $quiz): void
-    {
-        static::notifyClassStudents($quiz, 'quiz_ending_soon', 'Quiz ending soon', "\"{$quiz->title}\" ({$quiz->subject?->name}) closes in about 1 minute.");
-    }
-
-    public static function notifyQuizClosingSoon(Quiz $quiz): void
-    {
-        static::notifyClassStudents($quiz, 'quiz_closing_soon', 'Quiz closing in 1 hour', "\"{$quiz->title}\" ({$quiz->subject?->name}) closes in about 1 hour. Submit before it locks.");
+        static::notifyClassStudents($quiz, 'quiz_starting_soon', 'Quiz starting soon', "\"{$quiz->title}\" ({$quiz->subject?->name}) opens in about 5 minutes.");
     }
 
     public static function notifyFeedback(Feedback $feedback): void

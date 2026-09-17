@@ -566,36 +566,38 @@ class UserController extends Controller
     }
 
     /**
-     * Create or refresh the student's current enrollment record to match
-     * the class they've been assigned to, same logic as the dedicated
-     * Students page: any field left blank falls back to the class's own
-     * value, so picking just a Class still produces a complete enrollment.
-     * Class membership itself is synced onto the `classes()` pivot (a
-     * student can belong to more than one class — this form only assigns
-     * the one picked here, without disturbing any others they already have).
+     * Create or refresh the student's current enrollment record from
+     * whichever academic fields were submitted, same logic as the
+     * dedicated Students page (StudentController::syncEnrollment): any
+     * field left blank falls back to the existing enrollment's value first,
+     * then to the assigned class's value if one was picked. This form
+     * doesn't expose a Class field (that's the Students page's "Assign
+     * Class" action), so `class_id` is normally absent here — the
+     * enrollment must still be built from the submitted fields directly
+     * rather than bailing out, or every academic field entered on this
+     * page would be silently discarded.
      */
     private function syncStudentEnrollment(StudentProfile $profile, array $data, bool $userStatus): void
     {
-        if (empty($data['class_id'])) {
-            return;
-        }
-
-        $class = Classroom::with('major.degree')->findOrFail($data['class_id']);
         $status = $userStatus ? 'Active' : 'Inactive';
 
         $enrollment = $profile->enrollments()->latest('enrollment_date')->first();
 
+        $class = !empty($data['class_id'])
+            ? Classroom::with('major.degree')->find($data['class_id'])
+            : null;
+
         $attributes = [
-            'faculty_id' => $data['faculty_id'] ?? $class->major->degree->faculty_id,
-            'department_id' => $data['department_id'] ?? $class->department_id,
-            'degree_id' => $data['degree_id'] ?? $class->major->degree_id,
-            'major_id' => $data['major_id'] ?? $class->major_id,
-            'promotion_id' => $data['promotion_id'] ?? $this->resolveCurrentPromotionId(),
-            'stage_id' => $data['stage_id'] ?? $class->stage_id,
-            'academic_year_id' => $data['academic_year_id'] ?? $class->academic_year_id,
-            'semester_id' => $data['semester_id'] ?? $class->semester_id,
-            'term_id' => $data['term_id'] ?? $class->term_id,
-            'shift_id' => $data['shift_id'] ?? $class->shift_id,
+            'faculty_id' => $data['faculty_id'] ?? $class?->major?->degree?->faculty_id ?? $enrollment?->faculty_id,
+            'department_id' => $data['department_id'] ?? $class?->department_id ?? $enrollment?->department_id,
+            'degree_id' => $data['degree_id'] ?? $class?->major?->degree_id ?? $enrollment?->degree_id,
+            'major_id' => $data['major_id'] ?? $class?->major_id ?? $enrollment?->major_id,
+            'promotion_id' => $data['promotion_id'] ?? $enrollment?->promotion_id ?? $this->resolveCurrentPromotionId(),
+            'stage_id' => $data['stage_id'] ?? $class?->stage_id ?? $enrollment?->stage_id,
+            'academic_year_id' => $data['academic_year_id'] ?? $class?->academic_year_id ?? $enrollment?->academic_year_id,
+            'semester_id' => $data['semester_id'] ?? $class?->semester_id ?? $enrollment?->semester_id,
+            'term_id' => $data['term_id'] ?? $class?->term_id ?? $enrollment?->term_id,
+            'shift_id' => $data['shift_id'] ?? $class?->shift_id ?? $enrollment?->shift_id,
             'status' => $status,
         ];
 
@@ -605,7 +607,9 @@ class UserController extends Controller
             $profile->enrollments()->create($attributes + ['enrollment_date' => now()]);
         }
 
-        $profile->classes()->syncWithoutDetaching([$class->id => ['status' => $status]]);
+        if ($class) {
+            $profile->classes()->syncWithoutDetaching([$class->id => ['status' => $status]]);
+        }
     }
 
     private function resolveCurrentPromotionId(): ?int

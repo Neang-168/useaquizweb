@@ -16,6 +16,7 @@ import Users from '../views/pages/superAdmin/Users.vue'
 import RolesPermissions from '../views/pages/superAdmin/RolesPermissions.vue'
 import Report from '../views/pages/superAdmin/Report.vue'
 import ClassManagement from '../views/pages/superAdmin/ClassManagement.vue'
+import AcademicStructure from '../views/pages/superAdmin/AcademicStructure.vue'
 
 import TeacherLayout from '../views/TeacherLayout.vue'
 import TeachClasses from '../views/pages/teacher/Classes.vue'
@@ -65,6 +66,11 @@ const routes = [
         path: 'classes',
         name: 'admin.classes',
         component: Classes,
+      },
+      {
+        path: 'academic-structure',
+        name: 'admin.academic-structure',
+        component: AcademicStructure,
       },
       {
         path: 'teachers',

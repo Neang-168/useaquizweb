@@ -426,7 +426,7 @@
           </div>
         </div>
 
-        <!-- Promotion / Academic Year / Stage -->
+        <!-- Promotion / Academic Year / Semester -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion *</label>
@@ -439,23 +439,23 @@
               placeholder="Select Academic Year" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
-            <Dropdown v-model="studentForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
-              placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-        </div>
-
-        <!-- Semester / Term / Shift -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester *</label>
             <Dropdown v-model="studentForm.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
               placeholder="Select Semester" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
+        </div>
+
+        <!-- Term / Stage / Shift -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term *</label>
             <Dropdown v-model="studentForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
               placeholder="Select Term" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
+            <Dropdown v-model="studentForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
+              placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>

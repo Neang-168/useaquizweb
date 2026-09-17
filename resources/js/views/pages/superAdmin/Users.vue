@@ -133,7 +133,7 @@
         :scrollDirection="showAllColumns ? 'both' : 'vertical'"
         responsiveLayout="scroll"
         :loading="loading"
-        :tableStyle="showAllColumns ? 'min-width: 1900px' : 'min-width: 100%'"
+        :tableStyle="showAllColumns ? 'min-width: 4000px' : 'min-width: 100%'"
         class="p-datatable-sm users-table flex-1 min-h-0 mt-3"
       >
         <template #empty>
@@ -153,49 +153,49 @@
         <!-- Username - តែងតែបង្ហាញ -->
         <Column field="username" header="USERNAME" sortable style="min-width: 130px; padding-left: 1.25rem">
           <template #body="{ data }">
-            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.username }}</span>
+            <span class="font-mono font-bold text-indigo-600 text-sm whitespace-nowrap">{{ data.username }}</span>
           </template>
         </Column>
 
         <!-- Full Name - តែងតែបង្ហាញ -->
         <Column field="first_name" header="FULL NAME" sortable style="min-width: 180px">
           <template #body="{ data }">
-            <span class="font-semibold text-slate-800 text-sm">{{ data.first_name }} {{ data.last_name }}</span>
+            <span class="font-semibold text-slate-800 text-sm whitespace-nowrap">{{ data.first_name }} {{ data.last_name }}</span>
           </template>
         </Column>
 
         <!-- Name (Khmer) - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="name_kh" header="NAME (KHMER)" style="min-width: 140px">
+        <Column v-if="showAllColumns" field="name_kh" header="NAME (KHMER)" style="min-width: 170px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm font-khmer">{{ data.name_kh || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm font-khmer whitespace-nowrap">{{ data.name_kh || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Phone - លាក់/បង្ហាញ -->
         <Column v-if="showAllColumns" field="phone" header="PHONE" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.phone || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.phone || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Gender - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="gender" header="GENDER" style="width: 100px">
+        <Column v-if="showAllColumns" field="gender" header="GENDER" style="min-width: 100px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.gender || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.gender || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Date of Birth - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="dob" header="DATE OF BIRTH" style="width: 130px">
+        <Column v-if="showAllColumns" field="dob" header="DATE OF BIRTH" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ formatDisplayDate(data.dob) || 'N/A' }}</span>
           </template>
         </Column>
 
         <!-- Address - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="address" header="ADDRESS" style="min-width: 180px">
+        <Column v-if="showAllColumns" field="address" header="ADDRESS" style="min-width: 200px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ data.address || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.address || 'N/A' }}</span>
           </template>
         </Column>
 
@@ -212,16 +212,103 @@
         </Column>
 
         <!-- Employee / Student Code - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" header="CODE" style="width: 130px">
+        <Column v-if="showAllColumns" header="CODE" style="min-width: 130px">
           <template #body="{ data }">
-            <span class="font-mono font-bold text-indigo-600 text-sm">{{ detailsFor(data).primary || 'N/A' }}</span>
+            <span class="font-mono font-bold text-indigo-600 text-sm whitespace-nowrap">{{ codeFor(data) || 'N/A' }}</span>
           </template>
         </Column>
 
-        <!-- Department / Faculty / Admission - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" header="DEPARTMENT / FACULTY" style="min-width: 180px">
+        <!-- Position (Admin) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="POSITION" style="min-width: 150px">
           <template #body="{ data }">
-            <span class="text-slate-600 text-sm">{{ detailsFor(data).secondary || 'N/A' }}</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ positionFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Faculty (Teacher / Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="FACULTY" style="min-width: 200px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ facultyFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Department (Teacher / Student / Admin) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="DEPARTMENT" style="min-width: 220px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ departmentFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Major (Teacher / Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="MAJOR" style="min-width: 200px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ majorFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Employment Type (Teacher) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="EMPLOYMENT" style="min-width: 110px">
+          <template #body="{ data }">
+            <span v-if="employmentTypeFor(data)" class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block"
+              :class="employmentTypeFor(data) === 'Full-Time' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'">
+              {{ employmentTypeFor(data) }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Class (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="CLASS" style="min-width: 180px">
+          <template #body="{ data }">
+            <span class="text-slate-700 text-sm font-semibold whitespace-nowrap">{{ classNamesFor(data) || (data.role?.name === 'Student' ? 'Unassigned' : '—') }}</span>
+          </template>
+        </Column>
+
+        <!-- Shift (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="SHIFT" style="min-width: 110px">
+          <template #body="{ data }">
+            <span v-if="shiftFor(data)" class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ shiftFor(data) }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Promotion (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="PROMOTION" style="min-width: 150px">
+          <template #body="{ data }">
+            <span v-if="promotionFor(data)" class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
+              {{ promotionFor(data) }}
+            </span>
+            <span v-else class="text-slate-400 text-sm">—</span>
+          </template>
+        </Column>
+
+        <!-- Academic Year (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="ACADEMIC YEAR" style="min-width: 160px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ academicYearFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Stage (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="STAGE" style="min-width: 120px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ stageFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Semester (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="SEMESTER" style="min-width: 140px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ semesterFor(data) || '—' }}</span>
+          </template>
+        </Column>
+
+        <!-- Term (Student) - លាក់/បង្ហាញ -->
+        <Column v-if="showAllColumns" header="TERM" style="min-width: 120px">
+          <template #body="{ data }">
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ termFor(data) || '—' }}</span>
           </template>
         </Column>
 
@@ -515,7 +602,7 @@
             </div>
           </div>
 
-          <!-- Promotion / Academic Year / Stage -->
+          <!-- Promotion / Academic Year / Semester -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion *</label>
@@ -528,23 +615,23 @@
                 placeholder="Select Academic Year" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
-              <Dropdown v-model="form.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
-                placeholder="Select Stage" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-            </div>
-          </div>
-
-          <!-- Semester / Term / Shift -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester *</label>
               <Dropdown v-model="form.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
                 placeholder="Select Semester" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
+          </div>
+
+          <!-- Term / Stage / Shift -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Term *</label>
               <Dropdown v-model="form.term_id" :options="terms" optionLabel="name_en" optionValue="id"
                 placeholder="Select Term" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
+              <Dropdown v-model="form.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
+                placeholder="Select Stage" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
@@ -645,11 +732,25 @@ const terms = ref([])
 const shifts = ref([])
 const loading = ref(false)
 
+// The API caps per_page at 200, so a single request only ever returns page 1
+// — fine while the school has under 200 accounts, but it would silently hide
+// everyone past that as enrollment grows. Walk every page so the table always
+// reflects every user, not just the first 200.
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const { data } = await api.get('/users', { params: { per_page: 200 } })
-    users.value = data.data
+    let page = 1
+    let lastPage = 1
+    const all = []
+
+    do {
+      const { data } = await api.get('/users', { params: { per_page: 200, page } })
+      all.push(...data.data)
+      lastPage = data.last_page
+      page += 1
+    } while (page <= lastPage)
+
+    users.value = all
   } finally {
     loading.value = false
   }
@@ -664,8 +765,8 @@ const fetchLookups = async () => {
     api.get('/faculties', { params: { per_page: 100 } }),
     api.get('/departments', { params: { per_page: 100 } }),
     api.get('/degrees', { params: { per_page: 100 } }),
-    api.get('/majors', { params: { per_page: 200 } }),
-    api.get('/classes', { params: { per_page: 200 } }),
+    api.get('/majors', { params: { per_page: 100 } }),
+    api.get('/classes', { params: { per_page: 100 } }),
     api.get('/promotions', { params: { per_page: 100 } }),
     api.get('/academic-years', { params: { per_page: 100 } }),
     api.get('/stages', { params: { per_page: 100 } }),
@@ -863,32 +964,65 @@ const roleBadgeClass = (roleName) => {
   }
 }
 
-const detailsFor = (data) => {
+// ======= Per-field column getters =======
+// One field per column, same as the dedicated Teachers and Students pages
+// (faculty_name / department_name / major_name / academic_year_names on
+// Teachers.vue; faculty_name / department_name / major / promotion_name /
+// academic_year_name / stage_name / semester_name / term_name / shift /
+// class_name on Students.vue) rather than one cell combining several
+// fields — each getter reads whichever profile/enrollment holds that field
+// for the row's role, or null when the role doesn't have one.
+const enrollmentFor = (data) => data.student_profile?.enrollments?.[0] || null
+
+const codeFor = (data) => {
   const roleName = data.role?.name
-
-  if (roleName === 'Teacher' && data.teacher_profile) {
-    return {
-      primary: data.teacher_profile.employee_code || 'N/A',
-      secondary: data.teacher_profile.faculty?.name || 'No faculty assigned',
-    }
-  }
-
-  if (roleName === 'Student' && data.student_profile) {
-    return {
-      primary: data.student_profile.student_code || 'N/A',
-      secondary: data.student_profile.admission_date ? `Admitted ${formatDisplayDate(data.student_profile.admission_date)}` : 'No admission date',
-    }
-  }
-
-  if (roleGroups.admin.includes(roleName) && data.admin_profile) {
-    return {
-      primary: data.admin_profile.employee_code || 'N/A',
-      secondary: data.admin_profile.position || data.admin_profile.department || 'No position set',
-    }
-  }
-
-  return { primary: '—', secondary: '' }
+  if (roleName === 'Teacher') return data.teacher_profile?.employee_code || null
+  if (roleName === 'Student') return data.student_profile?.student_code || null
+  if (roleGroups.admin.includes(roleName)) return data.admin_profile?.employee_code || null
+  return null
 }
+
+const positionFor = (data) => data.admin_profile?.position || null
+
+const facultyFor = (data) => {
+  const roleName = data.role?.name
+  if (roleName === 'Teacher') return data.teacher_profile?.faculty?.name || null
+  if (roleName === 'Student') return enrollmentFor(data)?.faculty?.name || null
+  return null
+}
+
+const departmentFor = (data) => {
+  const roleName = data.role?.name
+  if (roleName === 'Teacher') return data.teacher_profile?.department?.name || null
+  if (roleName === 'Student') return enrollmentFor(data)?.department?.name || null
+  if (roleGroups.admin.includes(roleName)) return data.admin_profile?.department || null
+  return null
+}
+
+const majorFor = (data) => {
+  const roleName = data.role?.name
+  if (roleName === 'Teacher') return data.teacher_profile?.major?.name || null
+  if (roleName === 'Student') return enrollmentFor(data)?.major?.name || null
+  return null
+}
+
+const employmentTypeFor = (data) => {
+  const type = data.teacher_profile?.employment_type
+  if (!type) return null
+  return type === 'full_time' ? 'Full-Time' : 'Part-Time'
+}
+
+const classNamesFor = (data) => {
+  const names = (data.student_profile?.classes || []).map((c) => c.name).filter(Boolean)
+  return names.length ? names.join(', ') : null
+}
+
+const shiftFor = (data) => enrollmentFor(data)?.shift?.name || null
+const promotionFor = (data) => enrollmentFor(data)?.promotion?.name || null
+const academicYearFor = (data) => enrollmentFor(data)?.academic_year?.name || null
+const stageFor = (data) => enrollmentFor(data)?.stage?.name || null
+const semesterFor = (data) => enrollmentFor(data)?.semester?.name || null
+const termFor = (data) => enrollmentFor(data)?.term?.name || null
 
 // ======= Actions =======
 const openNewDialog = (defaultRoleName = null) => {
@@ -1071,9 +1205,5 @@ const onAvatarSelect = async (event) => {
 
 .users-table :deep(.p-datatable-tbody > tr > td) {
   font-size: 14px;
-}
-
-.font-khmer {
-  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
 }
 </style>

@@ -112,6 +112,10 @@
         <Dropdown v-model="majorFilter" :options="majorFilterOptions" optionLabel="name_en" optionValue="id"
           placeholder="All Majors" showClear class="w-full custom-filter-dropdown" />
 
+        <!-- Term Filter -->
+        <Dropdown v-model="termFilter" :options="terms" optionLabel="name_en" optionValue="id" placeholder="All Terms"
+          showClear class="w-full custom-filter-dropdown" />
+
         <!-- Stage Filter -->
         <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
           placeholder="All Stages" showClear class="w-full custom-filter-dropdown" />
@@ -119,10 +123,6 @@
         <!-- Shift Filter -->
         <Dropdown v-model="shiftFilter" :options="shifts" optionLabel="name_en" optionValue="id"
           placeholder="All Shifts" showClear class="w-full custom-filter-dropdown" />
-
-        <!-- Term Filter -->
-        <Dropdown v-model="termFilter" :options="terms" optionLabel="name_en" optionValue="id" placeholder="All Terms"
-          showClear class="w-full custom-filter-dropdown" />
 
         <!-- Status Filter -->
         <Dropdown v-model="statusFilter" :options="['Active', 'Inactive']" placeholder="All Statuses" showClear

@@ -75,14 +75,22 @@
           <!-- Navigation Links Area -->
           <div class="flex-1 overflow-y-auto pr-1 my-2 space-y-5 custom-scrollbar">
 
-            <!-- Dashboard sits alone at the top, unlabeled — the entry
-                 point doesn't need its own section header. -->
+            <!-- Dashboard and Report sit alone at the top, unlabeled — each
+                 is a single standalone destination that doesn't need its
+                 own section header. -->
             <div class="space-y-1">
               <router-link to="/admin/dashboard"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-th-large text-base"></i>
                 <span>Dashboard</span>
+              </router-link>
+
+              <router-link to="/admin/report"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-chart-bar text-base"></i>
+                <span>Report</span>
               </router-link>
             </div>
 
@@ -106,6 +114,13 @@
                 <i class="pi pi-building text-base"></i>
                 <span>Classes</span>
               </router-link>
+
+              <router-link to="/admin/academic-structure"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-sitemap text-base"></i>
+                <span>Academic Structure</span>
+              </router-link>
             </div>
 
             <!-- People: the individuals who use the system -->
@@ -128,22 +143,14 @@
                 <span>Students & Enrollments</span>
               </router-link>
             </div>
-            <!-- Report: quiz results and performance analytics -->
-            <div class="space-y-1">
-              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                Report
-              </span>
-
-              <router-link to="/admin/report"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-chart-bar text-base"></i>
-                <span>Report</span>
-              </router-link>
-            </div>
-
-            <!-- Administration: system-wide account management first,
-                 the admin's own profile last -->
+            <!-- Administration: system-wide account management first, the
+                 admin's own profile and platform-level tools last, since
+                 those are used far less often than day-to-day academic/
+                 member management above. Folds in what used to be a
+                 separate "Administration" section holding only User
+                 Management, plus a "System" section holding only User
+                 Profile and Settings — neither needed its own header for
+                 one or two items. -->
             <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
                 Administration
@@ -162,15 +169,6 @@
                 <i class="pi pi-shield text-base"></i>
                 <span>Roles & Permissions</span>
               </router-link> -->
-            </div>
-
-            <!-- System: the admin's own account plus platform-level tools,
-                 last since they're used far less often than day-to-day
-                 academic/member management above -->
-            <div class="space-y-1">
-              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
-                System
-              </span>
 
               <router-link :to="{ name: 'admin.my-profile' }"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"

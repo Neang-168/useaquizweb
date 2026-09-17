@@ -14,10 +14,24 @@
         </p>
       </div>
 
-      <Button label="Add New Teacher" icon="pi pi-plus"
-        class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-xs !font-semibold shadow-xs"
-        @click="openNewDialog" />
+      <div class="flex items-center gap-2">
+        <Button label="Import" icon="pi pi-upload"
+          class="!bg-white !text-slate-700 hover:!bg-slate-100 !border-slate-200 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+          @click="importDialog = true" />
+        <Button label="Add New Teacher" icon="pi pi-plus"
+          class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+          @click="openNewDialog" />
+      </div>
     </div>
+
+    <ImportDialog
+      v-model:visible="importDialog"
+      title="Import Teachers"
+      entity-label="teacher"
+      template-url="/teachers/import/template"
+      import-url="/teachers/import"
+      @imported="onImported"
+    />
 
     <!-- ======= TABLE CARD (header/search/filters/table, styled to match FeedbackTable) ======= -->
     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
@@ -32,20 +46,20 @@
           </div>
 
           <!-- Reset Filters Button -->
-          <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash" size="small"
-            class="!bg-rose-50 !border-rose-50 !text-rose-600 hover:!bg-rose-100 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+          <Button v-if="hasActiveFilters" label="Reset Filters" icon="pi pi-filter-slash"
+            class="!bg-rose-50 !text-rose-600 hover:!bg-rose-100 !border-0 !rounded-lg !py-1.5 !px-3 !text-xs !font-medium transition-all cursor-pointer whitespace-nowrap"
             @click="clearFilters" />
 
           <!-- Show More / Show Less Toggle Button -->
-          <Button :label="showAllColumns ? 'Fewer Column' : 'More Column'"
+          <Button :label="showAllColumns ? 'Fewer Columns' : 'More Columns'"
             :icon="showAllColumns ? 'pi pi-angle-double-left' : 'pi pi-angle-double-right'" size="small"
-            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1"
+            class="!bg-[#002060] !border-slate-100 !text-white hover:!bg-blue-900 !rounded-lg !text-xs !font-semibold !px-3 !py-1 whitespace-nowrap"
             @click="showAllColumns = !showAllColumns" />
         </div>
       </div>
 
       <!-- ======= FILTER BAR ======= -->
-      <div class="p-4 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      <div class="p-4 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2.5">
 
         <!-- Faculty Filter -->
         <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
@@ -55,9 +69,13 @@
         <Dropdown v-model="departmentFilter" :options="departmentFilterOptions" optionLabel="name_en" optionValue="id"
           placeholder="All Departments" showClear class="w-full custom-filter-dropdown" />
 
-        <!-- Degree Filter -->
-        <Dropdown v-model="degreeFilter" :options="degrees" optionLabel="title_en" optionValue="id"
-          placeholder="All Degrees" showClear class="w-full custom-filter-dropdown" />
+        <!-- Major Filter -->
+        <Dropdown v-model="majorFilter" :options="majorFilterOptions" optionLabel="name_en" optionValue="id"
+          placeholder="All Majors" showClear class="w-full custom-filter-dropdown" />
+
+        <!-- Academic Year Filter -->
+        <Dropdown v-model="academicYearFilter" :options="academicYears" optionLabel="name_en" optionValue="id"
+          placeholder="All Academic Years" showClear class="w-full custom-filter-dropdown" />
 
         <!-- Employment Type Filter -->
         <Dropdown v-model="typeFilter" :options="['Full-Time', 'Part-Time']" placeholder="All Employment Types"
@@ -92,6 +110,13 @@
         <Column header="NO" style="width: 46px; padding-left: 1.25rem">
           <template #body="{ index }">
             <span class="text-slate-400 text-sm font-semibold">{{ index + 1 }}</span>
+          </template>
+        </Column>
+
+        <!-- Username - តែងតែបង្ហាញ (needed to log in) -->
+        <Column field="username" header="USERNAME" style="min-width: 130px">
+          <template #body="{ data }">
+            <span class="font-mono text-slate-600 text-sm whitespace-nowrap">{{ data.username || '—' }}</span>
           </template>
         </Column>
 
@@ -144,14 +169,10 @@
           </template>
         </Column>
 
-        <!-- Degree - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="degree" header="DEGREE" style="min-width: 150px">
+        <!-- Academic Year - តែងតែបង្ហាញ -->
+        <Column field="academic_year_names" header="ACADEMIC YEAR" style="min-width: 160px">
           <template #body="{ data }">
-            <span v-if="data.degree"
-              class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block align-bottom bg-indigo-50 text-indigo-600 border-indigo-200">
-              {{ data.degree }}
-            </span>
-            <span v-else class="text-slate-400 text-sm">—</span>
+            <span class="text-slate-600 text-sm whitespace-nowrap">{{ data.academic_year_names || '—' }}</span>
           </template>
         </Column>
 
@@ -159,13 +180,6 @@
         <Column field="phone" header="PHONE" style="min-width: 120px">
           <template #body="{ data }">
             <span class="text-slate-600 text-sm font-mono whitespace-nowrap">{{ data.phone || '—' }}</span>
-          </template>
-        </Column>
-
-        <!-- Username - លាក់/បង្ហាញ -->
-        <Column v-if="showAllColumns" field="username" header="USERNAME" style="min-width: 130px">
-          <template #body="{ data }">
-            <span class="font-mono text-slate-600 text-sm whitespace-nowrap">{{ data.username || '—' }}</span>
           </template>
         </Column>
 
@@ -197,10 +211,10 @@
                 class="!p-2 !w-8 !h-8 !rounded-xl !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 hover:!text-indigo-700 !border !border-indigo-100 shadow-xs"
                 title="Manage Assignments" @click="openAssignmentsDialog(data)" /> -->
               <Button icon="pi pi-pencil"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border-slate-100  !border-0 shadow-xs"
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
                 title="Edit Teacher" @click="editTeacher(data)" ><i class="fa-solid fa-pen-to-square"></i></Button>
               <Button icon="pi pi-trash"
-                class="!p-2 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border-slate-100  !border-0 shadow-xs"
+                class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
                 title="Delete Teacher" @click="confirmDeleteTeacher(data)" ><i class="fa-solid fa-trash-can"></i></Button>
             </div>
           </template>
@@ -434,9 +448,21 @@ import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Password from 'primevue/password'
+import ImportDialog from '../../../components/admin/ImportDialog.vue'
 
 const toast = useToast()
 const confirm = useConfirm()
+
+const importDialog = ref(false)
+
+const onImported = async (data) => {
+  await fetchTeachers()
+  if (data.imported > 0) {
+    toast.add({ severity: 'success', summary: 'Teachers imported', detail: data.message, life: 4000 })
+  } else {
+    toast.add({ severity: 'warn', summary: 'No teachers imported', detail: data.message, life: 4000 })
+  }
+}
 
 // ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -469,10 +495,10 @@ const rows = ref(10)
 const teachers = ref([])
 const faculties = ref([])
 const departments = ref([])
-const degrees = ref([])
 const majors = ref([])
 const subjects = ref([])
 const classes = ref([])
+const academicYears = ref([])
 const loading = ref(false)
 
 const fetchTeachers = async () => {
@@ -486,20 +512,20 @@ const fetchTeachers = async () => {
 }
 
 const fetchLookups = async () => {
-  const [facultiesRes, departmentsRes, degreesRes, majorsRes, subjectsRes, classesRes] = await Promise.all([
+  const [facultiesRes, departmentsRes, majorsRes, subjectsRes, classesRes, academicYearsRes] = await Promise.all([
     api.get('/faculties', { params: { per_page: 100 } }),
     api.get('/departments', { params: { per_page: 200 } }),
-    api.get('/degrees', { params: { per_page: 100 } }),
     api.get('/majors', { params: { per_page: 100 } }),
     api.get('/subjects', { params: { per_page: 200 } }),
     api.get('/classes', { params: { per_page: 200 } }),
+    api.get('/academic-years', { params: { per_page: 100 } }),
   ])
   faculties.value = facultiesRes.data.data
   departments.value = departmentsRes.data.data
-  degrees.value = degreesRes.data.data
   majors.value = majorsRes.data.data
   subjects.value = subjectsRes.data.data.map(s => ({ id: s.id, faculty_id: s.faculty_id, name_en: `${s.name_en} (${s.code})` }))
   classes.value = classesRes.data.data
+  academicYears.value = academicYearsRes.data.data
 }
 
 // Department options are scoped to whichever faculty is currently selected
@@ -519,6 +545,17 @@ const departmentFilterOptions = computed(() =>
   departments.value.filter(d => d.faculty_id === facultyFilter.value)
 )
 
+const majorFilterOptions = computed(() => {
+  if (departmentFilter.value) {
+    return majors.value.filter(m => m.department_id === departmentFilter.value)
+  }
+  if (facultyFilter.value) {
+    const departmentIds = departments.value.filter(d => d.faculty_id === facultyFilter.value).map(d => d.id)
+    return majors.value.filter(m => departmentIds.includes(m.department_id))
+  }
+  return majors.value
+})
+
 onMounted(() => {
   fetchTeachers()
   fetchLookups()
@@ -527,29 +564,44 @@ onMounted(() => {
 // Search Filter (ប្រើ String 'contains')
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 
-// ======= Filter Bar (Faculty / Department / Degree / Type / Status) =======
+// ======= Filter Bar (Faculty / Department / Major / Academic Year / Type / Status) =======
 const facultyFilter = ref(null)
 const departmentFilter = ref(null)
-const degreeFilter = ref(null)
+const majorFilter = ref(null)
+const academicYearFilter = ref(null)
 const typeFilter = ref(null)
 const statusFilter = ref(null)
 
 const hasActiveFilters = computed(() =>
-  !!(facultyFilter.value || departmentFilter.value || degreeFilter.value || typeFilter.value || statusFilter.value)
+  !!(facultyFilter.value || departmentFilter.value || majorFilter.value || academicYearFilter.value || typeFilter.value || statusFilter.value)
 )
 
 const clearFilters = () => {
   facultyFilter.value = null
   departmentFilter.value = null
-  degreeFilter.value = null
+  majorFilter.value = null
+  academicYearFilter.value = null
   typeFilter.value = null
   statusFilter.value = null
 }
 
+watch(facultyFilter, () => {
+  if (departmentFilter.value && !departmentFilterOptions.value.some(d => d.id === departmentFilter.value)) {
+    departmentFilter.value = null
+  }
+})
+
+watch([facultyFilter, departmentFilter], () => {
+  if (majorFilter.value && !majorFilterOptions.value.some(m => m.id === majorFilter.value)) {
+    majorFilter.value = null
+  }
+})
+
 const filteredTeachers = computed(() => teachers.value.filter((t) => {
   if (facultyFilter.value && t.faculty_id !== facultyFilter.value) return false
   if (departmentFilter.value && t.department_id !== departmentFilter.value) return false
-  if (degreeFilter.value && t.degree_id !== degreeFilter.value) return false
+  if (majorFilter.value && t.major_id !== majorFilter.value) return false
+  if (academicYearFilter.value && !t.academic_year_ids?.includes(academicYearFilter.value)) return false
   if (typeFilter.value && t.type !== typeFilter.value) return false
   if (statusFilter.value && t.status !== statusFilter.value) return false
   return true

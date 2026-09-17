@@ -2,23 +2,28 @@
 
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DegreeController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\EnrollmentReportController;
 use App\Http\Controllers\Api\FacultyController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\ShiftController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
+use App\Http\Controllers\Api\StudentImportController;
 use App\Http\Controllers\Api\StudySessionController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherAssignmentController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\TeacherImportController;
 use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\Teacher\CalendarController as TeacherCalendarController;
 use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
@@ -55,6 +60,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // SuperAdmin dashboard overview
     Route::get('/dashboard-stats', [DashboardController::class, 'index'])
         ->middleware('permission:manage_users');
+
+    // Whole-database backup / restore (Admin only)
+    Route::prefix('backup')->middleware('permission:manage_users')->group(function () {
+        Route::get('/', [BackupController::class, 'download']);
+        Route::get('/history', [BackupController::class, 'history']);
+        Route::get('/history/{filename}', [BackupController::class, 'downloadHistoryFile']);
+        Route::post('/restore', [BackupController::class, 'restore']);
+    });
+
+    // School-wide quiz report (Admin)
+    Route::get('/report', [ReportController::class, 'index'])
+        ->middleware('permission:view_reports');
+
+    // School-wide student/teacher headcount report (Admin)
+    Route::get('/enrollment-report', [EnrollmentReportController::class, 'index'])
+        ->middleware('permission:view_reports');
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index']);
@@ -116,6 +137,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     // Teachers
+    Route::get('/teachers/import/template', [TeacherImportController::class, 'template'])
+        ->middleware('permission:manage_teachers');
+    Route::post('/teachers/import', [TeacherImportController::class, 'import'])
+        ->middleware('permission:manage_teachers');
     Route::apiResource('teachers', TeacherController::class)
         ->parameters(['teachers' => 'teacher'])
         ->middleware('permission:manage_teachers');
@@ -127,6 +152,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->middleware('permission:manage_teachers');
 
     // Students
+    Route::get('/students/import/template', [StudentImportController::class, 'template'])
+        ->middleware('permission:manage_students');
+    Route::post('/students/import', [StudentImportController::class, 'import'])
+        ->middleware('permission:manage_students');
     Route::patch('students/{student}/assign', [StudentController::class, 'assign'])
         ->middleware('permission:manage_students');
     Route::apiResource('students', StudentController::class)

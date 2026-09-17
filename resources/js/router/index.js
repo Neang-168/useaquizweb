@@ -108,6 +108,11 @@ const routes = [
         name: 'admin.my-profile',
         component: MyProfileView,
       },
+      {
+        path: 'settings',
+        name: 'admin.settings',
+        component: () => import('../views/pages/superAdmin/Settings.vue'),
+      },
     ],
   },
 

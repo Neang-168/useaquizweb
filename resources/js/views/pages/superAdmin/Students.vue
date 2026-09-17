@@ -22,11 +22,24 @@
           :disabled="selectedStudents.length === 0"
           @click="openBulkAssignDialog" />
 
+        <Button label="Import" icon="pi pi-upload"
+          class="!bg-white !text-slate-700 hover:!bg-slate-100 !border-slate-200 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
+          @click="importDialog = true" />
+
         <Button label="Add New Student" icon="pi pi-plus"
           class="!bg-[#002060] hover:!bg-blue-900 !border-0 !rounded-xl !py-2.5 !px-4 !text-sm !font-semibold shadow-sm cursor-pointer"
           @click="openNewDialog" />
       </div>
     </div>
+
+    <ImportDialog
+      v-model:visible="importDialog"
+      title="Import Students"
+      entity-label="student"
+      template-url="/students/import/template"
+      import-url="/students/import"
+      @imported="onImported"
+    />
 
     <!-- ======= STATS CARDS (COMMENTED OUT) ======= -->
     <!-- 
@@ -102,18 +115,24 @@
         <div class="flex flex-wrap items-center gap-2.5 pt-1">
           <Dropdown v-model="facultyFilter" :options="faculties" optionLabel="name_en" optionValue="id"
             placeholder="All Faculties" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown"
-            @change="majorFilter = null" />
+            @change="departmentFilter = null; majorFilter = null" />
+
+          <Dropdown v-model="departmentFilter" :options="departmentFilterOptions" optionLabel="name_en" optionValue="id"
+            placeholder="All Departments" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
 
           <Dropdown v-model="majorFilter" :options="majorOptions" optionLabel="name" optionValue="id"
             placeholder="All Majors" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
 
-          <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id" 
+          <Dropdown v-model="classFilter" :options="classes" optionLabel="name" optionValue="id"
             placeholder="All Classes" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
 
           <Dropdown v-model="promotionFilter" :options="promotions" optionLabel="name_en" optionValue="id"
-            placeholder="All Generations" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+            placeholder="All Promotions" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
 
-          <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']" 
+          <Dropdown v-model="stageFilter" :options="stages" optionLabel="name_en" optionValue="id"
+            placeholder="All Stages" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
+
+          <Dropdown v-model="statusFilter" :options="['Active', 'Inactive', 'Suspended']"
             placeholder="All Statuses" showClear class="w-full sm:w-auto flex-1 custom-filter-dropdown" />
 
           <!-- Reset Filter Button -->
@@ -147,10 +166,10 @@
         <!-- Selection Checkbox Column (Multi-select) -->
         <Column selectionMode="multiple" headerStyle="width: 3rem" style="padding-left: 1rem"></Column>
 
-        <!-- Student ID -->
-        <Column field="student_id" header="STUDENT ID" sortable style="padding-left: 1rem">
+        <!-- Username - always shown (needed to log in) -->
+        <Column field="username" header="USERNAME" sortable style="padding-left: 1rem">
           <template #body="{ data }">
-            <span class="font-mono font-bold text-indigo-600 text-sm">{{ data.student_id }}</span>
+            <span class="font-mono text-slate-600 text-sm">{{ data.username || '—' }}</span>
           </template>
         </Column>
 
@@ -205,13 +224,6 @@
           </template>
         </Column>
 
-        <!-- Username -->
-        <Column v-if="showAllColumns" field="username" header="USERNAME">
-          <template #body="{ data }">
-            <span class="font-mono text-slate-600 text-sm">{{ data.username }}</span>
-          </template>
-        </Column>
-
         <!-- Faculty -->
         <Column v-if="showAllColumns" field="faculty_name" header="FACULTY" sortable>
           <template #body="{ data }">
@@ -235,12 +247,12 @@
           </template>
         </Column>
 
-        <!-- Generation -->
-        <Column v-if="showAllColumns" field="generation" header="GENERATION" sortable>
+        <!-- Promotion -->
+        <Column v-if="showAllColumns" field="promotion_name" header="PROMOTION" sortable>
           <template #body="{ data }">
-            <span v-if="data.generation"
+            <span v-if="data.promotion_name"
               class="font-bold px-2.5 py-0.5 rounded-full text-xs border inline-block whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200">
-              {{ data.generation }}
+              {{ data.promotion_name }}
             </span>
             <span v-else class="text-slate-400 text-sm">—</span>
           </template>
@@ -316,41 +328,13 @@
           <span>Personal Information</span>
         </div>
 
-        <!-- Student ID / Full Name (English) / Full Name (Khmer) -->
+        <!-- Student ID / Username / Password -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Student ID *</label>
             <InputText v-model="studentForm.student_id" placeholder="e.g. STU-1001"
               class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (English) *</label>
-            <InputText v-model="studentForm.name_en" placeholder="e.g. Sok Visal"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (Khmer)</label>
-            <InputText v-model="studentForm.name_kh" placeholder="ឧ. សុខ វិសាល"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer" />
-          </div>
-        </div>
-
-        <!-- Gender / Phone -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
-            <Dropdown v-model="studentForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
-              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
-            <InputText v-model="studentForm.phone" placeholder="012 345 678"
-              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
-          </div>
-        </div>
-
-        <!-- Username / Password -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username *</label>
             <InputText v-model="studentForm.username" placeholder="STU00001"
@@ -366,8 +350,32 @@
           </div>
         </div>
 
-        <!-- Date of Birth / Status -->
+        <!-- Full Name (English) / Full Name (Khmer) / Gender -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (English) *</label>
+            <InputText v-model="studentForm.name_en" placeholder="e.g. Sok Visal"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name (Khmer)</label>
+            <InputText v-model="studentForm.name_kh" placeholder="ឧ. សុខ វិសាល"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm font-khmer" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Gender *</label>
+            <Dropdown v-model="studentForm.gender" :options="['Male', 'Female']" placeholder="Select Gender"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
+          </div>
+        </div>
+
+        <!-- Phone Number / Date of Birth / Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number *</label>
+            <InputText v-model="studentForm.phone" placeholder="012 345 678"
+              class="w-full !py-2.5 !px-3 !bg-slate-50 !border-slate-200 !rounded-xl !text-sm" />
+          </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date of Birth</label>
             <DatePicker v-model="studentForm.dob" dateFormat="yy-mm-dd" showIcon iconDisplay="input"
@@ -396,8 +404,8 @@
           <span>Academic Information</span>
         </div>
 
-        <!-- Faculty / Department -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Faculty / Department / Major -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Faculty *</label>
             <Dropdown v-model="studentForm.faculty_id" :options="faculties" optionLabel="name_en" optionValue="id"
@@ -410,16 +418,16 @@
               placeholder="Select Department" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
               @change="studentForm.major_id = null" />
           </div>
-        </div>
-
-        <!-- Major / Promotion / Academic Year -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Major *</label>
             <Dropdown v-model="studentForm.major_id" :options="majorsForSelectedDepartment" optionLabel="name_en" optionValue="id"
               placeholder="Select Major" showClear class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm"
               :disabled="!studentForm.department_id" />
           </div>
+        </div>
+
+        <!-- Promotion / Academic Year / Stage -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Promotion *</label>
             <Dropdown v-model="studentForm.promotion_id" :options="promotions" optionLabel="name_en" optionValue="id"
@@ -430,15 +438,15 @@
             <Dropdown v-model="studentForm.academic_year_id" :options="academicYears" optionLabel="name_en" optionValue="id"
               placeholder="Select Academic Year" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
-        </div>
-
-        <!-- Stage / Semester / Term -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Stage *</label>
             <Dropdown v-model="studentForm.stage_id" :options="stages" optionLabel="name_en" optionValue="id"
               placeholder="Select Stage" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
+        </div>
+
+        <!-- Semester / Term / Shift -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Semester *</label>
             <Dropdown v-model="studentForm.semester_id" :options="semesters" optionLabel="name_en" optionValue="id"
@@ -449,10 +457,6 @@
             <Dropdown v-model="studentForm.term_id" :options="terms" optionLabel="name_en" optionValue="id"
               placeholder="Select Term" class="w-full !bg-slate-50 !border-slate-200 !rounded-xl text-sm" />
           </div>
-        </div>
-
-        <!-- Shift -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Shift *</label>
             <Dropdown v-model="studentForm.shift_id" :options="shifts" optionLabel="name_en" optionValue="id"
@@ -483,7 +487,7 @@
           </div>
           <div class="min-w-0">
             <p class="text-sm font-semibold text-slate-800 truncate m-0">{{ assignForm.name_en }}</p>
-            <p class="text-[11px] text-slate-500 m-0">{{ assignForm.student_id }}</p>
+            <p class="text-[11px] text-slate-500 m-0">{{ assignForm.username }}</p>
           </div>
         </div>
 
@@ -591,6 +595,7 @@ import MultiSelect from 'primevue/multiselect'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Password from 'primevue/password'
+import ImportDialog from '../../../components/admin/ImportDialog.vue'
 
 // ======= Date helpers (DatePicker binds to Date objects; the API speaks yyyy-mm-dd strings) =======
 const parseApiDate = (value) => (value ? new Date(value) : null)
@@ -606,6 +611,17 @@ const formatDateForApi = (date) => {
 
 const toast = useToast()
 const confirm = useConfirm()
+
+const importDialog = ref(false)
+
+const onImported = async (data) => {
+  await fetchStudents()
+  if (data.imported > 0) {
+    toast.add({ severity: 'success', summary: 'Students imported', detail: data.message, life: 4000 })
+  } else {
+    toast.add({ severity: 'warn', summary: 'No students imported', detail: data.message, life: 4000 })
+  }
+}
 
 const showAllColumns = ref(false);
 
@@ -680,12 +696,19 @@ const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const first = ref(0)
 const rows = ref(10)
 
-// ======= Filter Bar (Faculty / Major / Class / Generation / Status) =======
+// ======= Filter Bar (Faculty / Department / Major / Class / Promotion / Stage / Status) =======
 const facultyFilter = ref(null)
+const departmentFilter = ref(null)
 const majorFilter = ref(null)
 const classFilter = ref(null)
 const promotionFilter = ref(null)
+const stageFilter = ref(null)
 const statusFilter = ref(null)
+
+// Department options narrow to whatever Faculty is currently selected.
+const departmentFilterOptions = computed(() =>
+  facultyFilter.value ? departments.value.filter(d => d.faculty_id === facultyFilter.value) : departments.value
+)
 
 const classFacultyId = (classId) => classes.value.find((c) => c.id === classId)?.faculty_id
 
@@ -703,23 +726,28 @@ const majorOptions = computed(() => {
 })
 
 const hasActiveFilters = computed(() =>
-  !!(facultyFilter.value || majorFilter.value || classFilter.value || promotionFilter.value || statusFilter.value)
+  !!(facultyFilter.value || departmentFilter.value || majorFilter.value || classFilter.value ||
+    promotionFilter.value || stageFilter.value || statusFilter.value)
 )
 
 const clearFilters = () => {
   facultyFilter.value = null
+  departmentFilter.value = null
   majorFilter.value = null
   classFilter.value = null
   promotionFilter.value = null
+  stageFilter.value = null
   statusFilter.value = null
 }
 
 const filteredStudents = computed(() => students.value.filter((s) => {
   const classIds = s.class_ids || []
   if (facultyFilter.value && !classIds.some((id) => classFacultyId(id) === facultyFilter.value)) return false
+  if (departmentFilter.value && s.department_id !== departmentFilter.value) return false
   if (majorFilter.value && s.major_id !== majorFilter.value) return false
   if (classFilter.value && !classIds.includes(classFilter.value)) return false
   if (promotionFilter.value && s.promotion_id !== promotionFilter.value) return false
+  if (stageFilter.value && s.stage_id !== stageFilter.value) return false
   if (statusFilter.value && s.status !== statusFilter.value) return false
   return true
 }))
@@ -904,14 +932,14 @@ const confirmDeleteStudent = (data) => {
 
 // ======= Assign Class (quick action, separate from full Edit) =======
 const assignDialog = ref(false)
-const assignForm = ref({ id: null, name_en: '', student_id: '', class_ids: [], promotion_id: null, status: 'Active' })
+const assignForm = ref({ id: null, name_en: '', username: '', class_ids: [], promotion_id: null, status: 'Active' })
 const assignClassSubjects = ref([])
 
 const openAssignDialog = (data) => {
   assignForm.value = {
     id: data.id,
     name_en: data.name_en,
-    student_id: data.student_id,
+    username: data.username,
     class_ids: [...(data.class_ids || [])],
     promotion_id: data.promotion_id,
     status: data.status,

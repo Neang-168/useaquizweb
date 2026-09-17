@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
+use App\Models\Department;
 use App\Models\Faculty;
+use App\Models\Major;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -37,6 +39,8 @@ class DashboardController extends Controller
             'classes' => Classroom::count(),
             'subjects' => Subject::count(),
             'faculties' => Faculty::count(),
+            'departments' => Department::count(),
+            'majors' => Major::count(),
         ];
 
         $statusBreakdown = [

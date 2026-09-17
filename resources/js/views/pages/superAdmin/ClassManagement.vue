@@ -221,7 +221,6 @@
 
         <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
           <div><span class="text-slate-400 block">Username</span><span class="font-semibold text-slate-700">{{ selectedStudent.username || '—' }}</span></div>
-          <div><span class="text-slate-400 block">Student ID</span><span class="font-semibold text-slate-700">{{ selectedStudent.student_id || '—' }}</span></div>
           <div><span class="text-slate-400 block">Gender</span><span class="font-semibold text-slate-700">{{ selectedStudent.gender || '—' }}</span></div>
           <div><span class="text-slate-400 block">Date of Birth</span><span class="font-semibold text-slate-700">{{ selectedStudent.dob || '—' }}</span></div>
           <div><span class="text-slate-400 block">Phone</span><span class="font-semibold text-slate-700">{{ selectedStudent.phone || '—' }}</span></div>

@@ -128,8 +128,8 @@
                 <span>Students & Enrollments</span>
               </router-link>
             </div>
-            <!-- Report: the individuals who use the system -->
-            <!-- <div class="space-y-1">
+            <!-- Report: quiz results and performance analytics -->
+            <div class="space-y-1">
               <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
                 Report
               </span>
@@ -137,10 +137,10 @@
               <router-link to="/admin/report"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-users text-base"></i>
+                <i class="pi pi-chart-bar text-base"></i>
                 <span>Report</span>
               </router-link>
-            </div> -->
+            </div>
 
             <!-- Administration: system-wide account management first,
                  the admin's own profile last -->
@@ -156,19 +156,35 @@
                 <span>User Management</span>
               </router-link>
 
-              <!-- <router-link :to="{ name: 'admin.my-profile' }"
-                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
-                active-class="!bg-blue-100 !text-blue-600">
-                <i class="pi pi-user text-base"></i>
-                <span>My Profile</span>
-              </router-link> -->
-
               <!-- <router-link to="/admin/roles-permissions"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-shield text-base"></i>
                 <span>Roles & Permissions</span>
               </router-link> -->
+            </div>
+
+            <!-- System: the admin's own account plus platform-level tools,
+                 last since they're used far less often than day-to-day
+                 academic/member management above -->
+            <div class="space-y-1">
+              <span class="block text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+                System
+              </span>
+
+              <router-link :to="{ name: 'admin.my-profile' }"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-user text-base"></i>
+                <span>User Profile</span>
+              </router-link>
+
+              <router-link :to="{ name: 'admin.settings' }"
+                class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
+                active-class="!bg-blue-100 !text-blue-600">
+                <i class="pi pi-cog text-base"></i>
+                <span>Settings</span>
+              </router-link>
             </div>
 
           </div>

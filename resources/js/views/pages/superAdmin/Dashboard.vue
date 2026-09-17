@@ -59,41 +59,47 @@
         </div>
       </div>
 
-      <!-- Bottom Row: 2 Wide Boxes (Subjects, Faculties) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-        <div 
-          v-for="card in bottomStatCards" 
+      <!-- Second Row: 4 Boxes (Faculty, Department, Major, Subject) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+        <div
+          v-for="card in bottomStatCards"
           :key="card.label"
-          class="group relative bg-white p-4.5 rounded-2xl border border-slate-100/80 shadow-xs hover:border-[#63c7df] hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer overflow-hidden flex items-center justify-between"
+          class="group relative bg-white p-4.5 rounded-2xl border border-slate-100/80 shadow-xs hover:border-[#63c7df] hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer overflow-hidden flex flex-col justify-between"
         >
-          <div class="absolute -right-3 -top-3 w-20 h-20 bg-slate-900/[0.03] rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+          <div class="absolute -right-3 -top-3 w-16 h-16 bg-slate-900/[0.03] rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
 
-          <div class="flex items-center gap-4 relative z-10">
-            <div 
-              class="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-2xs shrink-0"
+          <div class="flex items-center justify-between mb-3 relative">
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-2xs"
               :class="[card.bg, card.text]"
             >
-              <i :class="card.icon" class="text-xl"></i>
+              <i :class="card.icon" class="text-base"></i>
             </div>
-            <div>
-              <p class="text-[11px] font-bold text-[#002060] uppercase tracking-wider mb-0.5">
-                {{ card.label }}
-              </p>
-              <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight m-0 flex items-center">
-                <span v-if="loading" class="inline-block w-12 h-7 bg-slate-100 rounded-lg animate-pulse"></span>
-                <span 
-                  v-else 
-                  class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent font-mono"
-                >
-                  {{ card.value }}
-                </span>
-              </h2>
-            </div>
+
+            <span
+              v-if="card.trend"
+              class="inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs"
+              :class="card.isPositive !== false ? 'text-emerald-600 bg-emerald-50/80 border-emerald-100/60' : 'text-rose-600 bg-rose-50/80 border-rose-100/60'"
+            >
+              <i :class="card.isPositive !== false ? 'pi pi-arrow-up-right' : 'pi pi-arrow-down-right'" class="text-[9px]"></i>
+              {{ card.trend }}
+            </span>
+            <span v-else class="w-2 h-2 rounded-full bg-slate-200/60 group-hover:bg-blue-400 transition-colors"></span>
           </div>
 
-          <div class="hidden sm:block text-right relative z-10 pr-2">
-            <span class="text-xs text-slate-400 font-medium">System Module</span>
-            <div class="text-[10px] text-slate-300 font-mono mt-0.5">Active & Configured</div>
+          <div class="relative z-10">
+            <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight m-0 min-h-[32px] flex items-center">
+              <span v-if="loading" class="inline-block w-12 h-7 bg-slate-100 rounded-lg animate-pulse"></span>
+              <span
+                v-else
+                class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent font-mono transition-all duration-300"
+              >
+                {{ card.value }}
+              </span>
+            </h2>
+            <p class="text-[11px] font-bold text-[#002060] uppercase tracking-wider mt-1.5 mb-0 truncate">
+              {{ card.label }}
+            </p>
           </div>
 
           <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-slate-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -457,10 +463,10 @@ const error = ref('')
 const chartViewMode = ref('line') // 'line' | 'cycle'
 const hoveredPoint = ref(null)
 
-const totals = ref({ users: 0, teachers: 0, students: 0, classes: 0, subjects: 0, faculties: 0 })
+const totals = ref({ users: 0, teachers: 0, students: 0, classes: 0, subjects: 0, faculties: 0, departments: 0, majors: 0 })
 
 // ផ្ទុកតួលេខដែលត្រូវធ្វើចលនា Count-up Animation
-const animatedTotals = ref({ users: 0, teachers: 0, students: 0, classes: 0, subjects: 0, faculties: 0 })
+const animatedTotals = ref({ users: 0, teachers: 0, students: 0, classes: 0, subjects: 0, faculties: 0, departments: 0, majors: 0 })
 
 const usersByRoleRaw = ref([])
 const statusBreakdown = ref({ active: 0, inactive: 0 })
@@ -497,7 +503,7 @@ const triggerNumbersAnimation = () => {
   })
 }
 
-// ======= KPI STAT CARDS SPLIT (4 TOP + 2 BOTTOM WIDE) =======
+// ======= KPI STAT CARDS SPLIT (4 TOP + 4 BOTTOM) =======
 const statCards = computed(() => [
   { 
     label: 'Total Users', 
@@ -534,26 +540,42 @@ const statCards = computed(() => [
     text: 'text-indigo-600',
     trend: null 
   },
-  { 
-    label: 'Subjects', 
-    value: animatedTotals.value.subjects.toLocaleString(), 
-    icon: 'pi pi-book', 
-    bg: 'bg-rose-50/80 border border-rose-100/50', 
-    text: 'text-rose-600',
-    trend: null 
-  },
-  { 
-    label: 'Faculties', 
-    value: animatedTotals.value.faculties.toLocaleString(), 
-    icon: 'pi pi-sitemap', 
-    bg: 'bg-violet-50/80 border border-violet-100/50', 
+  {
+    label: 'Faculties',
+    value: animatedTotals.value.faculties.toLocaleString(),
+    icon: 'pi pi-sitemap',
+    bg: 'bg-violet-50/80 border border-violet-100/50',
     text: 'text-violet-600',
-    trend: null 
+    trend: null
+  },
+  {
+    label: 'Departments',
+    value: animatedTotals.value.departments.toLocaleString(),
+    icon: 'pi pi-folder-open',
+    bg: 'bg-cyan-50/80 border border-cyan-100/50',
+    text: 'text-cyan-600',
+    trend: null
+  },
+  {
+    label: 'Majors',
+    value: animatedTotals.value.majors.toLocaleString(),
+    icon: 'pi pi-briefcase',
+    bg: 'bg-fuchsia-50/80 border border-fuchsia-100/50',
+    text: 'text-fuchsia-600',
+    trend: null
+  },
+  {
+    label: 'Subjects',
+    value: animatedTotals.value.subjects.toLocaleString(),
+    icon: 'pi pi-book',
+    bg: 'bg-rose-50/80 border border-rose-100/50',
+    text: 'text-rose-600',
+    trend: null
   },
 ])
 
 const topStatCards = computed(() => statCards.value.slice(0, 4))
-const bottomStatCards = computed(() => statCards.value.slice(4, 6))
+const bottomStatCards = computed(() => statCards.value.slice(4, 8))
 
 // ======= TREND LINE / AREA SVG COMPUTATIONS =======
 const chartYMax = computed(() => {

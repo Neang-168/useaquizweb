@@ -388,6 +388,10 @@ class StudentController extends Controller
             'major' => $enrollment?->major?->name,
             'major_name' => $enrollment?->major?->name,
             'promotion_id' => $enrollment?->promotion_id,
+            'promotion_name' => $enrollment?->promotion?->name
+                ?: ($enrollment?->promotion ? "{$enrollment->promotion->year_start}-{$enrollment->promotion->year_end}" : null),
+            // Legacy field kept for existing UI compatibility (e.g. ClassManagement.vue's
+            // student detail panel) — prefer promotion_name above for new UI.
             'generation' => $enrollment?->promotion
                 ? "{$enrollment->promotion->year_start}-{$enrollment->promotion->year_end}"
                 : null,

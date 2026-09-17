@@ -24,7 +24,7 @@ class TeacherController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
 
         $teachers = TeacherProfile::query()
-            ->with('user', 'faculty', 'department', 'degree', 'major')
+            ->with('user', 'faculty', 'department', 'major', 'teacherSubjects.academicYear')
             ->when($request->input('q'), function ($query, $q) {
                 $query->where('employee_code', 'like', "%{$q}%")
                     ->orWhereHas('user', function ($query) use ($q) {
@@ -79,7 +79,7 @@ class TeacherController extends Controller
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
+        $teacher->load('user', 'faculty', 'department', 'major', 'teacherSubjects.academicYear');
 
         return response()->json([
             'message' => 'Teacher created successfully.',
@@ -92,7 +92,7 @@ class TeacherController extends Controller
      */
     public function show(TeacherProfile $teacher)
     {
-        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
+        $teacher->load('user', 'faculty', 'department', 'major', 'teacherSubjects.academicYear');
 
         return response()->json([
             'teacher' => $this->transform($teacher),
@@ -133,7 +133,7 @@ class TeacherController extends Controller
             ]);
         });
 
-        $teacher->load('user', 'faculty', 'department', 'degree', 'major');
+        $teacher->load('user', 'faculty', 'department', 'major', 'teacherSubjects.academicYear');
 
         return response()->json([
             'message' => 'Teacher updated successfully.',
@@ -225,6 +225,15 @@ class TeacherController extends Controller
     {
         $user = $teacher->user;
 
+        // A teacher can be assigned across several academic years at once
+        // (one per class/subject assignment), so this carries every year
+        // they currently teach in rather than a single value.
+        $academicYears = $teacher->teacherSubjects
+            ->pluck('academicYear')
+            ->filter()
+            ->unique('id')
+            ->values();
+
         return [
             'id' => $teacher->id,
             'code' => $teacher->employee_code,
@@ -242,10 +251,10 @@ class TeacherController extends Controller
             'department' => $teacher->faculty?->name,
             'department_id' => $teacher->department_id,
             'department_name' => $teacher->department?->name,
-            'degree_id' => $teacher->degree_id,
-            'degree' => $teacher->degree?->name,
             'major_id' => $teacher->major_id,
             'major_name' => $teacher->major?->name,
+            'academic_year_ids' => $academicYears->pluck('id')->values(),
+            'academic_year_names' => $academicYears->pluck('name')->implode(', ') ?: null,
             'qualification' => $teacher->qualification,
             'specialization' => $teacher->specialization,
             'type' => $teacher->employment_type === 'full_time' ? 'Full-Time' : 'Part-Time',

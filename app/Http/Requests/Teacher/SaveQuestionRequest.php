@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Teacher;
 
+use App\Models\Llo;
 use App\Models\Question;
 use App\Rules\UploadedImageToken;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +24,7 @@ class SaveQuestionRequest extends FormRequest
     {
         return [
             'subject_id' => ['required', 'exists:subjects,id'],
+            'llo_id' => ['required', 'exists:llos,id'],
             'type' => ['required', Rule::in(['multiple_choice', 'true_false', 'matching'])],
             'difficulty' => ['required', Rule::in(['Easy', 'Medium', 'Hard'])],
             'points' => ['required', 'integer', 'min:1', 'max:1000'],
@@ -61,6 +63,7 @@ class SaveQuestionRequest extends FormRequest
             $question = $this->route('question');
 
             $this->validateStem($validator, $question);
+            $this->validateLloSubjectMatch($validator);
 
             if ($type === 'multiple_choice') {
                 $this->validateOptions($validator, $question);
@@ -104,6 +107,22 @@ class SaveQuestionRequest extends FormRequest
 
         if (! $hasContent) {
             $validator->errors()->add('title', 'The question needs a title, an image, or both.');
+        }
+    }
+
+    private function validateLloSubjectMatch(Validator $validator): void
+    {
+        $lloId = $this->input('llo_id');
+        $subjectId = $this->input('subject_id');
+
+        if (! $lloId || ! $subjectId) {
+            return; // let the required/exists rules report their own errors first
+        }
+
+        $llo = Llo::with('clo')->find($lloId);
+
+        if ($llo && $llo->clo && (int) $llo->clo->subject_id !== (int) $subjectId) {
+            $validator->errors()->add('llo_id', 'The selected learning outcome does not belong to the chosen subject.');
         }
     }
 

@@ -21,7 +21,7 @@ class QuestionRowMapper
 
     public static function headers(): array
     {
-        $headers = ['type', 'subject_code', 'difficulty', 'points', 'title', 'correct_options'];
+        $headers = ['type', 'subject_code', 'llo_code', 'difficulty', 'points', 'title', 'correct_options'];
 
         for ($i = 1; $i <= self::OPTION_SLOTS; $i++) {
             $headers[] = "option_{$i}";
@@ -44,6 +44,7 @@ class QuestionRowMapper
         $row = array_fill_keys(self::headers(), '');
         $row['type'] = $question->type;
         $row['subject_code'] = $question->subject?->code ?? '';
+        $row['llo_code'] = $question->llo?->code ?? '';
         $row['difficulty'] = $question->difficulty;
         $row['points'] = $question->points;
         $row['title'] = $question->title ?? '';
@@ -93,6 +94,7 @@ class QuestionRowMapper
         $mc = array_fill_keys(self::headers(), '');
         $mc['type'] = 'multiple_choice';
         $mc['subject_code'] = 'e.g. MATH101';
+        $mc['llo_code'] = 'optional, e.g. LLO1.1';
         $mc['difficulty'] = 'Medium';
         $mc['points'] = 1;
         $mc['title'] = 'What is 2 + 2?';
@@ -142,6 +144,7 @@ class QuestionRowMapper
         $parsed = [
             'type' => $type,
             'subject_code' => trim((string) ($row['subject_code'] ?? '')),
+            'llo_code' => trim((string) ($row['llo_code'] ?? '')),
             'difficulty' => self::normalizeDifficulty($row['difficulty'] ?? null),
             'points' => self::normalizePoints($row['points'] ?? null),
             'title' => trim((string) ($row['title'] ?? '')),

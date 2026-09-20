@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\SaveQuestionRequest;
+use App\Models\Llo;
 use App\Models\Question;
 use App\Models\QuestionMatchingPair;
 use App\Models\QuestionOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class QuestionController extends Controller
@@ -27,15 +29,135 @@ class QuestionController extends Controller
 
         $questions = Question::query()
             ->where('teacher_profile_id', $teacher->id)
-            ->with(['subject', 'options', 'matchingPairs'])
+            ->with(['subject', 'llo', 'options', 'matchingPairs'])
             ->when($request->input('subject_id'), fn ($query, $id) => $query->where('subject_id', $id))
             ->when($request->input('type'), fn ($query, $type) => $query->where('type', $type))
+            ->when($request->input('difficulty'), fn ($query, $difficulty) => $query->where('difficulty', $difficulty))
+            ->when($request->input('clo_id'), fn ($query, $id) => $query->whereHas('llo', fn ($q) => $q->where('clo_id', $id)))
+            ->when($request->input('llo_id'), fn ($query, $id) => $query->where('llo_id', $id))
             ->when($request->input('q'), fn ($query, $q) => $query->where('title', 'like', "%{$q}%"))
             ->orderByDesc('created_at')
             ->get();
 
         return response()->json([
             'data' => $questions->map(fn (Question $question) => $this->transform($question)),
+        ]);
+    }
+
+    /**
+     * Pick a random sample of this teacher's questions matching the given
+     * filters, for building a quiz by outcome coverage rather than picking
+     * every question by hand. Never errors on a thin bank — if fewer
+     * questions match than requested, returns what exists plus a shortfall
+     * count so the caller can tell the difference between "picked N" and
+     * "wanted N but only M existed."
+     */
+    public function random(Request $request)
+    {
+        $teacher = $request->user()->teacherProfile;
+
+        if (! $teacher) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'subject_id' => ['required', 'exists:subjects,id'],
+            'clo_id' => ['nullable', 'integer', 'exists:clos,id'],
+            'llo_id' => ['nullable', 'integer', 'exists:llos,id'],
+            'difficulty' => ['nullable', Rule::in(['Easy', 'Medium', 'Hard'])],
+            'question_type' => ['nullable', Rule::in(['multiple_choice', 'true_false', 'matching'])],
+            'count' => ['required', 'integer', 'min:1', 'max:200'],
+            'exclude_ids' => ['nullable', 'array'],
+            'exclude_ids.*' => ['integer'],
+        ]);
+
+        $questions = Question::query()
+            ->where('teacher_profile_id', $teacher->id)
+            ->where('subject_id', $validated['subject_id'])
+            ->with(['subject', 'llo', 'options', 'matchingPairs'])
+            ->when($validated['clo_id'] ?? null, fn ($query, $id) => $query->whereHas('llo', fn ($q) => $q->where('clo_id', $id)))
+            ->when($validated['llo_id'] ?? null, fn ($query, $id) => $query->where('llo_id', $id))
+            ->when($validated['difficulty'] ?? null, fn ($query, $difficulty) => $query->where('difficulty', $difficulty))
+            ->when($validated['question_type'] ?? null, fn ($query, $type) => $query->where('type', $type))
+            ->when(! empty($validated['exclude_ids']), fn ($query) => $query->whereNotIn('id', $validated['exclude_ids']))
+            ->inRandomOrder()
+            ->limit($validated['count'])
+            ->get();
+
+        return response()->json([
+            'data' => $questions->map(fn (Question $question) => $this->transform($question)),
+            'shortfall' => max(0, $validated['count'] - $questions->count()),
+        ]);
+    }
+
+    /**
+     * This teacher's questions that have no LLO tag yet, for the bulk-tag
+     * screen in Question Bank (e.g. questions created via import, which
+     * never goes through SaveQuestionRequest).
+     */
+    public function untagged(Request $request)
+    {
+        $teacher = $request->user()->teacherProfile;
+
+        if (! $teacher) {
+            return response()->json(['data' => []]);
+        }
+
+        $questions = Question::query()
+            ->where('teacher_profile_id', $teacher->id)
+            ->whereNull('llo_id')
+            ->with(['subject', 'options', 'matchingPairs'])
+            ->when($request->input('subject_id'), fn ($query, $id) => $query->where('subject_id', $id))
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'data' => $questions->map(fn (Question $question) => $this->transform($question)),
+        ]);
+    }
+
+    /**
+     * Tag many untagged questions with one LLO in a single action. Only
+     * this teacher's own, currently-untagged questions whose subject
+     * matches the LLO's subject are updated; anything else requested is
+     * silently skipped and reported back, since attempting to tag another
+     * subject's question with this LLO would violate the same subject
+     * match SaveQuestionRequest enforces on the single-question path.
+     */
+    public function bulkTagLlo(Request $request)
+    {
+        $teacher = $request->user()->teacherProfile;
+
+        if (! $teacher) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'question_ids' => ['required', 'array', 'min:1'],
+            'question_ids.*' => ['integer', 'exists:questions,id'],
+            'llo_id' => ['required', 'exists:llos,id'],
+        ]);
+
+        $llo = Llo::with('clo')->findOrFail($validated['llo_id']);
+        $subjectId = $llo->clo?->subject_id;
+
+        $eligibleIds = Question::query()
+            ->whereIn('id', $validated['question_ids'])
+            ->where('teacher_profile_id', $teacher->id)
+            ->where('subject_id', $subjectId)
+            ->whereNull('llo_id')
+            ->pluck('id');
+
+        DB::transaction(function () use ($eligibleIds, $validated) {
+            Question::whereIn('id', $eligibleIds)->update(['llo_id' => $validated['llo_id']]);
+        });
+
+        $skippedIds = array_values(array_diff($validated['question_ids'], $eligibleIds->all()));
+
+        return response()->json([
+            'message' => $eligibleIds->count().' question(s) tagged, '.count($skippedIds).' skipped.',
+            'tagged' => $eligibleIds->count(),
+            'skippedIds' => $skippedIds,
         ]);
     }
 
@@ -51,7 +173,7 @@ class QuestionController extends Controller
 
         $this->deleteFiles($staleFiles);
 
-        $question->load('subject', 'options', 'matchingPairs');
+        $question->load('subject', 'llo', 'options', 'matchingPairs');
 
         return response()->json([
             'message' => 'Question created successfully.',
@@ -72,7 +194,7 @@ class QuestionController extends Controller
 
         $this->deleteFiles($staleFiles);
 
-        $question->load('subject', 'options', 'matchingPairs');
+        $question->load('subject', 'llo', 'options', 'matchingPairs');
 
         return response()->json([
             'message' => 'Question updated successfully.',
@@ -180,6 +302,7 @@ class QuestionController extends Controller
 
         $attributes = [
             'subject_id' => $validated['subject_id'],
+            'llo_id' => $validated['llo_id'],
             'type' => $validated['type'],
             'title' => filled($validated['title'] ?? null) ? $validated['title'] : null,
             'difficulty' => $validated['difficulty'],
@@ -298,6 +421,8 @@ class QuestionController extends Controller
             'id' => $question->id,
             'subject_id' => $question->subject_id,
             'subjectCode' => $question->subject?->code,
+            'llo_id' => $question->llo_id,
+            'lloTitle' => $question->llo?->title,
             'type' => $question->type,
             'difficulty' => $question->difficulty,
             'points' => $question->points,

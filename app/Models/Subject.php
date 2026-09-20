@@ -60,6 +60,11 @@ class Subject extends Model
         return $this->hasMany(TeacherSubject::class);
     }
 
+    public function clos(): HasMany
+    {
+        return $this->hasMany(Clo::class);
+    }
+
     /**
      * Auto-generate the next subject code for a faculty, e.g. "SCT101",
      * "SCT102", so the create form can prefill it before saving.

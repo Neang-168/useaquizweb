@@ -195,6 +195,13 @@ const termFields = [
 // (falls back to "{year_start}-{year_end}" when blank), so the form still
 // reads/writes `name_en` for consistency with every other tab and maps it
 // back to `name` only when building the request payload.
+const ploFields = [
+  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. PLO1' },
+  { key: 'title', label: 'Title', type: 'text', required: true, span: 2, placeholder: 'e.g. Apply engineering principles to solve real-world problems' },
+  { key: 'description', label: 'Description', type: 'textarea', span: 3, showInTable: false },
+  { key: 'status', label: 'Status', type: 'status', required: true },
+]
+
 const promotionFields = [
   { key: 'name_en', label: 'Name', type: 'text', placeholder: 'e.g. Promotion 22', requestKey: 'name' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
@@ -210,6 +217,7 @@ const tabs = [
   { key: 'faculties', label: 'Faculties', title: 'Faculties', singular: 'Faculty', icon: 'pi pi-building', endpoint: '/faculties', fields: facultyFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No faculties found.' },
   { key: 'departments', label: 'Departments', title: 'Departments', singular: 'Department', icon: 'pi pi-sitemap', endpoint: '/departments', fields: departmentFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No departments found.' },
   { key: 'majors', label: 'Majors', title: 'Majors', singular: 'Major', icon: 'pi pi-bookmark', endpoint: '/majors', fields: majorFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No majors found.' },
+  { key: 'plos', label: 'PLOs', title: 'Program Learning Outcomes', singular: 'PLO', icon: 'pi pi-flag-fill', endpoint: '/plos', fields: ploFields, searchPlaceholder: 'Search code or title...', emptyMessage: 'No PLOs found.' },
   { key: 'promotions', label: 'Promotions', title: 'Promotions', singular: 'Promotion', icon: 'pi pi-users', endpoint: '/promotions', fields: promotionFields, searchPlaceholder: 'Search by year...', emptyMessage: 'No promotions found.' },
   { key: 'academicYears', label: 'Academic Years', title: 'Academic Years', singular: 'Academic Year', icon: 'pi pi-calendar', endpoint: '/academic-years', fields: academicYearFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No academic years found.', supportsSetCurrent: true },
   { key: 'stages', label: 'Stages', title: 'Stages', singular: 'Stage', icon: 'pi pi-flag', endpoint: '/stages', fields: stageFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No stages found.' },

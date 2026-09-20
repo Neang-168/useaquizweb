@@ -141,6 +141,7 @@
           <p class="font-bold text-sm m-0" :class="preview.skipped.length ? 'text-amber-700' : 'text-emerald-700'">
             {{ preview.imported }} question{{ preview.imported === 1 ? '' : 's' }} ready to import
             <span v-if="preview.skipped.length" class="font-medium text-amber-600">· {{ preview.skipped.length }} will be skipped</span>
+            <span v-if="preview.warnings.length" class="font-medium text-sky-600">· {{ preview.warnings.length }} without a matching LLO tag</span>
           </p>
           <p class="text-xs text-slate-400 m-0 mt-0.5">Review the questions below before confirming.</p>
         </div>
@@ -159,9 +160,16 @@
         <!-- Ready-to-import questions, full-width grid -->
         <div v-if="preview.questions.length" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
           <div v-for="(q, idx) in preview.questions" :key="idx" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs">
-            <div class="flex items-center gap-1.5 mb-1.5">
+            <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
               <span class="font-bold px-1.5 py-0.5 rounded bg-white text-slate-600 border border-slate-200">{{ formatType(q.type) }}</span>
               <span class="text-slate-400">{{ q.subjectCode }} • {{ q.difficulty }}</span>
+              <span v-if="q.lloCode && !hasLloWarning(q.source)" class="font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <i class="pi pi-tag text-[9px]"></i> {{ q.lloCode }}
+              </span>
+              <span v-else-if="q.lloCode" class="font-bold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">
+                "{{ q.lloCode }}" not matched — untagged
+              </span>
+              <span v-else class="font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200">Untagged</span>
             </div>
             <p class="font-semibold text-slate-800 m-0">{{ q.title || '(image question)' }}</p>
 
@@ -183,6 +191,16 @@
           <div class="space-y-1.5">
             <div v-for="(item, idx) in preview.skipped" :key="idx" class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
               <span class="font-bold">{{ item.source }}:</span> {{ item.errors.join(' ') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- LLO tagging warnings (row still imports, just untagged) -->
+        <div v-if="preview.warnings.length" class="border-t border-slate-200 pt-4">
+          <p class="text-xs font-bold text-sky-700 mb-2">Imported without a matching LLO tag</p>
+          <div class="space-y-1.5">
+            <div v-for="(item, idx) in preview.warnings" :key="idx" class="text-xs text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+              <span class="font-bold">{{ item.source }}:</span> {{ item.message }}
             </div>
           </div>
         </div>
@@ -300,6 +318,10 @@ function formatType(type) {
   return type
 }
 
+function hasLloWarning(source) {
+  return !!preview.value?.warnings?.some(w => w.source === source)
+}
+
 function buildFormData() {
   const formData = new FormData()
   formData.append('file', selectedFile.value)
@@ -316,7 +338,7 @@ async function runPreview() {
       params: { preview: 1 },
       headers: { 'Content-Type': 'multipart/form-data' },
     })
-    preview.value = { imported: data.imported, skipped: data.skipped, questions: data.questions }
+    preview.value = { imported: data.imported, skipped: data.skipped, warnings: data.warnings || [], questions: data.questions }
   } catch (error) {
     toast.add({ summary: 'Failed to preview import file', ...toastFromError(error) })
     selectedFile.value = null
@@ -351,10 +373,11 @@ async function runImport() {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     if (data.imported > 0) {
-      toast.add({ severity: 'success', summary: 'Questions imported', detail: `${data.imported} question${data.imported === 1 ? '' : 's'} imported successfully.`, life: 3000 })
+      const untaggedNote = data.warnings?.length ? ` ${data.warnings.length} imported without a matching LLO tag — bulk-tag them in Question Bank.` : ''
+      toast.add({ severity: 'success', summary: 'Questions imported', detail: `${data.imported} question${data.imported === 1 ? '' : 's'} imported successfully.${untaggedNote}`, life: 5000 })
       router.push({ name: 'teacher.questionbank', query: { imported: data.imported } })
     } else {
-      preview.value = { imported: data.imported, skipped: data.skipped, questions: [] }
+      preview.value = { imported: data.imported, skipped: data.skipped, warnings: data.warnings || [], questions: [] }
       toast.add({ severity: 'warn', summary: 'No questions imported', detail: 'No rows could be imported. Check the skipped rows below.', life: 4000 })
     }
   } catch (error) {

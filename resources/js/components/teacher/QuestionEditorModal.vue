@@ -78,6 +78,44 @@
           </div>
         </div>
 
+        <!-- Course Learning Outcome (CLO) & Learning Outcome (LLO) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Course Outcome (CLO)</label>
+            <Dropdown
+              v-model="form.clo_id"
+              :options="filteredClos"
+              option-label="title"
+              option-value="id"
+              show-clear
+              placeholder="All CLOs"
+              size="small"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            >
+              <template #option="{ option }">{{ option.code ? `${option.code} — ${option.title}` : option.title }}</template>
+            </Dropdown>
+            <p class="text-[11px] text-slate-400 mt-1">Optional — narrows the list below and auto-fills it when there's only one match.</p>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Learning Outcome (LLO) *</label>
+            <Dropdown
+              v-model="form.llo_id"
+              :options="filteredLlos"
+              option-label="title"
+              option-value="id"
+              :disabled="filteredLlos.length === 0"
+              placeholder="Select learning outcome"
+              size="small"
+              class="w-full !bg-slate-50 !border-slate-200 !rounded-lg"
+            >
+              <template #option="{ option }">{{ option.code ? `${option.code} — ${option.title}` : option.title }}</template>
+            </Dropdown>
+            <p v-if="filteredLlos.length === 0" class="text-[11px] text-rose-500 mt-1">
+              No learning outcomes match — add one under Learning Outcomes first.
+            </p>
+          </div>
+        </div>
+
         <!-- Type Select -->
         <div>
           <label class="block font-bold text-slate-700 mb-1">Question Type *</label>
@@ -249,7 +287,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
@@ -267,6 +305,8 @@ const toast = useToast()
 const props = defineProps({
   visible: { type: Boolean, default: false },
   subjects: { type: Array, default: () => [] },
+  clos: { type: Array, default: () => [] },
+  llos: { type: Array, default: () => [] },
   editingQuestion: { type: Object, default: null },
   lockedSubjectId: { type: [Number, String], default: null },
 })
@@ -292,6 +332,8 @@ function blankPair() {
 function defaultForm(keep = null) {
   return {
     subject_id: keep?.subject_id ?? props.lockedSubjectId ?? props.subjects[0]?.id ?? null,
+    clo_id: keep?.clo_id ?? null,
+    llo_id: null,
     difficulty: keep?.difficulty ?? 'Medium',
     points: keep?.points ?? 1,
     type: keep?.type ?? 'multiple_choice',
@@ -325,6 +367,51 @@ function subjectLabel(id) {
   return subject.code ? `${subject.name} (${subject.code})` : subject.name
 }
 
+// The `llos` prop only carries Active learning outcomes (QuestionBank fetches
+// without include_inactive), so editing a question tagged to one that's since
+// been deactivated needs a synthetic fallback entry — otherwise the dropdown
+// would show blank and the watch below would wipe out a perfectly valid tag
+// just because its LLO got archived after the fact.
+const editingLloFallback = ref(null)
+
+const filteredClos = computed(() => props.clos.filter(c => c.subject_id === form.value.subject_id && c.status === 'Active'))
+
+const filteredLlos = computed(() => {
+  let list = props.llos.filter(l => l.subject_id === form.value.subject_id && l.status === 'Active')
+
+  if (form.value.clo_id) {
+    list = list.filter(l => l.clo_id === form.value.clo_id)
+  }
+
+  const fallback = editingLloFallback.value
+  const fallbackMatchesClo = !form.value.clo_id || fallback?.clo_id === form.value.clo_id
+
+  if (fallback && fallback.subject_id === form.value.subject_id && fallbackMatchesClo && !list.some(l => l.id === fallback.id)) {
+    return [...list, fallback]
+  }
+
+  return list
+})
+
+// Reset the CLO/LLO pick whenever the subject changes out from under them.
+watch(() => form.value.subject_id, () => {
+  if (!filteredClos.value.some(c => c.id === form.value.clo_id)) {
+    form.value.clo_id = null
+  }
+  if (!filteredLlos.value.some(l => l.id === form.value.llo_id)) {
+    form.value.llo_id = null
+  }
+})
+
+// Picking a CLO narrows the LLO list to just that CLO's outcomes. When that
+// leaves exactly one option, auto-fill it — the whole point of adding the
+// CLO step is to save the teacher a click once it's unambiguous.
+watch(() => form.value.clo_id, () => {
+  if (!filteredLlos.value.some(l => l.id === form.value.llo_id)) {
+    form.value.llo_id = filteredLlos.value.length === 1 ? filteredLlos.value[0].id : null
+  }
+})
+
 watch(() => props.visible, (isVisible) => {
   if (!isVisible) return
 
@@ -337,8 +424,16 @@ watch(() => props.visible, (isVisible) => {
     isEditing.value = true
     editingId.value = src.id
 
+    const matchedLlo = props.llos.find(l => l.id === src.llo_id)
+
+    editingLloFallback.value = src.llo_id
+      ? { id: src.llo_id, title: src.lloTitle || `LLO #${src.llo_id}`, code: null, clo_id: matchedLlo?.clo_id ?? null, subject_id: src.subject_id, status: 'Inactive' }
+      : null
+
     const cloned = {
       subject_id: src.subject_id,
+      clo_id: matchedLlo?.clo_id ?? null,
+      llo_id: src.llo_id ?? null,
       difficulty: src.difficulty,
       points: src.points ?? 1,
       type: src.type,
@@ -381,6 +476,7 @@ watch(() => props.visible, (isVisible) => {
 
     form.value = cloned
   } else {
+    editingLloFallback.value = null
     isEditing.value = false
     editingId.value = null
     form.value = defaultForm()
@@ -403,8 +499,14 @@ async function save() {
     return
   }
 
+  if (!form.value.llo_id) {
+    toast.add({ severity: 'warn', summary: 'Learning outcome required', detail: 'Please select a learning outcome (LLO) for this question.', life: 4000 })
+    return
+  }
+
   const payload = {
     subject_id: form.value.subject_id,
+    llo_id: form.value.llo_id,
     type: form.value.type,
     difficulty: form.value.difficulty,
     points: form.value.points,

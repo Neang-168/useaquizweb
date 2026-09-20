@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Llo;
 use App\Models\Question;
 use App\Models\QuestionMatchingPair;
 use App\Models\QuestionOption;
@@ -47,7 +48,7 @@ class QuestionImportExportController extends Controller
 
         $questions = Question::query()
             ->when($teacher, fn ($q) => $q->where('teacher_profile_id', $teacher->id), fn ($q) => $q->whereRaw('1 = 0'))
-            ->with(['subject', 'options', 'matchingPairs'])
+            ->with(['subject', 'llo', 'options', 'matchingPairs'])
             ->when($request->input('subject_id'), fn ($q, $id) => $q->where('subject_id', $id))
             ->when($request->input('type'), fn ($q, $type) => $q->where('type', $type))
             ->orderBy('subject_id')
@@ -104,6 +105,7 @@ class QuestionImportExportController extends Controller
 
         $valid = [];
         $skipped = [];
+        $warnings = [];
 
         foreach ($parsedQuestions as $index => $parsed) {
             $source = $parsed['source'] ?? 'row '.($index + 2); // +2: header row + 1-indexing
@@ -121,7 +123,32 @@ class QuestionImportExportController extends Controller
                 continue;
             }
 
-            $valid[] = ['source' => $source, 'parsed' => $parsed, 'subjectId' => $subjectId];
+            $lloId = null;
+            $lloCode = trim((string) ($parsed['llo_code'] ?? ''));
+
+            // llo_code is optional and never blocks the row — an unmatched or
+            // ambiguous code just imports the question untagged (same as
+            // leaving the column blank), reported as a warning so the teacher
+            // knows to fix it up via bulk-tag afterward instead of the whole
+            // row being skipped over a typo.
+            if ($lloCode !== '') {
+                $matches = Llo::whereHas('clo', fn ($q) => $q->where('subject_id', $subjectId))
+                    ->where('code', $lloCode)
+                    ->where('status', true)
+                    ->pluck('id');
+
+                if ($matches->count() === 1) {
+                    $lloId = $matches->first();
+                } else {
+                    $reason = $matches->count() === 0
+                        ? 'no matching Active LLO found for this subject'
+                        : 'matched more than one LLO for this subject (codes aren\'t unique subject-wide)';
+
+                    $warnings[] = ['source' => $source, 'message' => "LLO code \"{$lloCode}\" was not applied ({$reason}) — imported without a tag."];
+                }
+            }
+
+            $valid[] = ['source' => $source, 'parsed' => $parsed, 'subjectId' => $subjectId, 'lloId' => $lloId];
         }
 
         if ($isPreview) {
@@ -129,6 +156,7 @@ class QuestionImportExportController extends Controller
                 'preview' => true,
                 'imported' => count($valid),
                 'skipped' => $skipped,
+                'warnings' => $warnings,
                 'questions' => array_map(fn ($v) => $this->previewRow($v['source'], $v['parsed']), $valid),
             ]);
         }
@@ -136,15 +164,16 @@ class QuestionImportExportController extends Controller
         $created = [];
 
         foreach ($valid as $v) {
-            $question = DB::transaction(fn () => $this->createQuestion($v['parsed'], $v['subjectId'], $teacher->id));
+            $question = DB::transaction(fn () => $this->createQuestion($v['parsed'], $v['subjectId'], $v['lloId'], $teacher->id));
             $created[] = $this->transform($question);
         }
 
         return response()->json([
             'preview' => false,
-            'message' => count($created).' question(s) imported, '.count($skipped).' skipped.',
+            'message' => count($created).' question(s) imported, '.count($skipped).' skipped'.(count($warnings) ? ', '.count($warnings).' without a matching LLO tag' : '').'.',
             'imported' => count($created),
             'skipped' => $skipped,
+            'warnings' => $warnings,
             'questions' => $created,
         ]);
     }
@@ -160,6 +189,7 @@ class QuestionImportExportController extends Controller
             'source' => $source,
             'type' => $parsed['type'],
             'subjectCode' => $parsed['subject_code'],
+            'lloCode' => $parsed['llo_code'] ?? '',
             'difficulty' => $parsed['difficulty'],
             'points' => $parsed['points'],
             'title' => $parsed['title'],
@@ -169,11 +199,12 @@ class QuestionImportExportController extends Controller
         ];
     }
 
-    private function createQuestion(array $parsed, int $subjectId, int $teacherId): Question
+    private function createQuestion(array $parsed, int $subjectId, ?int $lloId, int $teacherId): Question
     {
         $question = Question::create([
             'teacher_profile_id' => $teacherId,
             'subject_id' => $subjectId,
+            'llo_id' => $lloId,
             'type' => $parsed['type'],
             'title' => $parsed['title'],
             'difficulty' => $parsed['difficulty'],
@@ -304,6 +335,7 @@ class QuestionImportExportController extends Controller
             ['How to fill in the Questions sheet'],
             ['type: multiple_choice, true_false, or matching'],
             ['subject_code: must match one of your assigned subjects (see My Subjects)'],
+            ['llo_code: optional — the code of a Learning Outcome (LLO) under that subject to tag this question with. Leave blank to import untagged and tag it later. An unknown or ambiguous code is ignored with a warning, it never blocks the row.'],
             ['difficulty: Easy, Medium, or Hard (defaults to Medium if left blank)'],
             ['points: how much this question is worth (defaults to 1 if left blank)'],
             ['title: the question text'],
@@ -355,12 +387,14 @@ class QuestionImportExportController extends Controller
 
     private function transform(Question $question): array
     {
-        $question->load('subject', 'options', 'matchingPairs');
+        $question->load('subject', 'llo', 'options', 'matchingPairs');
 
         return [
             'id' => $question->id,
             'subject_id' => $question->subject_id,
             'subjectCode' => $question->subject?->code,
+            'llo_id' => $question->llo_id,
+            'lloTitle' => $question->llo?->title,
             'type' => $question->type,
             'difficulty' => $question->difficulty,
             'points' => $question->points,

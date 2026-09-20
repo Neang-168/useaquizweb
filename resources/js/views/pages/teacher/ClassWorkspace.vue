@@ -366,7 +366,7 @@
       :visible="showQuizModal"
       @update:visible="(val) => { if (!val) closeQuizModal() }"
       modal
-      class="w-full max-w-2xl"
+      class="w-full max-w-5xl"
     >
       <template #header>
         <h3 class="text-sm font-bold text-[#002060] m-0">
@@ -471,46 +471,118 @@
             Selected questions total {{ selectedPoints }} raw pts, above your Total Score of {{ builderForm.totalScore }} &mdash; they'll be scaled down to fit. You can still add more if you want.
           </p>
 
-          <div class="flex items-center gap-2">
-            <InputText
-              v-model="pickerSearch"
-              size="small"
-              placeholder="Search questions..."
-              class="flex-1 !bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
-            />
-            <Dropdown
-              v-model="pickerTypeFilter"
-              :options="pickerTypeOptions"
-              option-label="label"
-              option-value="value"
-              size="small"
-              class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
-            />
-          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-3 items-start">
+            <!-- Left: filters, list, add controls -->
+            <div class="space-y-2 min-w-0">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Dropdown
+                  v-model="pickerCloFilter"
+                  :options="clos"
+                  option-label="title"
+                  option-value="id"
+                  placeholder="All CLOs"
+                  show-clear
+                  size="small"
+                  class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
+                />
+                <Dropdown
+                  v-model="pickerLloFilter"
+                  :options="lloOptionsForFilter"
+                  option-label="title"
+                  option-value="id"
+                  placeholder="All LLOs"
+                  show-clear
+                  size="small"
+                  class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
+                />
+              </div>
 
-          <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-56 overflow-y-auto">
-            <div
-              v-for="q in filteredPickerQuestions"
-              :key="q.id"
-              class="flex items-center gap-3 px-3 py-2 hover:bg-[#F8F8F8]"
-            >
-              <Checkbox :value="q.id" v-model="builderForm.selectedQuestionIds" class="shrink-0" />
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F8F8F8] text-slate-600 shrink-0 border border-slate-200">{{ formatType(q.type) }}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
-              <span class="text-slate-700 flex-1 truncate">{{ q.title || '(image question)' }}</span>
-              <span
-                :class="{
-                  'bg-[#63C7DF]/15 text-[#002060] border-[#63C7DF]/40': q.difficulty === 'Easy',
-                  'bg-[#E4AC40]/15 text-[#E4AC40] border-[#E4AC40]/40': q.difficulty === 'Medium',
-                  'bg-[#D71818]/15 text-[#D71818] border-[#D71818]/40': q.difficulty === 'Hard'
-                }"
-                class="text-[10px] font-bold px-2 py-0.5 rounded border shrink-0"
-              >
-                {{ q.difficulty }}
-              </span>
+              <div class="flex items-center gap-2">
+                <InputText
+                  v-model="pickerSearch"
+                  size="small"
+                  placeholder="Search questions..."
+                  class="flex-1 !bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
+                />
+                <Dropdown
+                  v-model="pickerTypeFilter"
+                  :options="pickerTypeOptions"
+                  option-label="label"
+                  option-value="value"
+                  size="small"
+                  class="!bg-[#F8F8F8] !border-slate-200 !rounded-lg !text-xs"
+                />
+              </div>
+
+              <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-56 overflow-y-auto">
+                <div
+                  v-for="q in filteredPickerQuestions"
+                  :key="q.id"
+                  class="flex items-center gap-3 px-3 py-2 hover:bg-[#F8F8F8]"
+                >
+                  <Checkbox :value="q.id" v-model="builderForm.selectedQuestionIds" class="shrink-0" />
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F8F8F8] text-slate-600 shrink-0 border border-slate-200">{{ formatType(q.type) }}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] shrink-0">{{ q.points }} pt{{ q.points === 1 ? '' : 's' }}</span>
+                  <span class="text-slate-700 flex-1 truncate">{{ q.title || '(image question)' }}</span>
+                  <span
+                    :class="{
+                      'bg-[#63C7DF]/15 text-[#002060] border-[#63C7DF]/40': q.difficulty === 'Easy',
+                      'bg-[#E4AC40]/15 text-[#E4AC40] border-[#E4AC40]/40': q.difficulty === 'Medium',
+                      'bg-[#D71818]/15 text-[#D71818] border-[#D71818]/40': q.difficulty === 'Hard'
+                    }"
+                    class="text-[10px] font-bold px-2 py-0.5 rounded border shrink-0"
+                  >
+                    {{ q.difficulty }}
+                  </span>
+                </div>
+                <div v-if="filteredPickerQuestions.length === 0" class="px-3 py-6 text-center text-xs text-slate-400">
+                  No questions match this filter. Try "Add New Question" to create one.
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 bg-[#F8F8F8] border border-slate-200 rounded-lg px-3 py-2">
+                <span class="text-[11px] font-semibold text-slate-600 flex-1">
+                  {{ matchingCount }} question{{ matchingCount === 1 ? '' : 's' }} match &middot; {{ matchingSelectedCount }} already selected
+                </span>
+                <InputNumber v-model="randomCount" :min="1" :max="200" size="small" class="!w-20" input-class="w-full !bg-white !border-slate-200 !rounded-lg !text-xs" />
+                <Button label="Add Random" size="small" class="!bg-[#63C7DF] hover:!bg-[#4bb6cf] !border-[#63C7DF] !text-white !rounded-lg !text-xs" @click="addRandom" />
+                <Button label="Add All" size="small" outlined class="!border-[#002060] !text-[#002060] !rounded-lg !text-xs" @click="addAll" />
+                <Button
+                  label="Keep N Random"
+                  size="small"
+                  outlined
+                  class="!border-[#e4ac40] !text-[#e4ac40] !rounded-lg !text-xs"
+                  @click="keepRandom"
+                />
+              </div>
             </div>
-            <div v-if="filteredPickerQuestions.length === 0" class="px-3 py-6 text-center text-xs text-slate-400">
-              No questions match this filter. Try "Add New Question" to create one.
+
+            <!-- Right: Balance panel -->
+            <div class="bg-white border border-slate-200 rounded-xl p-3 space-y-3 lg:sticky lg:top-2">
+              <div>
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide m-0">Balance</p>
+                <p class="text-sm font-bold text-[#002060] m-0">{{ builderForm.selectedQuestionIds.length }} question{{ builderForm.selectedQuestionIds.length === 1 ? '' : 's' }} &middot; {{ selectedPoints }} pts</p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide m-0">By Learning Outcome</p>
+                <div v-for="row in balanceByLlo" :key="row.id" class="flex items-center justify-between gap-2 text-[11px]">
+                  <span :class="row.count === 0 ? 'text-rose-500 font-semibold' : 'text-slate-600'" class="truncate flex-1">{{ row.title }}</span>
+                  <span
+                    class="font-bold px-1.5 py-0.5 rounded-full shrink-0"
+                    :class="row.count === 0 ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC]'"
+                  >{{ row.count }}</span>
+                </div>
+                <p v-if="balanceByLlo.length === 0" class="text-[11px] text-slate-400 m-0">No LLOs defined for this subject yet.</p>
+              </div>
+
+              <div class="space-y-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide m-0">By Difficulty</p>
+                <div v-for="row in balanceByDifficulty" :key="row.label" class="flex items-center justify-between gap-2 text-[11px]">
+                  <span class="text-slate-600">{{ row.label }}</span>
+                  <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#D8E7EC]/50 text-[#002060] border border-[#D8E7EC] shrink-0">{{ row.count }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -595,6 +667,8 @@
     <QuestionEditorModal
       v-model:visible="showQuestionEditor"
       :subjects="classInfo ? [{ id: classInfo.subject_id, code: '', name: classInfo.subject }] : []"
+      :clos="clos"
+      :llos="activeLlos"
       :locked-subject-id="classInfo?.subject_id"
       :editing-question="null"
       @saved="onNewQuestionSaved"
@@ -643,6 +717,10 @@ const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'q
 const classInfo = ref(null)
 const quizzes = ref([])
 const pickerQuestions = ref([])
+const clos = ref([])
+const llos = ref([])
+
+const activeLlos = computed(() => llos.value.filter(l => l.status === 'Active'))
 
 const fetchClassInfo = async () => {
   const { data } = await api.get('/teacher/classes')
@@ -665,16 +743,33 @@ const fetchPickerQuestions = async () => {
   pickerQuestions.value = data.data
 }
 
+const fetchClos = async () => {
+  if (!classInfo.value) return
+  const { data } = await api.get('/teacher/clos', { params: { subject_id: classInfo.value.subject_id } })
+  clos.value = data.data
+}
+
+// include_inactive so a since-archived LLO that already has questions tagged
+// to it still shows up (with its true count) in the Balance panel below,
+// instead of silently vanishing from the breakdown.
+const fetchLlos = async () => {
+  if (!classInfo.value) return
+  const { data } = await api.get('/teacher/llos', { params: { subject_id: classInfo.value.subject_id, include_inactive: 1 } })
+  llos.value = data.data
+}
+
 async function loadWorkspace() {
   classInfo.value = null
   quizzes.value = []
   pickerQuestions.value = []
+  clos.value = []
+  llos.value = []
   selectedScoreQuiz.value = null
   selectedFeedbackQuiz.value = null
 
   try {
     await fetchClassInfo()
-    await Promise.all([fetchQuizzes(), fetchPickerQuestions()])
+    await Promise.all([fetchQuizzes(), fetchPickerQuestions(), fetchClos(), fetchLlos()])
   } catch (error) {
     toast.add({ summary: 'Failed to load class workspace', ...toastFromError(error) })
   }
@@ -767,6 +862,24 @@ const showQuizModal = ref(false)
 const editingQuizId = ref(null)
 const pickerSearch = ref('')
 const pickerTypeFilter = ref('')
+const pickerCloFilter = ref(null)
+const pickerLloFilter = ref(null)
+const randomCount = ref(5)
+
+// Picking a CLO invalidates whatever LLO was filtered on, since LLOs are
+// scoped to a single CLO — keep the two dropdowns from disagreeing.
+watch(pickerCloFilter, () => {
+  pickerLloFilter.value = null
+})
+
+function cloIdForLlo(lloId) {
+  return llos.value.find(l => l.id === lloId)?.clo_id ?? null
+}
+
+const lloOptionsForFilter = computed(() => {
+  const base = activeLlos.value
+  return pickerCloFilter.value ? base.filter(l => l.clo_id === pickerCloFilter.value) : base
+})
 
 const pickerTypeOptions = [
   { label: 'All Types', value: '' },
@@ -820,15 +933,26 @@ const filteredPickerQuestions = computed(() => {
   return pickerQuestions.value.filter(q => {
     const matchType = !pickerTypeFilter.value || q.type === pickerTypeFilter.value
     const matchSearch = !pickerSearch.value || (q.title || '').toLowerCase().includes(pickerSearch.value.toLowerCase())
-    return matchType && matchSearch
+    const matchClo = !pickerCloFilter.value || cloIdForLlo(q.llo_id) === pickerCloFilter.value
+    const matchLlo = !pickerLloFilter.value || q.llo_id === pickerLloFilter.value
+    return matchType && matchSearch && matchClo && matchLlo
   })
 })
 
+const matchingCount = computed(() => filteredPickerQuestions.value.length)
+
+const matchingSelectedCount = computed(() => {
+  const selected = new Set(builderForm.value.selectedQuestionIds)
+  return filteredPickerQuestions.value.filter(q => selected.has(q.id)).length
+})
+
+const selectedQuestionObjects = computed(() => {
+  const selected = new Set(builderForm.value.selectedQuestionIds)
+  return pickerQuestions.value.filter(q => selected.has(q.id))
+})
+
 const selectedPoints = computed(() => {
-  const selectedIds = new Set(builderForm.value.selectedQuestionIds)
-  return pickerQuestions.value
-    .filter(q => selectedIds.has(q.id))
-    .reduce((sum, q) => sum + (q.points || 0), 0)
+  return selectedQuestionObjects.value.reduce((sum, q) => sum + (q.points || 0), 0)
 })
 
 const pointsOverLimit = computed(() => {
@@ -836,9 +960,143 @@ const pointsOverLimit = computed(() => {
   return !!total && selectedPoints.value > total
 })
 
+// Every LLO of the subject is listed (even ones with zero selected, flagged
+// in rose) so a teacher can immediately see which outcomes this quiz has
+// no coverage for at all.
+const balanceByLlo = computed(() => {
+  const counts = new Map()
+  let unassigned = 0
+
+  selectedQuestionObjects.value.forEach(q => {
+    if (q.llo_id) {
+      counts.set(q.llo_id, (counts.get(q.llo_id) || 0) + 1)
+    } else {
+      unassigned++
+    }
+  })
+
+  // LLO codes are only unique within their own CLO, so two different CLOs
+  // can legitimately both have an "LLO01" — prefix with the CLO title too,
+  // otherwise same-coded LLOs from different CLOs look like duplicates.
+  const rows = llos.value.map(l => ({
+    id: l.id,
+    title: `${l.clo_title ? l.clo_title + ' · ' : ''}${l.code ? l.code + ' — ' : ''}${l.title}`,
+    count: counts.get(l.id) || 0,
+  }))
+
+  if (unassigned > 0) {
+    rows.push({ id: 'unassigned', title: 'Unassigned', count: unassigned })
+  }
+
+  return rows
+})
+
+const balanceByDifficulty = computed(() => {
+  const counts = { Easy: 0, Medium: 0, Hard: 0 }
+  selectedQuestionObjects.value.forEach(q => {
+    if (counts[q.difficulty] !== undefined) counts[q.difficulty]++
+  })
+  return ['Easy', 'Medium', 'Hard'].map(label => ({ label, count: counts[label] }))
+})
+
+async function addRandom() {
+  if (!classInfo.value) return
+
+  try {
+    const { data } = await api.post('/teacher/questions/random', {
+      subject_id: classInfo.value.subject_id,
+      clo_id: pickerCloFilter.value || undefined,
+      llo_id: pickerLloFilter.value || undefined,
+      question_type: pickerTypeFilter.value || undefined,
+      count: randomCount.value,
+      exclude_ids: builderForm.value.selectedQuestionIds,
+    })
+
+    const existingIds = new Set(pickerQuestions.value.map(q => q.id))
+    data.data.forEach(q => {
+      if (!existingIds.has(q.id)) pickerQuestions.value.push(q)
+      if (!builderForm.value.selectedQuestionIds.includes(q.id)) builderForm.value.selectedQuestionIds.push(q.id)
+    })
+
+    if (data.shortfall > 0) {
+      toast.add({ severity: 'warn', summary: 'Fewer questions available', detail: `Only ${data.data.length} available for this filter.`, life: 4000 })
+    } else {
+      toast.add({ severity: 'success', summary: 'Questions added', detail: `${data.data.length} question(s) added at random.`, life: 3000 })
+    }
+  } catch (error) {
+    toast.add({ summary: 'Failed to add random questions', ...toastFromError(error) })
+  }
+}
+
+// Trims the selection down, not up: among the questions matching the
+// current filter that are ALREADY selected, keep only a random `randomCount`
+// of them and deselect the rest. Unlike addRandom() (which only ever adds
+// unselected matches), this is how you go from "all 12 tagged to this LLO
+// are selected" down to "just 4 of them," e.g. to balance a quiz across
+// several outcomes without hand-unchecking rows one by one.
+function keepRandom() {
+  const matchingSelectedIds = filteredPickerQuestions.value
+    .map(q => q.id)
+    .filter(id => builderForm.value.selectedQuestionIds.includes(id))
+
+  if (matchingSelectedIds.length <= randomCount.value) {
+    toast.add({
+      severity: 'info',
+      summary: 'Nothing to trim',
+      detail: `Only ${matchingSelectedIds.length} question(s) matching this filter are selected already.`,
+      life: 3500,
+    })
+    return
+  }
+
+  const shuffled = [...matchingSelectedIds].sort(() => Math.random() - 0.5)
+  const toKeep = new Set(shuffled.slice(0, randomCount.value))
+  const toRemove = new Set(matchingSelectedIds.filter(id => !toKeep.has(id)))
+
+  builderForm.value.selectedQuestionIds = builderForm.value.selectedQuestionIds.filter(id => !toRemove.has(id))
+
+  toast.add({
+    severity: 'success',
+    summary: 'Selection trimmed',
+    detail: `Kept ${randomCount.value} random question(s) for this filter, removed ${toRemove.size}.`,
+    life: 3500,
+  })
+}
+
+function addAll() {
+  const toAdd = filteredPickerQuestions.value
+    .map(q => q.id)
+    .filter(id => !builderForm.value.selectedQuestionIds.includes(id))
+
+  if (toAdd.length === 0) {
+    toast.add({ severity: 'info', summary: 'Nothing to add', detail: 'All matching questions are already selected.', life: 3000 })
+    return
+  }
+
+  const applyAdd = () => {
+    builderForm.value.selectedQuestionIds.push(...toAdd)
+    toast.add({ severity: 'success', summary: 'Questions added', detail: `${toAdd.length} question(s) added.`, life: 3000 })
+  }
+
+  if (toAdd.length > 20) {
+    confirm.require({
+      header: 'Add all matching questions',
+      message: `Add all ${toAdd.length} matching questions to this quiz?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Add All',
+      rejectLabel: 'Cancel',
+      accept: applyAdd,
+    })
+  } else {
+    applyAdd()
+  }
+}
+
 async function openQuizModal(quiz = null) {
   pickerSearch.value = ''
   pickerTypeFilter.value = ''
+  pickerCloFilter.value = null
+  pickerLloFilter.value = null
 
   if (quiz) {
     editingQuizId.value = quiz.id

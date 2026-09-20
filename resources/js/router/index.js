@@ -27,6 +27,7 @@ import ScoreReport from '../views/pages/teacher/ScoreReport.vue'
 import Feedback from '../views/pages/teacher/Feedback.vue'
 import QuestionBank from '../views/pages/teacher/QuestionBank.vue'
 import QuestionImportExport from '../views/pages/teacher/QuestionImportExport.vue'
+import LearningOutcomes from '../views/pages/teacher/LearningOutcomes.vue'
 
 import StudentLayout from '../views/StudentLayout.vue'
 import Mycourse from '../views/pages/student/Mycourse.vue'
@@ -162,6 +163,11 @@ const routes = [
         path: 'questionbank/import-export',
         name: 'teacher.questionbank.importExport',
         component: QuestionImportExport,
+      },
+      {
+        path: 'learning-outcomes',
+        name: 'teacher.learning-outcomes',
+        component: LearningOutcomes,
       },
       {
         path: 'scoreReport',

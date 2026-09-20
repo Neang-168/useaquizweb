@@ -128,11 +128,6 @@
             </div>
 
             <div class="space-y-1.5 sm:col-span-2">
-              <label for="email" class="text-xs font-bold text-slate-700">Email</label>
-              <InputText id="email" v-model="profileForm.email" type="email" placeholder="jane@example.com" class="w-full !rounded-lg !border-[#D8E7EC] focus:!border-[#002060] focus:!ring-2 focus:!ring-[#002060]/20" />
-            </div>
-
-            <div class="space-y-1.5 sm:col-span-2">
               <label for="address" class="text-xs font-bold text-slate-700">Address</label>
               <Textarea id="address" v-model="profileForm.address" rows="2" placeholder="Street, city, country" class="w-full !rounded-lg !border-[#D8E7EC] focus:!border-[#002060] focus:!ring-2 focus:!ring-[#002060]/20" />
             </div>
@@ -302,7 +297,6 @@ const academicTiles = computed(() => {
     { label: 'Class', value: e.class_name },
     { label: 'Major', value: e.major_name },
     { label: 'Faculty', value: e.faculty_name },
-    { label: 'Degree', value: e.degree_name },
     { label: 'Academic Year', value: e.academic_year_name },
     { label: 'Semester', value: e.semester_name },
     { label: 'Term', value: e.term_name },
@@ -321,7 +315,6 @@ const profileForm = ref({
   gender: null,
   dob: '',
   phone: '',
-  email: '',
   address: '',
 })
 
@@ -354,7 +347,6 @@ const fetchCurrentUser = async () => {
       gender: data.gender || null,
       dob: data.dob || '',
       phone: data.phone || '',
-      email: data.email || '',
       address: data.address || '',
     }
     setAuthUser(data)

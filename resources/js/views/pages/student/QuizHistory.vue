@@ -59,6 +59,7 @@
               <th class="p-4">Submitted On</th>
               <th class="p-4">Score</th>
               <th class="p-4">Result</th>
+              <th class="p-4">Answer</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
@@ -72,11 +73,28 @@
                   {{ a.passed ? 'Passed' : 'Failed' }}
                 </span>
               </td>
+              <td class="p-4">
+                <Button
+                  v-if="a.canViewAnswer"
+                  label="View Answer"
+                  icon="pi pi-eye"
+                  size="small"
+                  outlined
+                  class="!border-indigo-200 !text-indigo-600 hover:!bg-indigo-50 !rounded-xl !text-xs !px-3 !py-1.5"
+                  @click="openViewAnswer(a)"
+                />
+                <span v-else class="inline-flex items-center gap-1.5 text-[11px] text-slate-400 font-semibold">
+                  <i class="pi pi-lock text-[10px]"></i>
+                  Available {{ a.endAt ? `after ${formatDateTime(a.endAt)}` : 'once the quiz closes' }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </template>
+
+    <ViewAnswerDialog v-model:visible="viewAnswerVisible" :submission-id="viewingSubmissionId" />
 
   </div>
 </template>
@@ -84,8 +102,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import Button from 'primevue/button'
 import api, { extractError } from '../../../api'
 import { formatDateTime } from '../../../utils/formatDateTime'
+import ViewAnswerDialog from '../../../components/student/ViewAnswerDialog.vue'
 
 const route = useRoute()
 const quizId = computed(() => Number(route.params.quizId))
@@ -100,6 +120,13 @@ const backTo = computed(() => {
 
 const loading = ref(true)
 const attempts = ref([])
+const viewAnswerVisible = ref(false)
+const viewingSubmissionId = ref(null)
+
+function openViewAnswer(attempt) {
+  viewingSubmissionId.value = attempt.id
+  viewAnswerVisible.value = true
+}
 
 const quizTitle = computed(() => attempts.value[0]?.quizTitle ?? '')
 const subjectLabel = computed(() => {

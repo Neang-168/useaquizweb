@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\EnrollmentReportController;
 use App\Http\Controllers\Api\FacultyController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\PloController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleController;
@@ -26,9 +27,12 @@ use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\TeacherImportController;
 use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\Teacher\CalendarController as TeacherCalendarController;
+use App\Http\Controllers\Api\Teacher\CloController as TeacherCloController;
 use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Api\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Api\Teacher\FeedbackController as TeacherFeedbackController;
+use App\Http\Controllers\Api\Teacher\LloController as TeacherLloController;
+use App\Http\Controllers\Api\Teacher\PloController as TeacherPloController;
 use App\Http\Controllers\Api\Teacher\QuestionController as TeacherQuestionController;
 use App\Http\Controllers\Api\Teacher\QuestionImageUploadController as TeacherQuestionImageUploadController;
 use App\Http\Controllers\Api\Teacher\QuestionImportExportController as TeacherQuestionImportExportController;
@@ -120,6 +124,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::apiResource('majors', MajorController::class)->parameters(['majors' => 'major']);
         Route::get('/subjects/next-code', [SubjectController::class, 'nextCode']);
         Route::apiResource('subjects', SubjectController::class)->parameters(['subjects' => 'subject']);
+        Route::apiResource('plos', PloController::class)->parameters(['plos' => 'plo']);
         Route::apiResource('study-sessions', StudySessionController::class)->parameters(['study-sessions' => 'studySession']);
 
         Route::post('/academic-years/{academicYear}/set-current', [AcademicYearController::class, 'setCurrent']);
@@ -171,11 +176,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/subjects', [TeacherSubjectController::class, 'index']);
 
+        Route::get('/plos', [TeacherPloController::class, 'index']);
+        Route::apiResource('clos', TeacherCloController::class)->parameters(['clos' => 'clo']);
+        Route::apiResource('llos', TeacherLloController::class)->parameters(['llos' => 'llo']);
+
         Route::post('/uploads/question-image', [TeacherQuestionImageUploadController::class, 'store']);
 
         Route::get('/questions/template', [TeacherQuestionImportExportController::class, 'template']);
         Route::get('/questions/export', [TeacherQuestionImportExportController::class, 'export']);
         Route::post('/questions/import', [TeacherQuestionImportExportController::class, 'import']);
+        Route::get('/questions/untagged', [TeacherQuestionController::class, 'untagged']);
+        Route::post('/questions/bulk-tag-llo', [TeacherQuestionController::class, 'bulkTagLlo']);
+        Route::post('/questions/random', [TeacherQuestionController::class, 'random']);
 
         Route::apiResource('questions', TeacherQuestionController::class)
             ->parameters(['questions' => 'question'])
@@ -204,6 +216,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/quizzes/{quiz}/submit', [StudentQuizController::class, 'submit']);
 
         Route::get('/results', [StudentResultController::class, 'index']);
+        Route::get('/results/{submission}/answers', [StudentResultController::class, 'answers']);
 
         Route::get('/notifications', [StudentNotificationController::class, 'index']);
         Route::post('/notifications/{notification}/read', [StudentNotificationController::class, 'markRead']);

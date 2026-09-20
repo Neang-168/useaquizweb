@@ -16,6 +16,7 @@ class Question extends Model
     protected $fillable = [
         'teacher_profile_id',
         'subject_id',
+        'llo_id',
         'type',
         'title',
         'image_path',
@@ -54,6 +55,11 @@ class Question extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function llo(): BelongsTo
+    {
+        return $this->belongsTo(Llo::class);
     }
 
     public function options(): HasMany

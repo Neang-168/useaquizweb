@@ -9,7 +9,7 @@
           Academic Structure
         </h1>
         <p class="text-xs sm:text-sm text-slate-500 m-0 mt-1 pl-0.5">
-          Manage faculties, departments, majors, promotions, academic years, semesters, terms, stages and shifts &mdash; fully editable, no more fixed seed data.
+          Manage faculties, departments, majors, promotions, academic years, semesters, terms, stages and shifts.
         </p>
       </div>
 

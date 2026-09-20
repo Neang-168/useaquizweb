@@ -90,7 +90,7 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('shifts', 'code')->ignore($shift?->id),
@@ -103,7 +103,7 @@ class ShiftController extends Controller
         ]);
 
         return [
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'start_time' => $validated['start_time'],

@@ -120,7 +120,7 @@ class AcademicYearController extends Controller
     {
         $validated = $request->validate([
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('academic_years', 'code')->ignore($academicYear?->id),
@@ -134,7 +134,7 @@ class AcademicYearController extends Controller
         ]);
 
         return [
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'start_date' => $validated['start_date'],

@@ -108,7 +108,7 @@ onMounted(fetchLookups)
 // `name` needs this — every other endpoint accepts `name_en`). =======
 
 const facultyFields = [
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. SCT' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. SCT', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true, placeholder: 'e.g. Science And Technology' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'description', label: 'Description', type: 'textarea', span: 3, showInTable: false },
@@ -117,7 +117,7 @@ const facultyFields = [
 
 const departmentFields = [
   { key: 'faculty_id', label: 'Faculty', type: 'select', optionsKey: 'faculties', optionLabel: 'name_en', optionValue: 'id', displayKey: 'faculty_name', required: true },
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. ICT' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. ICT', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'description', label: 'Description', type: 'textarea', span: 3, showInTable: false },
@@ -135,7 +135,7 @@ const majorFields = [
     required: true,
     formatTable: (data) => (data.faculty_name ? `${data.department_name} · ${data.faculty_name}` : data.department_name || '—'),
   },
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. IT' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. IT', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'description', label: 'Description', type: 'textarea', span: 3, showInTable: false },
@@ -143,7 +143,7 @@ const majorFields = [
 ]
 
 const stageFields = [
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. Y1' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. Y1', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true, placeholder: 'e.g. Year 1' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'level', label: 'Level / Order', type: 'number', required: true, placeholder: '1' },
@@ -151,7 +151,7 @@ const stageFields = [
 ]
 
 const shiftFields = [
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. M' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. M', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true, placeholder: 'e.g. Morning' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'start_time', label: 'Start Time', type: 'time', required: true },
@@ -160,7 +160,7 @@ const shiftFields = [
 ]
 
 const academicYearFields = [
-  { key: 'code', label: 'Code', type: 'text', required: true, placeholder: 'e.g. AY2026-2027' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'e.g. AY2026-2027', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name (English)', type: 'text', required: true, placeholder: 'e.g. 2026-2027' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'start_date', label: 'Start Date', type: 'date', required: true },
@@ -181,7 +181,7 @@ const semesterFields = [
 
 const termFields = [
   { key: 'academic_year_id', label: 'Academic Year', type: 'select', optionsKey: 'academicYears', optionLabel: 'name_en', optionValue: 'id', displayKey: 'academic_year', required: true },
-  { key: 'code', label: 'Code', type: 'text', placeholder: 'optional' },
+  { key: 'code', label: 'Code', type: 'text', placeholder: 'optional', showInTable: false, showInForm: false },
   { key: 'name_en', label: 'Name', type: 'text', required: true, placeholder: 'e.g. Term 1' },
   { key: 'name_kh', label: 'Name (Khmer)', type: 'text', khmer: true },
   { key: 'order_no', label: 'Order', type: 'number', required: true, placeholder: '1' },
@@ -212,9 +212,9 @@ const tabs = [
   { key: 'majors', label: 'Majors', title: 'Majors', singular: 'Major', icon: 'pi pi-bookmark', endpoint: '/majors', fields: majorFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No majors found.' },
   { key: 'promotions', label: 'Promotions', title: 'Promotions', singular: 'Promotion', icon: 'pi pi-users', endpoint: '/promotions', fields: promotionFields, searchPlaceholder: 'Search by year...', emptyMessage: 'No promotions found.' },
   { key: 'academicYears', label: 'Academic Years', title: 'Academic Years', singular: 'Academic Year', icon: 'pi pi-calendar', endpoint: '/academic-years', fields: academicYearFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No academic years found.', supportsSetCurrent: true },
+  { key: 'stages', label: 'Stages', title: 'Stages', singular: 'Stage', icon: 'pi pi-flag', endpoint: '/stages', fields: stageFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No stages found.' },
   { key: 'semesters', label: 'Semesters', title: 'Semesters', singular: 'Semester', icon: 'pi pi-calendar-plus', endpoint: '/semesters', fields: semesterFields, searchPlaceholder: 'Search name...', emptyMessage: 'No semesters found.' },
   { key: 'terms', label: 'Terms', title: 'Terms', singular: 'Term', icon: 'pi pi-calendar-minus', endpoint: '/terms', fields: termFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No terms found.' },
-  { key: 'stages', label: 'Stages', title: 'Stages', singular: 'Stage', icon: 'pi pi-flag', endpoint: '/stages', fields: stageFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No stages found.' },
   { key: 'shifts', label: 'Shifts', title: 'Shifts', singular: 'Shift', icon: 'pi pi-clock', endpoint: '/shifts', fields: shiftFields, searchPlaceholder: 'Search code or name...', emptyMessage: 'No shifts found.' },
 ]
 

@@ -149,6 +149,7 @@ class UserController extends Controller
 
         $data = $request->validate([
             'email' => [
+                'sometimes',
                 'required',
                 'string',
                 'email',

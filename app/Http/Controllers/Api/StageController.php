@@ -90,7 +90,7 @@ class StageController extends Controller
     {
         $validated = $request->validate([
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('stages', 'code')->ignore($stage?->id),
@@ -102,7 +102,7 @@ class StageController extends Controller
         ]);
 
         return [
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'order_no' => $validated['level'],

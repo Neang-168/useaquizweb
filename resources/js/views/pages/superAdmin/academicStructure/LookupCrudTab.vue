@@ -63,28 +63,22 @@
         </template>
       </Column>
 
-      <Column header="ACTIONS" style="width: 120px; padding-right: 1.25rem" class="!text-center">
+      <Column header="ACTIONS" class="!text-right" style="min-width: 130px; padding-right: 1.25rem">
         <template #body="{ data }">
-          <div class="flex items-center justify-center gap-1.5">
+          <div class="flex items-center justify-end gap-1.5">
             <Button
               v-if="supportsSetCurrent && !data.is_current"
-              size="small"
-              class="!bg-slate-100 !border-slate-100 !text-blue-600 !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
+              icon="pi pi-check"
+              class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-blue-600 !border !border-slate-100 shadow-xs cursor-pointer text-xs"
               title="Set as current"
               @click="setCurrent(data)"
             ><i class="fa-solid fa-check"></i></Button>
-            <Button
-              size="small"
-              class="!bg-slate-100 !border-slate-100 !text-[#e4ac14] !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
-              :title="`Edit ${singular}`"
-              @click="openEdit(data)"
-            ><i class="fa-solid fa-pen-to-square"></i></Button>
-            <Button
-              size="small"
-              class="!bg-slate-100 !border-slate-100 !text-[#d71818] !rounded-xl !text-xs !px-3 !py-1.5 shadow-xs"
-              :title="`Delete ${singular}`"
-              @click="confirmDeleteItem(data)"
-            ><i class="fa-solid fa-trash-can"></i></Button>
+            <Button icon="pi pi-pencil"
+              class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#e4ac14] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+              :title="`Edit ${singular}`" @click="openEdit(data)"><i class="fa-solid fa-pen-to-square"></i></Button>
+            <Button icon="pi pi-trash"
+              class="!p-1.5 !w-8 !h-8 !rounded-xl !bg-slate-100 !text-[#d71818] !border !border-slate-100 shadow-xs cursor-pointer text-xs"
+              :title="`Delete ${singular}`" @click="confirmDeleteItem(data)"><i class="fa-solid fa-trash-can"></i></Button>
           </div>
         </template>
       </Column>
@@ -104,7 +98,7 @@
       }"
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div v-for="field in fields" :key="field.key" :class="colSpanClass(field)">
+        <div v-for="field in formFields" :key="field.key" :class="colSpanClass(field)">
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
             {{ field.label }}<span v-if="field.required"> *</span>
           </label>
@@ -217,6 +211,7 @@ const first = ref(0)
 const rows = ref(10)
 
 const tableColumns = computed(() => props.fields.filter((f) => f.showInTable !== false && f.type !== 'textarea'))
+const formFields = computed(() => props.fields.filter((f) => f.showInForm !== false))
 
 const filteredItems = computed(() => {
   const q = props.search.trim().toLowerCase()
@@ -310,10 +305,10 @@ const save = async () => {
   try {
     if (isEdit.value) {
       await api.put(`${props.endpoint}/${form.value.id}`, payload)
-      toast.add({ severity: 'success', summary: `${props.singular} updated`, life: 3000 })
+      toast.add({ severity: 'success', summary: `${props.singular} updated`, detail: `${displayName(form.value)} was updated successfully.`, life: 3000 })
     } else {
       await api.post(props.endpoint, payload)
-      toast.add({ severity: 'success', summary: `${props.singular} created`, life: 3000 })
+      toast.add({ severity: 'success', summary: `${props.singular} created`, detail: `${displayName(form.value)} was created successfully.`, life: 3000 })
     }
 
     dialogVisible.value = false
@@ -340,7 +335,7 @@ const confirmDeleteItem = (data) => {
     accept: async () => {
       try {
         await api.delete(`${props.endpoint}/${data.id}`)
-        toast.add({ severity: 'success', summary: `${props.singular} deleted`, life: 3000 })
+        toast.add({ severity: 'success', summary: `${props.singular} deleted`, detail: `${displayName(data)} was deleted.`, life: 3000 })
         await fetchItems()
         emit('changed')
       } catch (error) {
@@ -353,7 +348,7 @@ const confirmDeleteItem = (data) => {
 const setCurrent = async (data) => {
   try {
     await api.post(`${props.endpoint}/${data.id}/set-current`)
-    toast.add({ severity: 'success', summary: `${displayName(data)} is now the current academic year.`, life: 3000 })
+    toast.add({ severity: 'success', summary: 'Current academic year set', detail: `${displayName(data)} is now the current academic year.`, life: 3000 })
     await fetchItems()
     emit('changed')
   } catch (error) {

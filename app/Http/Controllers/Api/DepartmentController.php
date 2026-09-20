@@ -83,7 +83,7 @@ class DepartmentController extends Controller
         $validated = $request->validate([
             'faculty_id' => ['required', 'exists:faculties,id'],
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('departments', 'code')->ignore($department?->id),
@@ -96,7 +96,7 @@ class DepartmentController extends Controller
 
         return [
             'faculty_id' => $validated['faculty_id'],
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'description' => $validated['description'] ?? null,

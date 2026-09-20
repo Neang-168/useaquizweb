@@ -105,7 +105,7 @@ class MajorController extends Controller
             'department_id' => ['required', 'exists:departments,id'],
             'degree_id' => ['nullable', 'exists:degrees,id'],
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('majors', 'code')
@@ -121,7 +121,7 @@ class MajorController extends Controller
         return [
             'department_id' => $validated['department_id'],
             'degree_id' => $validated['degree_id'] ?? null,
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'description' => $validated['description'] ?? null,

@@ -91,7 +91,7 @@ class FacultyController extends Controller
     {
         $validated = $request->validate([
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('faculties', 'code')->ignore($faculty?->id),
@@ -103,7 +103,7 @@ class FacultyController extends Controller
         ]);
 
         return [
-            'code' => $validated['code'],
+            'code' => $validated['code'] ?? null,
             'name' => $validated['name_en'],
             'name_kh' => $validated['name_kh'] ?? null,
             'description' => $validated['description'] ?? null,

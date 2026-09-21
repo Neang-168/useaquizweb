@@ -68,12 +68,12 @@
             <!-- Profile Dropdown Button -->
             <div class="relative flex items-center gap-3">
               <router-link to="/student/my-profile" class="flex items-center gap-2.5 no-underline">
-                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-xs">
-                  {{ userInitial }}
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-xs overflow-hidden shrink-0">
+                  <img v-if="authUser.avatar_url" :src="authUser.avatar_url" alt="Avatar" class="w-full h-full object-cover" />
+                  <span v-else>{{ userInitial }}</span>
                 </div>
                 <div class="hidden sm:block text-left">
-                  <p class="text-xs font-bold text-slate-800 leading-tight m-0">{{ userFullName }}</p>
-                  <p class="text-[10px] text-slate-400 leading-tight m-0">Student</p>
+                  <p class="text-sm font-semibold text-slate-700 leading-tight m-0">{{ userFullName }}</p>
                 </div>
               </router-link>
 

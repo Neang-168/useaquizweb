@@ -31,7 +31,7 @@ class CalendarController extends Controller
         $monthEnd = $monthStart->copy()->endOfMonth()->endOfDay();
 
         $quizzes = Quiz::query()
-            ->where('status', 'Published')
+            ->whereIn('status', ['Published', 'Closed'])
             ->whereIn('class_id', $classIds)
             ->where(function ($query) {
                 $query->whereNotNull('start_at')->orWhereNotNull('end_at');

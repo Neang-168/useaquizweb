@@ -1275,17 +1275,12 @@ const fetchQuizScoreStats = async (quizId) => {
   try {
     const { data } = await api.get(`/teacher/quizzes/${quizId}/scores`)
     const scores = data.data || []
-    
-    const targetQuiz = quizzes.value.find(q => q.id === quizId)
-    const passMark = targetQuiz?.passMark ?? 50 // default Pass Mark = 50%
-    const totalScore = targetQuiz?.totalScore || 100
 
     let passed = 0
     let failed = 0
 
     scores.forEach(s => {
-      const percentage = (s.score / totalScore) * 100
-      if (percentage >= passMark) {
+      if (s.passed) {
         passed++
       } else {
         failed++

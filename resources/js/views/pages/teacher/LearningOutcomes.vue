@@ -6,7 +6,7 @@
       <div>
         <h1 class="text-xl font-bold text-[#002060] m-0 flex items-center gap-2">
           <i class="pi pi-sitemap text-[#e4ac40] text-2xl"></i>
-          Learning Outcomes
+          Course Learning Outcomes (CLOs) and Lesson Learning Outcomes (LLOs)
         </h1>
         <p class="text-xs text-slate-500 m-0 mt-1">
           Manage Course Learning Outcomes (CLOs) and Lesson Learning Outcomes (LLOs) for your subjects.

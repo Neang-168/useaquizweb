@@ -13,7 +13,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { colorForSubject } from './subjectColors'
+import { colorForStatus } from './statusColors'
 
 const props = defineProps({
   quiz: { type: Object, required: true },
@@ -21,10 +21,11 @@ const props = defineProps({
 
 defineEmits(['click'])
 
-const color = computed(() => colorForSubject(props.quiz.subject?.id))
+const color = computed(() => colorForStatus(props.quiz.status))
 
 const tooltip = computed(() => {
   const parts = [props.quiz.title]
+  if (props.quiz.status) parts.push(props.quiz.status)
   if (props.quiz.subject?.name) parts.push(props.quiz.subject.name)
   if (props.quiz.class?.name) parts.push(props.quiz.class.name)
   return parts.join(' • ')

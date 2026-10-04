@@ -61,6 +61,14 @@
       @quiz-click="selectedQuiz = $event"
     />
 
+    <!-- Status legend -->
+    <div class="flex flex-wrap items-center gap-4 px-1">
+      <div v-for="(color, status) in STATUS_COLORS" :key="status" class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+        <span class="w-2 h-2 rounded-full" :class="color.dot"></span>
+        {{ status }}
+      </div>
+    </div>
+
     <QuizDetailModal :quiz="selectedQuiz" @close="selectedQuiz = null" />
   </div>
 </template>
@@ -74,6 +82,7 @@ import { useToast } from 'primevue/usetoast'
 import api, { toastFromError } from '../../../api'
 import CalendarGrid from './CalendarGrid.vue'
 import QuizDetailModal from './QuizDetailModal.vue'
+import { STATUS_COLORS } from './statusColors'
 
 const toast = useToast()
 

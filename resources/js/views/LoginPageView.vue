@@ -94,10 +94,10 @@
           <!-- Title & Description -->
           <div>
             <h2 class="text-lg sm:text-xl font-bold text-surface-800">
-              University Of South-East Asia
+              University of South-East Asia
             </h2>
             <p class="mt-2 text-xs sm:text-sm text-surface-500 leading-relaxed max-w-xs mx-auto">
-              Welcome back! Please log in with your credentials to manage quizzes, view reports, and track system activities.
+              Welcome back! Please log in with your credentials to access USEA Quiz.
             </p>
           </div>
         </div>

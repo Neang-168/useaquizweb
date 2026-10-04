@@ -51,7 +51,11 @@ class DashboardController extends Controller
         $activeQuizzesCount = $quizzes->where('status', 'Published')->count();
 
         $quizIds = $quizzes->pluck('id');
-        $submissions = QuizSubmission::whereIn('quiz_id', $quizIds)->get();
+        // Only finished attempts — in_progress rows have no score yet and
+        // would read as 0% in the averages and alerts below.
+        $submissions = QuizSubmission::whereIn('quiz_id', $quizIds)
+            ->whereIn('status', ['submitted', 'graded'])
+            ->get();
 
         $pendingEssaysCount = $submissions->where('status', 'submitted')->filter(function (QuizSubmission $submission) use ($quizzes) {
             $quiz = $quizzes->firstWhere('id', $submission->quiz_id);
@@ -89,13 +93,18 @@ class DashboardController extends Controller
                 'duration' => $quiz->duration_minutes,
                 'subject' => $quiz->subject?->name,
                 'className' => $quiz->classroom?->name,
-                'submittedCount' => $submissions->where('quiz_id', $quiz->id)->count(),
+                // Distinct students, so retakes don't push this past totalStudents.
+                'submittedCount' => $submissions->where('quiz_id', $quiz->id)->unique('student_profile_id')->count(),
                 'totalStudents' => $totalStudents,
                 'statusText' => $quiz->status,
             ];
         });
 
+        // Judge each student on their latest attempt per quiz, so a student who
+        // failed and then passed a retake isn't still flagged.
         $needsAttention = $submissions
+            ->groupBy(fn (QuizSubmission $s) => $s->quiz_id . '-' . $s->student_profile_id)
+            ->map(fn ($attempts) => $attempts->sortByDesc('attempt_number')->first())
             ->filter(function (QuizSubmission $s) use ($quizzes, $percentageOf) {
                 $passMark = $quizzes->firstWhere('id', $s->quiz_id)?->pass_mark ?? 50;
 

@@ -9,7 +9,7 @@
           <img :src="LogoUsea" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <div>
-          <h1 class="m-0 text-[16px] font-semibold text-slate-900 leading-tight">University Of South-East Asia</h1>
+          <h1 class="m-0 text-[16px] font-semibold text-slate-900 leading-tight">University of South-East Asia</h1>
         </div>
         <!-- <div>
           <h1 class="ml-10 text-[14px] font-semibold text-slate-900 leading-tight">Teacher Portal</h1>
@@ -94,7 +94,7 @@
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"
                 active-class="!bg-blue-100 !text-blue-600">
                 <i class="pi pi-sitemap text-base"></i>
-                <span>Learning Outcomes</span>
+                <span>CLOs & LLOs</span>
               </router-link>
               <router-link to="/teacher/scoreReport"
                 class="w-full border-0 text-slate-700 hover:bg-slate-200/60 hover:text-blue-600 py-2 px-3 rounded-sm flex items-center gap-3 text-sm font-semibold transition-all no-underline"

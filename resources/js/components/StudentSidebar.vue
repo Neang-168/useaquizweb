@@ -12,7 +12,7 @@
               <img :src="LogoUsea" alt="Logo" class="w-full h-full object-contain" />
             </div>
             <div>
-              <h1 class="m-0 text-[16px] font-semibold text-slate-900 leading-tight">University Of South-East Asia</h1>
+              <h1 class="m-0 text-[16px] font-semibold text-slate-900 leading-tight">University of South-East Asia</h1>
             </div>
           </div>
 

@@ -60,6 +60,14 @@
       @quiz-click="selectedQuiz = $event"
     />
 
+    <!-- Status legend — students never see Drafts -->
+    <div class="flex flex-wrap items-center gap-4 px-1">
+      <div v-for="status in ['Published', 'Closed']" :key="status" class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+        <span class="w-2 h-2 rounded-full" :class="STATUS_COLORS[status].dot"></span>
+        {{ status }}
+      </div>
+    </div>
+
     <QuizDetailModal
       :quiz="selectedQuiz"
       :detail-route="detailRouteFor"
@@ -77,6 +85,7 @@ import SelectButton from 'primevue/selectbutton'
 import api, { extractError } from '../../api'
 import CalendarGrid from '../teacher/calendar/CalendarGrid.vue'
 import QuizDetailModal from '../teacher/calendar/QuizDetailModal.vue'
+import { STATUS_COLORS } from '../teacher/calendar/statusColors'
 
 const referenceDate = ref(new Date())
 const viewMode = ref('month')
